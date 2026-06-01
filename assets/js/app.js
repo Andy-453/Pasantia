@@ -86,6 +86,22 @@ window.App = {
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
 };
 
+// ===== EVENT DELEGATION — Piloto Fase 3 =====
+// Reemplazo progresivo de onclick inline por data-action + dispatcher centralizado.
+// Compatibilidad legacy: onclick coexistente (llamada doble es idempotente).
+// TODO [MVC]: migrar más acciones y eliminar onclick cuando event delegation cubra todo.
+var __ACTIONS = {
+  'show-tab': function(b){ showTab(b.dataset.tab); },
+  'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); },
+  'reset-filters': function(){ resetFilters(); },
+};
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-action]');
+  if(!b) return;
+  var fn = __ACTIONS[b.getAttribute('data-action')];
+  if(fn) fn(b);
+});
+
 // ===== TREE =====
 /**
  * Renderiza el árbol jerárquico (pregrado → línea → especialización / maestría / doctorado).

@@ -681,9 +681,93 @@ window.App = { showTab, renderViews, renderKPIs, /* ... */ };
 
 Los módulos individuales usarán `export function fn(){}` estándar.
 
-### 13.7. Próximo bloqueador para MVC real
+### 13.7. Bloqueadores para MVC real
 
-1. **Event delegation**: reemplazar +50 `onclick` inline en HTML generado por `data-action` + listener centralizado.
+1. ✅ ~~**Event delegation**~~ — **PILOTO IMPLEMENTADO (Fase 3)**: ver sección 14.
 2. **Eliminar `var` legacy**: reemplazar `var DB`, `var curFac`, `var filt*` por referencias a `AppState`.
 3. **Data como módulo**: extraer `DEFAULT_DATA`, `SD`, `ALL_SEDES` a módulos separados.
 4. **ESModules**: cambiar `<script>` tags a `<script type="module">`.
+
+---
+
+## 14. Event Delegation — migración progresiva
+
+### 14.1. Arquitectura del dispatcher
+
+Se implementó un listener centralizado que captura clicks con `data-action`:
+
+```js
+// app.js (después de window.App)
+var __ACTIONS = {
+  'show-tab':      function(b){ showTab(b.dataset.tab); },
+  'sel-fac':       function(b){ selFac(parseInt(b.dataset.fac,10)); },
+  'reset-filters': function(){ resetFilters(); },
+};
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-action]');
+  if(!b) return;
+  var fn = __ACTIONS[b.getAttribute('data-action')];
+  if(fn) fn(b);
+});
+```
+
+### 14.2. Handlers migrados en el piloto
+
+| data-action | data-* | Handler | Riesgo |
+|---|---|---|---|
+| `show-tab` | `data-tab="arbol\|tabla\|sede\|..."` | `showTab(id)` | Bajo — idempotente |
+| `sel-fac` | `data-fac="0\|1\|2\|..."` | `selFac(i)` | Bajo — idempotente |
+| `reset-filters` | — | `resetFilters()` | Bajo — idempotente |
+
+### 14.3. Elementos con data-action (origen)
+
+| Origen | Tipo | Acción |
+|---|---|---|
+| HTML estático (Dashboard_*.html) | 7 tabs + 7 fac-buttons + reset + header | data-action + onclick coexistente |
+| `renderFacBar()` (dashboard.js) | N fac-buttons (dinámicos) | data-action + onclick coexistente |
+
+### 14.4. Estrategia de coexistencia
+
+Cada elemento migrado mantiene su `onclick` original junto con `data-action`. Como `showTab`, `selFac` y `resetFilters` son **idempotentes**, la doble invocación no produce efectos secundarios. Esto permite:
+
+1. **Transición segura**: si el dispatcher falla, el onclick legacy sigue funcionando.
+2. **Rollback inmediato**: basta quitar el `data-action`.
+3. **Validación progresiva**: se puede monitorear qué mecanismo se activa.
+
+### 14.5. Handlers NO migrados (pendientes)
+
+| Handler | Ubicación | Por qué no se migró |
+|---|---|---|
+| `openEditProg(pid)` | renderTree (HTML dinámico) | renderTree excluido |
+| `deleteProg(pid)` | renderTree / renderEditor | renderTree + editor excluidos |
+| `saveProg(pid, isNew)` | renderProgForm | editor excluido |
+| `addLinea()` / `delLinea()` | renderProgForm | editor excluido |
+| `addMae()` / `delMae()` | renderProgForm | editor excluido |
+| `snSetFac(f)` / `snSetProg(p)` | renderSNIES | SNIES excluido |
+| `toggleSec(id)` | renderPipeline | Pipeline excluido |
+| `toggleDocForm()` | renderEditor | Editor excluido |
+| `saveDoc()` | renderEditor | Editor excluido |
+| `deleteFac()` / `saveFac(isNew)` | renderEditor | Editor excluido |
+| `openNewFac()` / `openEditFac()` | renderEditor | Editor excluido |
+| `downloadDB()` | HTML estático | No idempotente (crea 2 CSVs) |
+| `downloadHTML()` | HTML estático | No idempotente (crea 2 descargas) |
+| `resetDB()` | HTML estático | No idempotente (doble confirm) |
+| `window.print()` | HTML estático | Nativo, sin cambio |
+| `applyFilters()` | selects (onchange) | No es click, es onchange |
+
+### 14.6. Próximos pasos para event delegation completo
+
+1. **Migrar onchange de filtros**: los 5 `<select onchange="applyFilters()">` se pueden migrar a data-action + listener de change.
+2. **Migrar renderTree**: reemplazar `onclick="openEditProg(...)"` en templates dinámicos.
+3. **Migrar editor**: migrar ~15 handlers en renderProgForm y renderEditor.
+4. **Migrar pipeline**: `toggleSec` ya tiene `data-sec-id` — estandarizar a data-action.
+5. **Eliminar onclick legacy**: solo cuando todos los handlers estén migrados.
+
+### 14.7. Bloqueadores para migración completa
+
+| Bloqueador | Impacto |
+|---|---|
+| Templates en string literals `` `...${}...` `` | Dificulta reemplazo masivo |
+| Handlers con args dinámicos `openEditProg('${p.id}')` | data-* resuelve, ~20 templates por refactorizar |
+| Mezcla onclick en HTML estático y dinámico | Dos orígenes, misma estrategia |
+| Sin tests automatizados | No se puede verificar regresión |
