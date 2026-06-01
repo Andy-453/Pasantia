@@ -16,7 +16,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 867 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 868 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -751,6 +751,7 @@ document.addEventListener('change', function(e){
 | `download-html` | click | — | `downloadHTML()` | Bajo |
 | `print` | click | — | `window.print()` | Bajo |
 | `reset-db` | click | — | `resetDB()` | Bajo |
+| `open-edit-prog` | click | `data-pid="progId"` | `openEditProg(pid)` | Bajo |
 
 ### 14.4. Elementos con data-action
 
@@ -760,6 +761,8 @@ document.addEventListener('change', function(e){
 | `renderFacBar()` (dashboard.js) | N fac-buttons dinámicos | click |
 | `renderSNIES()` (app.js) | N fac-buttons + N prog-buttons dinámicos | click |
 | `renderPipeline()` (app.js) | N section headers + timeline | click |
+| `renderTree()` (app.js) | 2 edit buttons (single + multi pregrado) | click |
+| `renderTree()` (app.js) | 2 error-recovery links | click |
 | HTML estático | 5 selects (#filt-sede, #filt-pregrado, #filt-oferta, #filt-estado, #filt-nivel) | change |
 
 ### 14.5. Estrategia de migración
@@ -772,8 +775,7 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 
 | Handler | Ubicación | Por qué no se migró |
 |---|---|---|
-| `openEditProg(pid)` | renderTree (HTML dinámico) | renderTree excluido |
-| `deleteProg(pid)` | renderTree / renderEditor | renderTree + editor excluidos |
+| `deleteProg(pid)` | renderEditor | editor excluido |
 | `saveProg(pid, isNew)` | renderProgForm | editor excluido |
 | `addLinea()` / `delLinea()` | renderProgForm | editor excluido |
 | `addMae()` / `delMae()` | renderProgForm | editor excluido |
@@ -786,8 +788,7 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 
 ### 14.7. Próximos pasos
 
-1. **Migrar renderTree**: reemplazar `onclick="openEditProg(...)"` en templates dinámicos.
-2. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
+1. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
 3. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (único tab sin data-action).
 
 ### 14.8. Bloqueadores
@@ -795,7 +796,7 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 | Bloqueador | Impacto |
 |---|---|
 | Templates en string literals `` `...${}...` `` | Dificulta reemplazo masivo |
-| Handlers con args dinámicos `openEditProg('${p.id}')` | data-* resuelve, ~20 templates por refactorizar |
+| Handlers con args dinámicos en editor | data-* resuelve, ~15 templates por refactorizar |
 | Mezcla onclick en HTML estático y dinámico | Dos orígenes, misma estrategia |
 | Sin tests automatizados | No se puede verificar regresión |
 
@@ -817,6 +818,7 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 | Guardar dashboard | 1 button | `download-html` | `downloadHTML()` | — |
 | Imprimir | 1 button | `print` | `window.print()` | — |
 | Restablecer datos | 1 button | `reset-db` | `resetDB()` | — |
+| Editar programa (árbol) | ✎ button (renderTree) | `open-edit-prog` | `openEditProg(pid)` | `data-pid` |
 
 ### 15.2. Change delegation
 
@@ -833,17 +835,17 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 | Evento | Handler | Ubicación | Prioridad migración |
 |---|---|---|---|
 | click | `showTab('snies')` | tb-snies | Alta (único tab sin data-action) |
-| click | `openNewProg()` | editor | Media (zona excluida) |
-| click | `openEditFac()` | editor | Media (zona excluida) |
-| click | `openNewFac()` | editor | Media (zona excluida) |
-| click | `selFac(i)` | editor panel | Media (zona excluida) |
-| click | `openEditProg(...)` | renderTree | Media (zona excluida) |
-| click | `deleteProg(...)` | renderTree | Media (zona excluida) |
-| click | `saveProg(...)` | renderProgForm | Media (zona excluida) |
-| click | `snSetFac(...)` / `snSetProg(...)` | renderSNIES | Baja (zona excluida) |
-| click | `toggleSec(...)` | renderPipeline | Baja (zona excluida) |
-| click | `downloadDB()` / `downloadHTML()` / `resetDB()` | HTML header | Baja (no idempotente) |
-| click | `window.print()` | HTML header | Sin cambio |
+| click | `deleteProg(...)` | renderEditor | Media (editor excluido) |
+| click | `saveProg(...)` | renderProgForm | Media (editor excluido) |
+| click | `delLinea(...)` / `delMae(...)` | renderProgForm | Media (editor excluido) |
+| click | `addLinea()` / `addMae()` | renderProgForm | Media (editor excluido) |
+| click | `saveDoc()` | renderEditor | Media (editor excluido) |
+| click | `toggleDocForm()` | renderEditor | Media (editor excluido) |
+| click | `deleteFac()` / `saveFac(isNew)` | editor modal | Media (editor excluido) |
+| click | `openNewFac()` / `openEditFac()` | editor modal | Media (editor excluido) |
+| click | `openNewProg()` | editor | Media (editor excluido) |
+| click | `selFac(i)` | editor panel | Media (editor excluido) |
+| click | `downloadDB()` | HTML header | Baja (no idempotente) |
 
 ### 15.4. Preparación ESModules
 
@@ -852,7 +854,7 @@ Estado actual de dependencias para migración a `<script type="module">`:
 | Requisito | Estado |
 |---|---|
 | Sin `var` globales en módulos | ❌ `var DB, curFac, filtSede, filtOferta, filtEstado, filtNivel, SD, _snFac, _snProg, ALL_SEDES, DEFAULT_DATA` persisten |
-| Sin `onclick` inline en HTML | ⚠️ Parcial: 15+ onclick en editor, tree, SNIES, pipeline |
+| Sin `onclick` inline en HTML | ⚠️ Parcial: 14 onclick en editor (renderProgForm, renderEditor, modales) |
 | Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
 | Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |
 | `window.App` como namespace de transición | ✅ ~50 funciones exportadas |

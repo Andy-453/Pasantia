@@ -102,8 +102,8 @@ window.App = {
 // ===== EVENT DELEGATION — Fase 3 =====
 // Dispatcher centralizado: click + change.
 // onclick/onchange removido de elementos con data-action.
-// onclick/onchange se conserva en elementos sin data-action (editor, tree, etc.).
-// TODO [MVC]: migrar más acciones a data-action.
+// onclick se conserva solo en editor (renderProgForm, renderEditor, openNewFac, openEditFac).
+// TODO [MVC]: migrar editor a data-action.
 var __ACTIONS = {
   'show-tab': function(b){ showTab(b.dataset.tab); },
   'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); },
@@ -114,6 +114,7 @@ var __ACTIONS = {
   'download-html': function(){ downloadHTML(); },
   'print': function(){ window.print(); },
   'reset-db': function(){ resetDB(); },
+  'open-edit-prog': function(b){ openEditProg(b.dataset.pid); },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -140,7 +141,7 @@ function renderTree(){
   try{
   const f=DB[curFac];
   // Ensure data integrity before rendering
-  if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" onclick="resetDB()" style="color:#006633">Recargar datos por defecto</a></div>';return;}
+  if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
   const singlePregrado = filtPregrado !== 'ALL';
 
   function vline(h){
@@ -186,7 +187,7 @@ function renderTree(){
     // Pregrado card centered
     h+=`
     <div class="node node-pregrado" style="min-width:260px;max-width:340px">
-      <button class="edit-node-btn no-print" onclick="openEditProg('${p.id}')">✎</button>
+      <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✎</button>
       <div class="node-stripe"></div>
       <div class="node-body">
         <div class="node-label">Programa de pregrado</div>
@@ -316,7 +317,7 @@ function renderTree(){
       h+=`<div class="pcol">
         ${vline(14)}
         <div class="node node-pregrado">
-          <button class="edit-node-btn no-print" onclick="openEditProg('${p.id}')">✎</button>
+          <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✎</button>
           <div class="node-stripe"></div>
           <div class="node-body">
             <div class="node-label">Programa de pregrado</div>
@@ -391,7 +392,7 @@ function renderTree(){
 
   document.getElementById('tree').innerHTML=h;
   }catch(err){
-    document.getElementById('tree').innerHTML='<div class="empty-msg">⚠️ Error al renderizar el árbol. <a href="#" onclick="resetDB()" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
+    document.getElementById('tree').innerHTML='<div class="empty-msg">⚠️ Error al renderizar el árbol. <a href="#" data-action="reset-db" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
     console.error('renderTree error:',err);
   }
 }
