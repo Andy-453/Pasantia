@@ -273,6 +273,4 @@ function exportSNIES(){
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='SNIES_UDEC.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
-// COMPAT LEGACY: requerido por onclick en HTML y por app.js
-window.downloadDB = downloadDB;
-window.exportSNIES = exportSNIES;
+// exportado via window.App (app.js)

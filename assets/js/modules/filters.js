@@ -76,13 +76,3 @@ function populateSedes(){
   window.AppState.filters.pregrado=window.filtPregrado;
 }
 
-// ===== COMPATIBILIDAD GLOBAL =====
-window.sedeMatch=sedeMatch;
-window.ofertaMatch=ofertaMatch;
-window.estadoMatch=estadoMatch;
-window.nivelMatch=nivelMatch;
-window.pregradoMatch=pregradoMatch;
-window.itemMatch=itemMatch;
-window.applyFilters=applyFilters;
-window.resetFilters=resetFilters;
-window.populateSedes=populateSedes;

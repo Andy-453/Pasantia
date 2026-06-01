@@ -432,5 +432,4 @@ function renderIndicadores(){
   wrap.innerHTML=h;
 }
 
-// COMPAT LEGACY: requerido por showTab() en app.js y por HTML con datos embebidos
-window.renderIndicadores = renderIndicadores;
+// exportado via window.App (app.js)

@@ -49,6 +49,43 @@ window.AppState = {
   ui: {}
 };
 
+// ===== EXPORT MANIFEST — Fase 3 =====
+// Namespace global para migración futura a ESModules.
+// Compatibilidad legacy: todas las funciones están también en window
+// vía declaraciones `function` (implícito). Inline onclick sigue funcionando.
+// TODO [MVC]: cuando se migre a ESModules, reemplazar por import/export.
+window.App = {
+  // State
+  AppState: window.AppState,
+  // Navigation
+  showTab: showTab, renderViews: renderViews, selFac: selFac,
+  // Dashboard
+  renderKPIs: renderKPIs, renderFacBar: renderFacBar,
+  // Filters
+  applyFilters: applyFilters, resetFilters: resetFilters, populateSedes: populateSedes,
+  sedeMatch: sedeMatch, ofertaMatch: ofertaMatch, estadoMatch: estadoMatch,
+  nivelMatch: nivelMatch, pregradoMatch: pregradoMatch, itemMatch: itemMatch,
+  // Tree, Table, SedeView
+  renderTree: renderTree, renderTabla: renderTabla, renderSedeView: renderSedeView,
+  // Editor
+  renderEditor: renderEditor, openNewProg: openNewProg, openEditProg: openEditProg,
+  openEditFac: openEditFac, openNewFac: openNewFac, saveFac: saveFac,
+  deleteFac: deleteFac, saveDoc: saveDoc, cancelEdit: cancelEdit,
+  renderProgForm: renderProgForm, addLinea: addLinea, delLinea: delLinea,
+  addMae: addMae, delMae: delMae, saveProg: saveProg, deleteProg: deleteProg,
+  collectLineas: collectLineas, collectMaes: collectMaes, toggleDocForm: toggleDocForm,
+  // SNIES
+  renderSNIES: renderSNIES, snSetFac: snSetFac, snSetProg: snSetProg, exportSNIES: exportSNIES,
+  // Pipeline
+  renderPipeline: renderPipeline, toggleSec: toggleSec,
+  // Indicators
+  renderIndicadores: renderIndicadores,
+  // Storage
+  loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
+  // Utils
+  showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
+};
+
 // ===== TREE =====
 /**
  * Renderiza el árbol jerárquico (pregrado → línea → especialización / maestría / doctorado).

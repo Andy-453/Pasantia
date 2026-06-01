@@ -443,12 +443,13 @@ Todo se ejecuta al cargar app.js. Si se migra a ESModules, `type="module"` tiene
 ### Prioridad 2 (bajo riesgo, alto beneficio)
 3. ✅ ~~Migrar filtros a AppState.filters~~ — **COMPLETADO (Fase 3)**
 4. ✅ ~~Migrar curFac a AppState.navigation.curFac~~ — **COMPLETADO (Fase 3)**
+5. ✅ ~~**Estandarizar window.* exports**~~ — **COMPLETADO (Fase 3)**
 
 ### Prioridad 3 (preparar terreno)
-5. **Migrar editor (editingProgId, tmpLineas, tmpMaes) a AppState.editor**
-6. **Migrar SNIES (_snFac, _snProg) a AppState.snies**
-7. **Implementar event delegation** para reemplazar onclick inline
-8. **Eliminar dependencia directa renderKPIs→renderViews** inyectando callback
+6. **Migrar editor (editingProgId, tmpLineas, tmpMaes) a AppState.editor**
+7. **Migrar SNIES (_snFac, _snProg) a AppState.snies**
+8. **Implementar event delegation** para reemplazar onclick inline
+9. **Eliminar dependencia directa renderKPIs→renderViews** inyectando callback
 
 ### Prioridad 4 (no tocar todavía)
 9. **renderTree** — esperar a que AppState esté estable
@@ -600,3 +601,89 @@ La sincronización de `filtSede`/`filtPregrado` ya no es necesaria porque `popul
 1. **Desincronización temporal**: `deleteFac()` (activa) y `saveFac(true)` modifican `curFac` sin actualizar AppState. Si una función AppState-aware se ejecuta entre medias, leería valor incorrecto. Mitigación: `deleteFac` en la versión activa usa `curFac=Math.max(0,curFac-1);` — la próxima llamada a `selFac()` sincronizará AppState.
 2. ✅ ~~**populateSedes modifica filtros**~~ — **RESUELTO**: `populateSedes()` ahora escribe también en `AppState.filters`.
 3. **Acceso directo a var legacy**: Las funciones no migradas (tree, tabla, editor, pipeline) leen `curFac` y `filt*` directamente. Mientras los aliases legacy existan, funciona correctamente.
+
+---
+
+## 13. Estrategia de exports globales
+
+### 13.1. Patrón actual (Fase 3)
+
+Se eliminaron las exportaciones redundantes `window.fn = fn` de cada módulo y se centralizaron en un único namespace:
+
+```js
+// app.js — manifiesto único de exportaciones
+window.App = {
+  AppState: window.AppState,
+  showTab, renderViews, selFac,
+  renderKPIs, renderFacBar,
+  applyFilters, resetFilters, populateSedes,
+  sedeMatch, ofertaMatch, estadoMatch, nivelMatch, pregradoMatch, itemMatch,
+  renderTree, renderTabla, renderSedeView,
+  renderEditor, openNewProg, openEditProg, openEditFac, openNewFac,
+  saveFac, deleteFac, saveDoc, cancelEdit,
+  renderProgForm, addLinea, delLinea, addMae, delMae,
+  saveProg, deleteProg, collectLineas, collectMaes, toggleDocForm,
+  renderSNIES, snSetFac, snSetProg, exportSNIES,
+  renderPipeline, toggleSec,
+  renderIndicadores,
+  loadDB, saveDB, downloadHTML, downloadDB, resetDB,
+  showConfirm, getSt, pll, uid, gv, gi, toast,
+};
+```
+
+### 13.2. Mecanismo dual (compatibilidad legacy)
+
+Todas las funciones existen en window por dos vías:
+
+| Mecanismo | Origen | Persistencia |
+|---|---|---|
+| `function fn(){}` (declaración) | Hoisting a window.* | Implícito, permanente |
+| `window.App.fn` (namespace) | Asignación en app.js | Explícito, canónico |
+
+Esto garantiza que los handlers `onclick="fn()"` en HTML sigan funcionando sin cambios.
+
+### 13.3. Exportaciones eliminadas por módulo
+
+| Archivo | Exportaciones eliminadas | Motivo |
+|---|---|---|
+| utils.js | window.showConfirm, getSt, pll, uid, gv, gi, toast | Redundantes (fn en window vía function) |
+| storage.js | window.saveDB, loadDB, downloadHTML, resetDB, _validateDB | Redundantes + _validateDB era interna |
+| filters.js | window.sedeMatch…itemMatch, applyFilters, resetFilters, populateSedes | Redundantes |
+| dashboard.js | window.renderKPIs, renderFacBar, selFac | Redundantes |
+| indicators.js | window.renderIndicadores | Redundante |
+| export.js | window.downloadDB, exportSNIES | Redundantes |
+
+### 13.4. Funciones que permanecen solo en `function` (sin export explícito en módulo)
+
+Ninguna. Todas las funciones están en `window.App`. Las que antes no tenían export explícito (showTab, renderTree, renderEditor, etc.) ahora están referenciadas en el namespace.
+
+### 13.5. Diferencia clave entre mecanismos
+
+```js
+window.fn = fn;        // EXPLÍCITO — requiere línea de código
+function fn(){}        // IMPLÍCITO — ocurre automáticamente
+
+// Ambos producen: typeof window.fn === 'function'
+// Diferencia: el explícito es redundante si ya hay function declaration
+```
+
+### 13.6. Transición futura a ESModules
+
+Cuando se migre a ESModules, el manifiesto `window.App` se reemplazará por:
+
+```js
+// app.js (como entry point ESModule)
+import { showTab, renderViews } from './navigation.js';
+import { renderKPIs, renderFacBar } from './dashboard.js';
+// ...
+window.App = { showTab, renderViews, renderKPIs, /* ... */ };
+```
+
+Los módulos individuales usarán `export function fn(){}` estándar.
+
+### 13.7. Próximo bloqueador para MVC real
+
+1. **Event delegation**: reemplazar +50 `onclick` inline en HTML generado por `data-action` + listener centralizado.
+2. **Eliminar `var` legacy**: reemplazar `var DB`, `var curFac`, `var filt*` por referencias a `AppState`.
+3. **Data como módulo**: extraer `DEFAULT_DATA`, `SD`, `ALL_SEDES` a módulos separados.
+4. **ESModules**: cambiar `<script>` tags a `<script type="module">`.

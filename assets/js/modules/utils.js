@@ -50,11 +50,3 @@ function toast(msg){
   setTimeout(function(){t.style.display='none';},2500);
 }
 
-// ===== COMPATIBILIDAD GLOBAL =====
-window.showConfirm=showConfirm;
-window.getSt=getSt;
-window.pll=pll;
-window.uid=uid;
-window.gv=gv;
-window.gi=gi;
-window.toast=toast;

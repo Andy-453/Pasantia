@@ -56,10 +56,3 @@ function renderKPIs(){
     <div class="kpi" style="background:#FCEBEB;border-color:#F09595"><div class="kpi-v" style="color:#A32D2D">${neg}</div><div class="kpi-l">Negados MEN</div></div>`;
 }
 
-// ===== COMPATIBILIDAD GLOBAL (temporal) =====
-// COMPAT LEGACY: funciones requeridas por onclick="" en HTML renderizado
-// y por app.js antes de la migración completa a módulos.
-// TODO [MVC]: reemplazar por import/export cuando se eliminen los onclick inline.
-window.renderKPIs=renderKPIs;
-window.renderFacBar=renderFacBar;
-window.selFac=selFac;
