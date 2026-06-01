@@ -16,7 +16,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 861 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 867 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -348,6 +348,7 @@ window.AppState = {
 - [x] Eliminar handlers inline (`onclick` + `onchange`) reemplazando por event delegation (show-tab, sel-fac, reset-filters, apply-filters)
 - [x] Migrar estado del editor (`editingProgId`, `tmpLineas`, `tmpMaes`) a `AppState.editor` vía getter/setter
 - [x] Migrar estado SNIES (`SD`, `_snFac`, `_snProg`) a `AppState.snies` vía getter/setter
+- [x] Migrar handlers SNIES + Pipeline + Header a event delegation
 
 ### Fase 4: Desacoplamiento render
 - [ ] Reemplazar ciclo `applyFilters → renderViews → renderKPIs` por event emitter
@@ -739,18 +740,26 @@ document.addEventListener('change', function(e){
 ### 14.3. Handlers migrados
 
 | data-action | Tipo evento | data-* | Handler | Riesgo |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | `show-tab` | click | `data-tab="arbol\|tabla\|sede\|..."` | `showTab(id)` | Bajo |
 | `sel-fac` | click | `data-fac="0\|1\|2\|..."` | `selFac(i)` | Bajo |
 | `reset-filters` | click | — | `resetFilters()` | Bajo |
 | `apply-filters` | change | — | `applyFilters()` | Bajo |
+| `snies-set-fac` | click | `data-fac="facultad"` | `snSetFac(f)` | Bajo |
+| `snies-set-prog` | click | `data-prog="programa"` | `snSetProg(p)` | Bajo |
+| `toggle-section` | click | `data-sec-id="secN"` | `toggleSec(id)` | Bajo |
+| `download-html` | click | — | `downloadHTML()` | Bajo |
+| `print` | click | — | `window.print()` | Bajo |
+| `reset-db` | click | — | `resetDB()` | Bajo |
 
 ### 14.4. Elementos con data-action
 
 | Origen | Tipo | Evento |
 |---|---|---|
-| HTML estático | 7 tabs + 7 fac-buttons + reset + header | click |
+| HTML estático | 7 tabs + 7 fac-buttons + reset + header + imprimir + guardar + restablecer | click |
 | `renderFacBar()` (dashboard.js) | N fac-buttons dinámicos | click |
+| `renderSNIES()` (app.js) | N fac-buttons + N prog-buttons dinámicos | click |
+| `renderPipeline()` (app.js) | N section headers + timeline | click |
 | HTML estático | 5 selects (#filt-sede, #filt-pregrado, #filt-oferta, #filt-estado, #filt-nivel) | change |
 
 ### 14.5. Estrategia de migración
@@ -768,23 +777,18 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 | `saveProg(pid, isNew)` | renderProgForm | editor excluido |
 | `addLinea()` / `delLinea()` | renderProgForm | editor excluido |
 | `addMae()` / `delMae()` | renderProgForm | editor excluido |
-| `snSetFac(f)` / `snSetProg(p)` | renderSNIES | SNIES excluido |
-| `toggleSec(id)` | renderPipeline | Pipeline excluido |
 | `toggleDocForm()` | renderEditor | Editor excluido |
 | `saveDoc()` | renderEditor | Editor excluido |
 | `deleteFac()` / `saveFac(isNew)` | renderEditor | Editor excluido |
 | `openNewFac()` / `openEditFac()` | renderEditor | Editor excluido |
-| `downloadDB()` | HTML estático | No idempotente |
-| `downloadHTML()` | HTML estático | No idempotente |
-| `resetDB()` | HTML estático | No idempotente |
-| `window.print()` | HTML estático | Nativo, sin cambio |
+| `downloadDB()` | HTML estático | No migrado (riesgo doble descarga) |
+| `showTab('snies')` | HTML estático (tb-snies) | Pendiente migrar a data-action |
 
 ### 14.7. Próximos pasos
 
 1. **Migrar renderTree**: reemplazar `onclick="openEditProg(...)"` en templates dinámicos.
 2. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
-3. **Migrar pipeline**: `toggleSec` ya tiene `data-sec-id` — estandarizar a data-action.
-4. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (único tab sin data-action).
+3. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (único tab sin data-action).
 
 ### 14.8. Bloqueadores
 
@@ -807,6 +811,12 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 | Header editor | 1 button | `show-tab` | `showTab('editor')` | `data-tab` |
 | Selección facultad | fac-bar buttons | `sel-fac` | `selFac(i)` | `data-fac` |
 | Limpiar filtros | 1 button | `reset-filters` | `resetFilters()` | — |
+| SNIES facultad | N buttons (renderSNIES) | `snies-set-fac` | `snSetFac(f)` | `data-fac` |
+| SNIES programa | N buttons (renderSNIES) | `snies-set-prog` | `snSetProg(p)` | `data-prog` |
+| Pipeline sección | N section headers | `toggle-section` | `toggleSec(id)` | `data-sec-id` |
+| Guardar dashboard | 1 button | `download-html` | `downloadHTML()` | — |
+| Imprimir | 1 button | `print` | `window.print()` | — |
+| Restablecer datos | 1 button | `reset-db` | `resetDB()` | — |
 
 ### 15.2. Change delegation
 

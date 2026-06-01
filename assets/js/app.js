@@ -102,12 +102,18 @@ window.App = {
 // ===== EVENT DELEGATION — Fase 3 =====
 // Dispatcher centralizado: click + change.
 // onclick/onchange removido de elementos con data-action.
-// onclick/onchange se conserva en elementos sin data-action (descargas, SNIES, editor, etc.).
+// onclick/onchange se conserva en elementos sin data-action (editor, tree, etc.).
 // TODO [MVC]: migrar más acciones a data-action.
 var __ACTIONS = {
   'show-tab': function(b){ showTab(b.dataset.tab); },
   'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); },
   'reset-filters': function(){ resetFilters(); },
+  'snies-set-fac': function(b){ snSetFac(b.dataset.fac); },
+  'snies-set-prog': function(b){ snSetProg(b.dataset.prog); },
+  'toggle-section': function(b){ toggleSec(b.dataset.secId); },
+  'download-html': function(){ downloadHTML(); },
+  'print': function(){ window.print(); },
+  'reset-db': function(){ resetDB(); },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -595,8 +601,8 @@ function renderSNIES(){
   if(!_snProg||!progs.find(function(p){return p.name===_snProg;})) _snProg=progs.length?progs[0].name:null;
   var prog=_snProg?SD.programs.find(function(p){return p.name===_snProg;}):null;
   var fc=_snFac==='TODAS'?'#006633':(FAC_COL[_snFac]||'#006633');
-  var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-fac="'+f.replace(/"/g,'&quot;')+'" onclick="snSetFac(this.dataset.fac)" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
-  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-prog="'+p.name.replace(/"/g,'&quot;')+'" onclick="snSetProg(this.dataset.prog)" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
+  var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+f.replace(/"/g,'&quot;')+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
+  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Análisis SNIES · Posgrados 2020–2024</div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:10px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
@@ -739,7 +745,7 @@ function renderPipeline(){
   function sec(ic,titulo,sub,items,col,bg){
     var id='sec'+(secIdx++);
     return '<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:.75rem">'
-      +'<div style="background:'+bg+';padding:13px 16px;border-bottom:2px solid '+col+';display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-sec-id="'+id+'" onclick="toggleSec(this.dataset.secId)">'
+      +'<div style="background:'+bg+';padding:13px 16px;border-bottom:2px solid '+col+';display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="'+id+'"'
         +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">'+ic+'</div>'
         +'<div><div style="font-size:13px;font-weight:700;color:'+col+'">'+titulo+'</div><div style="font-size:10px;color:#666;margin-top:1px">'+sub+'</div></div></div>'
         +'<div style="display:flex;align-items:center;gap:10px"><span style="background:'+col+';color:#fff;border-radius:20px;padding:3px 14px;font-size:13px;font-weight:700">'+items.length+'</span><span id="icon-'+id+'" style="color:'+col+';font-size:16px;font-weight:700">▼</span></div>'
@@ -759,7 +765,7 @@ function renderPipeline(){
   +'</div>';
   // Timeline
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
-    +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-sec-id="timeline" onclick="toggleSec(this.dataset.secId)">'
+    +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="timeline"'
       +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">📅</span><div><div style="font-size:13px;font-weight:700;color:#fff">Cronograma por trimestre</div><div style="font-size:10px;color:rgba(200,164,58,.8)">Programas en desarrollo con fecha asignada · '+conFecha.length+' programas</div></div></div>'
       +'<span id="icon-timeline" style="color:#C8A43A;font-size:16px;font-weight:700">▼</span>'
     +'</div>'
