@@ -59,6 +59,7 @@ function populateSedes(){
   window.ALL_SEDES.filter(function(x){return s.has(x);}).forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
   if(window.filtSede!=='ALL'&&!s.has(window.filtSede)) window.filtSede='ALL';
   sel.value=window.filtSede;
+  window.AppState.filters.sede=window.filtSede;
 
   var pSel=document.getElementById('filt-pregrado');
   var prevPregrado=pSel.value;
@@ -72,6 +73,7 @@ function populateSedes(){
   });
   if(prevPregrado!=='ALL'&&seen.has(prevPregrado)){pSel.value=prevPregrado;window.filtPregrado=prevPregrado;}
   else{pSel.value='ALL';window.filtPregrado='ALL';}
+  window.AppState.filters.pregrado=window.filtPregrado;
 }
 
 // ===== COMPATIBILIDAD GLOBAL =====

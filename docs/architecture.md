@@ -388,17 +388,20 @@ document.addEventListener('click', e => {
 });
 ```
 
-### 8.2. Funciones sombreadas (dead code)
+### 8.2. Funciones sombreadas — ELIMINADAS (Fase 3)
 
-| Función sombreada | Línea (no ejecutada) | Línea (activa) |
-|---|---|---|
-| `renderEditor()` | 369 | 800 |
-| `saveDoc()` | 431 | 847 |
-| `deleteFac()` | 530 | 857 |
-| `saveFac()` | 525 | 870 |
-| `openNewFac()` | 537 | 863 |
+| Función sombreada | Estado |
+|---|---|
+| `renderEditor()` | ✅ Eliminada |
+| `saveDoc()` | ✅ Eliminada |
+| `deleteFac()` | ✅ Eliminada |
+| `saveFac()` | ✅ Eliminada |
+| `openNewFac()` | ✅ Eliminada |
+| `openNewProg()` | ✅ Eliminada |
+| `openEditProg()` | ✅ Eliminada |
+| `saveNewFac()` | ✅ Eliminada (dead code) |
 
-**Riesgo**: Confusión durante refactor. **Prioridad**: eliminar las versiones sombreadas.
+Todas las versiones redundantes fueron eliminadas en `app.js`. Ya no hay riesgo de ambigüedad.
 
 ### 8.3. Ciclo applyFilters → renderViews → renderKPIs
 
@@ -434,7 +437,7 @@ Todo se ejecuta al cargar app.js. Si se migra a ESModules, `type="module"` tiene
 ## 9. Recomendaciones inmediatas
 
 ### Prioridad 1 (antes de cualquier refactor MVC)
-1. **Eliminar funciones sombreadas** — las 5 versiones legacy en app.js
+1. ✅ ~~**Eliminar funciones sombreadas**~~ — **COMPLETADO (Fase 3)**
 2. **Estandarizar window.* exports** — algunos módulos exportan, otros no consistentemente
 
 ### Prioridad 2 (bajo riesgo, alto beneficio)
@@ -534,7 +537,7 @@ Definido en `app.js:35-50` (inicio del bootstrap principal).
 | `filtOferta` | `AppState.filters.oferta` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
 | `filtEstado` | `AppState.filters.estado` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
 | `filtNivel` | `AppState.filters.nivel` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
-| `filtPregrado` | `AppState.filters.pregrado` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe), sync post-init |
+| `filtPregrado` | `AppState.filters.pregrado` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe), `populateSedes()` (escribe) |
 | — | `AppState.navigation.activeTab` | ✅ | `showTab()` (escribe) |
 
 ### 12.3. Variables pendientes (próximas iteraciones)
@@ -578,19 +581,22 @@ Las variables `var` originales se mantienen intactas para no romper:
 | `applyFilters()` | filters.js | Escribe `AppState.filters.*` (además de `window.filt*` legacy) |
 | `resetFilters()` | filters.js | Escribe `AppState.filters.*` (además de `window.filt*` legacy) |
 | `renderIndicadores()` | indicators.js | Referencia `window.AppState` para uso futuro |
+| `populateSedes()` | filters.js | Escribe `AppState.filters.sede` y `AppState.filters.pregrado` (además de `window.filt*` legacy) |
+
+Funciones sombreadas **eliminadas** de app.js (8 funciones): `renderEditor`, `saveDoc`, `openNewProg`, `openEditProg`, `saveFac`, `deleteFac`, `openNewFac`, `saveNewFac`.
 
 ### 12.6. Sync post-init
 
-Después del bootstrap (`loadDB()` → `populateSedes()`), se sincroniza AppState con los valores legacy por si `populateSedes` modificó `filtSede` o `filtPregrado`:
+Después del bootstrap (`loadDB()` → `populateSedes()`), se sincroniza `curFac` con AppState:
 
 ```js
 window.AppState.navigation.curFac = curFac;
-window.AppState.filters.sede = filtSede;
-window.AppState.filters.pregrado = filtPregrado;
 ```
+
+La sincronización de `filtSede`/`filtPregrado` ya no es necesaria porque `populateSedes()` escribe ambas fuentes. Se eliminaron las líneas redundantes.
 
 ### 12.7. Riesgos detectados
 
-1. **Desincronización temporal**: `deleteFac()` y `saveNewFac()` modifican `curFac` sin actualizar AppState. Si una función AppState-aware se ejecuta entre medias, leería valor incorrecto. Mitigación: ninguna por ahora (editor no está migrado).
-2. **populateSedes modifica filtros**: Aún no migrado, modifica `window.filtSede`/`window.filtPregrado` directamente sin pasar por AppState. El sync post-init cubre el caso inicial.
+1. **Desincronización temporal**: `deleteFac()` (activa) y `saveFac(true)` modifican `curFac` sin actualizar AppState. Si una función AppState-aware se ejecuta entre medias, leería valor incorrecto. Mitigación: `deleteFac` en la versión activa usa `curFac=Math.max(0,curFac-1);` — la próxima llamada a `selFac()` sincronizará AppState.
+2. ✅ ~~**populateSedes modifica filtros**~~ — **RESUELTO**: `populateSedes()` ahora escribe también en `AppState.filters`.
 3. **Acceso directo a var legacy**: Las funciones no migradas (tree, tabla, editor, pipeline) leen `curFac` y `filt*` directamente. Mientras los aliases legacy existan, funciona correctamente.
