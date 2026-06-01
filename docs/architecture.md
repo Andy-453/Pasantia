@@ -16,7 +16,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 846 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 854 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -49,9 +49,9 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | `filtEstado` | `String` | app.js:31 | filters.js (applyFilters, resetFilters) | filters.js (estadoMatch) | BAJO | BAJO |
 | `filtNivel` | `String` | app.js:31 | filters.js (applyFilters, resetFilters) | filters.js (nivelMatch) | BAJO | BAJO |
 | `filtPregrado` | `String` | app.js:31 | filters.js (applyFilters, resetFilters, populateSedes) | filters.js (pregradoMatch) | MEDIO | MEDIO |
-| `editingProgId` | `String|null` | app.js:32 | app.js (openNewProg, openEditProg, saveProg, deleteProg, cancelEdit) | app.js (renderProgForm) | BAJO (solo editor) | BAJO |
-| `tmpLineas` | `Array` | app.js:33 | app.js (renderProgForm, saveProg, deleteProg, cancelEdit, addLinea, delLinea, collectLineas) | app.js (renderProgForm, saveProg) | BAJO (solo editor) | BAJO |
-| `tmpMaes` | `Array` | app.js:33 | app.js (renderProgForm, saveProg, deleteProg, cancelEdit, addMae, delMae, collectMaes) | app.js (renderProgForm, saveProg) | BAJO (solo editor) | BAJO |
+| `editingProgId` | `String|null` | app.js:34 (getter/setter) | **MIGRADO** → `AppState.editor.editingProgId` | app.js (renderProgForm) | ✅ legacy alias | ✅ |
+| `tmpLineas` | `Array` | app.js:35 (getter/setter) | **MIGRADO** → `AppState.editor.tmpLineas` | app.js (renderProgForm, saveProg) | ✅ legacy alias | ✅ |
+| `tmpMaes` | `Array` | app.js:36 (getter/setter) | **MIGRADO** → `AppState.editor.tmpMaes` | app.js (renderProgForm, saveProg) | ✅ legacy alias | ✅ |
 | `SD` | `Object` | app.js:599 | Nunca (solo lectura) | app.js (renderSNIES), export.js (exportSNIES) | MEDIO | BAJO |
 | `_snFac` | `String` | app.js:600 | app.js (snSetFac) | app.js (renderSNIES) | BAJO | BAJO |
 | `_snProg` | `String` | app.js:600 | app.js (snSetFac, snSetProg, renderSNIES) | app.js (renderSNIES) | BAJO | BAJO |
@@ -346,6 +346,7 @@ window.AppState = {
 - [ ] Extraer lógica de filtros → `Controller.Filters`
 - [ ] Extraer lógica de navegación → `Controller.Navigation`
 - [x] Eliminar handlers inline (`onclick` + `onchange`) reemplazando por event delegation (show-tab, sel-fac, reset-filters, apply-filters)
+- [x] Migrar estado del editor (`editingProgId`, `tmpLineas`, `tmpMaes`) a `AppState.editor` vía getter/setter
 
 ### Fase 4: Desacoplamiento render
 - [ ] Reemplazar ciclo `applyFilters → renderViews → renderKPIs` por event emitter
@@ -523,11 +524,16 @@ window.AppState = {
     nivel: 'ALL',
     pregrado: 'ALL'
   },
-  ui: {}  // reservado para estado visual futuro
+  ui: {},  // reservado para estado visual futuro
+  editor: {
+    editingProgId: null,  // null | '__new__' | program-id
+    tmpLineas: [],        // working copy of lineas (with _progId)
+    tmpMaes: []           // working copy of maes (with _progId)
+  }
 };
 ```
 
-Definido en `app.js:35-50` (inicio del bootstrap principal).
+Definido en `app.js:40-57` (inicio del bootstrap principal).
 
 ### 12.2. Variables migradas
 
@@ -540,6 +546,9 @@ Definido en `app.js:35-50` (inicio del bootstrap principal).
 | `filtNivel` | `AppState.filters.nivel` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
 | `filtPregrado` | `AppState.filters.pregrado` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe), `populateSedes()` (escribe) |
 | — | `AppState.navigation.activeTab` | ✅ | `showTab()` (escribe) |
+| `editingProgId` | `AppState.editor.editingProgId` | ✅ | vía getter/setter — 0 cambios en consumidores |
+| `tmpLineas` | `AppState.editor.tmpLineas` | ✅ | vía getter/setter — 0 cambios en consumidores |
+| `tmpMaes` | `AppState.editor.tmpMaes` | ✅ | vía getter/setter — 0 cambios en consumidores |
 
 ### 12.3. Variables pendientes (próximas iteraciones)
 
@@ -551,9 +560,7 @@ Definido en `app.js:35-50` (inicio del bootstrap principal).
 | `SD` | `AppState.snies.data` | renderSNIES, exportSNIES | BAJO | Media |
 | `_snFac` | `AppState.snies.activeFac` | renderSNIES | BAJO | Media |
 | `_snProg` | `AppState.snies.activeProg` | renderSNIES | BAJO | Media |
-| `editingProgId` | `AppState.editor.progId` | editor CRUD | BAJO | Media |
-| `tmpLineas` | `AppState.editor.lineas` | editor progForm | BAJO | Media |
-| `tmpMaes` | `AppState.editor.maes` | editor progForm | BAJO | Media |
+| (migrado) | vía getter/setter | — | ✅ | — |
 | `ST_MAP` | `AppState.stateColors` | utils.js (getSt) | BAJO | Baja |
 
 ### 12.4. Compatibilidad legacy (aliases)

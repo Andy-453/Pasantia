@@ -29,8 +29,11 @@ var DEFAULT_DATA=[{"id":"admin","name":"Facultad de Ciencias Admin., Económicas
 var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
 var DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
 var curFac=0,filtSede='ALL',filtOferta='ALL',filtEstado='ALL',filtNivel='ALL',filtPregrado='ALL';
-var editingFacIdx=null, editingProgId=null;
-var tmpLineas=[], tmpMaes=[];
+var editingFacIdx=null;
+// Legacy aliases: AppState.editor es fuente única (Fase 3)
+Object.defineProperty(window,'editingProgId',{get:function(){return window.AppState.editor.editingProgId;},set:function(v){window.AppState.editor.editingProgId=v;},configurable:true});
+Object.defineProperty(window,'tmpLineas',{get:function(){return window.AppState.editor.tmpLineas;},set:function(v){window.AppState.editor.tmpLineas=v;},configurable:true});
+Object.defineProperty(window,'tmpMaes',{get:function(){return window.AppState.editor.tmpMaes;},set:function(v){window.AppState.editor.tmpMaes=v;},configurable:true});
 
 // Estado centralizado — Fase 3 (migración gradual)
 // Compatibilidad legacy: mantener var* globales hasta migración completa
@@ -46,7 +49,12 @@ window.AppState = {
     nivel: 'ALL',
     pregrado: 'ALL'
   },
-  ui: {}
+  ui: {},
+  editor: {
+    editingProgId: null,
+    tmpLineas: [],
+    tmpMaes: []
+  }
 };
 
 // ===== EXPORT MANIFEST — Fase 3 =====
