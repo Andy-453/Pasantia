@@ -16,7 +16,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 854 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 861 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -52,9 +52,9 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | `editingProgId` | `String|null` | app.js:34 (getter/setter) | **MIGRADO** → `AppState.editor.editingProgId` | app.js (renderProgForm) | ✅ legacy alias | ✅ |
 | `tmpLineas` | `Array` | app.js:35 (getter/setter) | **MIGRADO** → `AppState.editor.tmpLineas` | app.js (renderProgForm, saveProg) | ✅ legacy alias | ✅ |
 | `tmpMaes` | `Array` | app.js:36 (getter/setter) | **MIGRADO** → `AppState.editor.tmpMaes` | app.js (renderProgForm, saveProg) | ✅ legacy alias | ✅ |
-| `SD` | `Object` | app.js:599 | Nunca (solo lectura) | app.js (renderSNIES), export.js (exportSNIES) | MEDIO | BAJO |
-| `_snFac` | `String` | app.js:600 | app.js (snSetFac) | app.js (renderSNIES) | BAJO | BAJO |
-| `_snProg` | `String` | app.js:600 | app.js (snSetFac, snSetProg, renderSNIES) | app.js (renderSNIES) | BAJO | BAJO |
+| `SD` | `Object` | app.js:579 (getter/setter) | **MIGRADO** → `AppState.snies.SD` | app.js (renderSNIES), export.js (exportSNIES) | ✅ legacy alias | ✅ |
+| `_snFac` | `String` | app.js:581 (getter/setter) | **MIGRADO** → `AppState.snies.fac` | app.js (renderSNIES) | ✅ legacy alias | ✅ |
+| `_snProg` | `String` | app.js:582 (getter/setter) | **MIGRADO** → `AppState.snies.prog` | app.js (renderSNIES) | ✅ legacy alias | ✅ |
 | `ST_MAP` | `Object` | modules/utils.js:18 | Nunca (solo lectura) | utils.js (getSt) | BAJO | BAJO |
 | `__UDEC_EMBEDDED__` | `Boolean` | app.js:24 | Nunca | storage.js (loadDB) | BAJO | BAJO |
 
@@ -347,6 +347,7 @@ window.AppState = {
 - [ ] Extraer lógica de navegación → `Controller.Navigation`
 - [x] Eliminar handlers inline (`onclick` + `onchange`) reemplazando por event delegation (show-tab, sel-fac, reset-filters, apply-filters)
 - [x] Migrar estado del editor (`editingProgId`, `tmpLineas`, `tmpMaes`) a `AppState.editor` vía getter/setter
+- [x] Migrar estado SNIES (`SD`, `_snFac`, `_snProg`) a `AppState.snies` vía getter/setter
 
 ### Fase 4: Desacoplamiento render
 - [ ] Reemplazar ciclo `applyFilters → renderViews → renderKPIs` por event emitter
@@ -529,11 +530,16 @@ window.AppState = {
     editingProgId: null,  // null | '__new__' | program-id
     tmpLineas: [],        // working copy of lineas (with _progId)
     tmpMaes: []           // working copy of maes (with _progId)
+  },
+  snies: {
+    SD: null,     // SNIES dataset (cargado al final de app.js)
+    fac: 'TODAS', // facultad activa en panel SNIES
+    prog: null    // programa activo en panel SNIES
   }
 };
 ```
 
-Definido en `app.js:40-57` (inicio del bootstrap principal).
+Definido en `app.js:40-63` (inicio del bootstrap principal).
 
 ### 12.2. Variables migradas
 
@@ -549,6 +555,9 @@ Definido en `app.js:40-57` (inicio del bootstrap principal).
 | `editingProgId` | `AppState.editor.editingProgId` | ✅ | vía getter/setter — 0 cambios en consumidores |
 | `tmpLineas` | `AppState.editor.tmpLineas` | ✅ | vía getter/setter — 0 cambios en consumidores |
 | `tmpMaes` | `AppState.editor.tmpMaes` | ✅ | vía getter/setter — 0 cambios en consumidores |
+| `SD` | `AppState.snies.SD` | ✅ | vía getter/setter — 0 cambios en consumidores |
+| `_snFac` | `AppState.snies.fac` | ✅ | vía getter/setter — 0 cambios en consumidores |
+| `_snProg` | `AppState.snies.prog` | ✅ | vía getter/setter — 0 cambios en consumidores |
 
 ### 12.3. Variables pendientes (próximas iteraciones)
 
@@ -557,9 +566,7 @@ Definido en `app.js:40-57` (inicio del bootstrap principal).
 | `DB` | `AppState.DB` | 15+ consumidores, editor CRUD | **ALTO** | Último |
 | `DEFAULT_DATA` | `AppState.defaultData` | storage.js | BAJO | Baja |
 | `ALL_SEDES` | `AppState.ALL_SEDES` | filters.js | BAJO | Baja |
-| `SD` | `AppState.snies.data` | renderSNIES, exportSNIES | BAJO | Media |
-| `_snFac` | `AppState.snies.activeFac` | renderSNIES | BAJO | Media |
-| `_snProg` | `AppState.snies.activeProg` | renderSNIES | BAJO | Media |
+| (migrado) | vía getter/setter | — | ✅ | — |
 | (migrado) | vía getter/setter | — | ✅ | — |
 | `ST_MAP` | `AppState.stateColors` | utils.js (getSt) | BAJO | Baja |
 
