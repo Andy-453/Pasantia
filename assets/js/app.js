@@ -32,8 +32,22 @@ var curFac=0,filtSede='ALL',filtOferta='ALL',filtEstado='ALL',filtNivel='ALL',fi
 var editingFacIdx=null, editingProgId=null;
 var tmpLineas=[], tmpMaes=[];
 
-
-
+// Estado centralizado — Fase 3 (migración gradual)
+// Compatibilidad legacy: mantener var* globales hasta migración completa
+window.AppState = {
+  navigation: {
+    curFac: 0,
+    activeTab: 'pipeline'
+  },
+  filters: {
+    sede: 'ALL',
+    oferta: 'ALL',
+    estado: 'ALL',
+    nivel: 'ALL',
+    pregrado: 'ALL'
+  },
+  ui: {}
+};
 
 // ===== TREE =====
 /**
@@ -563,6 +577,7 @@ function saveNewFac(){
  * @param {string} id - 'arbol' | 'tabla' | 'sede' | 'indicadores' | 'snies' | 'pipeline' | 'editor'
  */
 function showTab(id){
+  AppState.navigation.activeTab=id;
   ['arbol','tabla','sede','indicadores','snies','pipeline','editor'].forEach(t=>{
     document.getElementById('panel-'+t).classList.toggle('act',t===id);
     document.getElementById('tb-'+t).classList.toggle('act',t===id);
@@ -593,6 +608,10 @@ loadDB();
 renderFacBar();
 populateSedes();
 renderViews();
+// Sync AppState with legacy vars after bootstrap
+window.AppState.navigation.curFac=curFac;
+window.AppState.filters.sede=filtSede;
+window.AppState.filters.pregrado=filtPregrado;
 
 
 // ===== SNIES DATA =====

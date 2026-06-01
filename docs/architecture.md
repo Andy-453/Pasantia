@@ -438,17 +438,19 @@ Todo se ejecuta al cargar app.js. Si se migra a ESModules, `type="module"` tiene
 2. **Estandarizar window.* exports** — algunos módulos exportan, otros no consistentemente
 
 ### Prioridad 2 (bajo riesgo, alto beneficio)
-3. **Migrar filtros a AppState.filters** — solo afecta filters.js
-4. **Migrar curFac a AppState.activeFaculty** — requiere cambiar 4 archivos
+3. ✅ ~~Migrar filtros a AppState.filters~~ — **COMPLETADO (Fase 3)**
+4. ✅ ~~Migrar curFac a AppState.navigation.curFac~~ — **COMPLETADO (Fase 3)**
 
 ### Prioridad 3 (preparar terreno)
-5. **Implementar event delegation** para reemplazar onclick inline
-6. **Eliminar dependencia directa renderKPIs→renderViews** inyectando callback
+5. **Migrar editor (editingProgId, tmpLineas, tmpMaes) a AppState.editor**
+6. **Migrar SNIES (_snFac, _snProg) a AppState.snies**
+7. **Implementar event delegation** para reemplazar onclick inline
+8. **Eliminar dependencia directa renderKPIs→renderViews** inyectando callback
 
 ### Prioridad 4 (no tocar todavía)
-7. **renderTree** — esperar a que AppState esté estable
-8. **renderPipeline** — esperar a que event delegation funcione
-9. **Editor** — esperar a eliminar código sombreado primero
+9. **renderTree** — esperar a que AppState esté estable
+10. **renderPipeline** — esperar a que event delegation funcione
+11. **Editor** — esperar a eliminar código sombreado primero
 
 ---
 
@@ -497,3 +499,98 @@ Todo se ejecuta al cargar app.js. Si se migra a ESModules, `type="module"` tiene
 - Event delegation
 - ESModules con `import`/`export`
 - Views como funciones puras: `render(state) → HTMLString`
+
+---
+
+## 12. Estado centralizado — progreso de migración
+
+### 12.1. Estructura actual de AppState
+
+```js
+window.AppState = {
+  navigation: {
+    curFac: 0,          // índice facultad activa
+    activeTab: 'pipeline'  // pestaña activa
+  },
+  filters: {
+    sede: 'ALL',
+    oferta: 'ALL',
+    estado: 'ALL',
+    nivel: 'ALL',
+    pregrado: 'ALL'
+  },
+  ui: {}  // reservado para estado visual futuro
+};
+```
+
+Definido en `app.js:35-50` (inicio del bootstrap principal).
+
+### 12.2. Variables migradas
+
+| Variable legacy | Ruta AppState | Migrada | Consumidores actualizados |
+|---|---|---|---|
+| `curFac` | `AppState.navigation.curFac` | ✅ | `selFac()` (escribe), `renderKPIs()` (lee) |
+| `filtSede` | `AppState.filters.sede` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
+| `filtOferta` | `AppState.filters.oferta` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
+| `filtEstado` | `AppState.filters.estado` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
+| `filtNivel` | `AppState.filters.nivel` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe) |
+| `filtPregrado` | `AppState.filters.pregrado` | ✅ | `applyFilters()` (escribe), `resetFilters()` (escribe), sync post-init |
+| — | `AppState.navigation.activeTab` | ✅ | `showTab()` (escribe) |
+
+### 12.3. Variables pendientes (próximas iteraciones)
+
+| Variable | Ruta propuesta | Dependencias | Riesgo | Prioridad |
+|---|---|---|---|---|
+| `DB` | `AppState.DB` | 15+ consumidores, editor CRUD | **ALTO** | Último |
+| `DEFAULT_DATA` | `AppState.defaultData` | storage.js | BAJO | Baja |
+| `ALL_SEDES` | `AppState.ALL_SEDES` | filters.js | BAJO | Baja |
+| `SD` | `AppState.snies.data` | renderSNIES, exportSNIES | BAJO | Media |
+| `_snFac` | `AppState.snies.activeFac` | renderSNIES | BAJO | Media |
+| `_snProg` | `AppState.snies.activeProg` | renderSNIES | BAJO | Media |
+| `editingProgId` | `AppState.editor.progId` | editor CRUD | BAJO | Media |
+| `tmpLineas` | `AppState.editor.lineas` | editor progForm | BAJO | Media |
+| `tmpMaes` | `AppState.editor.maes` | editor progForm | BAJO | Media |
+| `ST_MAP` | `AppState.stateColors` | utils.js (getSt) | BAJO | Baja |
+
+### 12.4. Compatibilidad legacy (aliases)
+
+Las variables `var` originales se mantienen intactas para no romper:
+- `renderTree()` — lee `curFac`, `filtSede`, `filtPregrado`
+- `renderTabla()` — lee `curFac`
+- `renderSedeView()` — lee `curFac`
+- `renderPipeline()` — lee `curFac`
+- `renderEditor()` — lee `curFac`
+- `renderProgForm()` — lee `curFac`
+- `renderSNIES()` — lee `_snFac`, `_snProg`
+- `populateSedes()` — lee `curFac`, `filtSede`, `filtPregrado`
+- `deleteFac()` — modifica `curFac`
+- `saveNewFac()` — modifica `curFac`
+
+**Estrategia**: `selFac()` y `applyFilters()` escriben a AMBAS (AppState + var legacy). Las funciones legacy siguen funcionando vía `var`. Cuando todas las funciones legacy se migren, se eliminarán los aliases.
+
+### 12.5. Funciones actualizadas en esta iteración
+
+| Función | Archivo | Cambio |
+|---|---|---|
+| `showTab()` | app.js | Escribe `AppState.navigation.activeTab` |
+| `selFac()` | dashboard.js | Escribe `AppState.navigation.curFac` (además de `curFac` legacy) |
+| `renderKPIs()` | dashboard.js | Lee `AppState.navigation.curFac` en lugar de `curFac` |
+| `applyFilters()` | filters.js | Escribe `AppState.filters.*` (además de `window.filt*` legacy) |
+| `resetFilters()` | filters.js | Escribe `AppState.filters.*` (además de `window.filt*` legacy) |
+| `renderIndicadores()` | indicators.js | Referencia `window.AppState` para uso futuro |
+
+### 12.6. Sync post-init
+
+Después del bootstrap (`loadDB()` → `populateSedes()`), se sincroniza AppState con los valores legacy por si `populateSedes` modificó `filtSede` o `filtPregrado`:
+
+```js
+window.AppState.navigation.curFac = curFac;
+window.AppState.filters.sede = filtSede;
+window.AppState.filters.pregrado = filtPregrado;
+```
+
+### 12.7. Riesgos detectados
+
+1. **Desincronización temporal**: `deleteFac()` y `saveNewFac()` modifican `curFac` sin actualizar AppState. Si una función AppState-aware se ejecuta entre medias, leería valor incorrecto. Mitigación: ninguna por ahora (editor no está migrado).
+2. **populateSedes modifica filtros**: Aún no migrado, modifica `window.filtSede`/`window.filtPregrado` directamente sin pasar por AppState. El sync post-init cubre el caso inicial.
+3. **Acceso directo a var legacy**: Las funciones no migradas (tree, tabla, editor, pipeline) leen `curFac` y `filt*` directamente. Mientras los aliases legacy existan, funciona correctamente.
