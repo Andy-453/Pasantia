@@ -36,10 +36,16 @@ function applyFilters(){
   window.filtOferta=document.getElementById('filt-oferta').value;
   window.filtEstado=document.getElementById('filt-estado').value;
   window.filtNivel=document.getElementById('filt-nivel').value;
+  window.AppState.filters.sede=window.filtSede;
+  window.AppState.filters.pregrado=window.filtPregrado;
+  window.AppState.filters.oferta=window.filtOferta;
+  window.AppState.filters.estado=window.filtEstado;
+  window.AppState.filters.nivel=window.filtNivel;
   renderViews();
 }
 function resetFilters(){
   window.filtSede=window.filtOferta=window.filtEstado=window.filtNivel=window.filtPregrado='ALL';
+  window.AppState.filters.sede=window.AppState.filters.oferta=window.AppState.filters.estado=window.AppState.filters.nivel=window.AppState.filters.pregrado='ALL';
   ['filt-sede','filt-oferta','filt-estado','filt-nivel','filt-pregrado'].forEach(function(id){document.getElementById(id).value='ALL';});
   renderViews();
 }
@@ -53,6 +59,7 @@ function populateSedes(){
   window.ALL_SEDES.filter(function(x){return s.has(x);}).forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
   if(window.filtSede!=='ALL'&&!s.has(window.filtSede)) window.filtSede='ALL';
   sel.value=window.filtSede;
+  window.AppState.filters.sede=window.filtSede;
 
   var pSel=document.getElementById('filt-pregrado');
   var prevPregrado=pSel.value;
@@ -66,15 +73,6 @@ function populateSedes(){
   });
   if(prevPregrado!=='ALL'&&seen.has(prevPregrado)){pSel.value=prevPregrado;window.filtPregrado=prevPregrado;}
   else{pSel.value='ALL';window.filtPregrado='ALL';}
+  window.AppState.filters.pregrado=window.filtPregrado;
 }
 
-// ===== COMPATIBILIDAD GLOBAL =====
-window.sedeMatch=sedeMatch;
-window.ofertaMatch=ofertaMatch;
-window.estadoMatch=estadoMatch;
-window.nivelMatch=nivelMatch;
-window.pregradoMatch=pregradoMatch;
-window.itemMatch=itemMatch;
-window.applyFilters=applyFilters;
-window.resetFilters=resetFilters;
-window.populateSedes=populateSedes;

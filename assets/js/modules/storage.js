@@ -70,9 +70,3 @@ function downloadHTML(){
 }
 function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){try{localStorage.removeItem('udec_rutas_db');}catch(e){}location.reload();}}
 
-// ===== COMPATIBILIDAD GLOBAL =====
-window.saveDB=saveDB;
-window._validateDB=_validateDB;
-window.loadDB=loadDB;
-window.downloadHTML=downloadHTML;
-window.resetDB=resetDB;

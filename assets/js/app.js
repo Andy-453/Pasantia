@@ -29,11 +29,122 @@ var DEFAULT_DATA=[{"id":"admin","name":"Facultad de Ciencias Admin., Económicas
 var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
 var DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
 var curFac=0,filtSede='ALL',filtOferta='ALL',filtEstado='ALL',filtNivel='ALL',filtPregrado='ALL';
-var editingFacIdx=null, editingProgId=null;
-var tmpLineas=[], tmpMaes=[];
+var editingFacIdx=null;
+// Legacy aliases: AppState.editor es fuente única (Fase 3)
+Object.defineProperty(window,'editingProgId',{get:function(){return window.AppState.editor.editingProgId;},set:function(v){window.AppState.editor.editingProgId=v;},configurable:true});
+Object.defineProperty(window,'tmpLineas',{get:function(){return window.AppState.editor.tmpLineas;},set:function(v){window.AppState.editor.tmpLineas=v;},configurable:true});
+Object.defineProperty(window,'tmpMaes',{get:function(){return window.AppState.editor.tmpMaes;},set:function(v){window.AppState.editor.tmpMaes=v;},configurable:true});
 
+// Estado centralizado — Fase 3 (migración gradual)
+// Compatibilidad legacy: mantener var* globales hasta migración completa
+window.AppState = {
+  navigation: {
+    curFac: 0,
+    activeTab: 'pipeline'
+  },
+  filters: {
+    sede: 'ALL',
+    oferta: 'ALL',
+    estado: 'ALL',
+    nivel: 'ALL',
+    pregrado: 'ALL'
+  },
+  ui: {},
+  editor: {
+    editingProgId: null,
+    tmpLineas: [],
+    tmpMaes: []
+  },
+  snies: {
+    SD: null,
+    fac: 'TODAS',
+    prog: null
+  }
+};
 
+// ===== EXPORT MANIFEST — Fase 3 =====
+// Namespace global para migración futura a ESModules.
+// Compatibilidad legacy: todas las funciones están también en window
+// vía declaraciones `function` (implícito). Inline onclick sigue funcionando.
+// TODO [MVC]: cuando se migre a ESModules, reemplazar por import/export.
+window.App = {
+  // State
+  AppState: window.AppState,
+  // Navigation
+  showTab: showTab, renderViews: renderViews, selFac: selFac,
+  // Dashboard
+  renderKPIs: renderKPIs, renderFacBar: renderFacBar,
+  // Filters
+  applyFilters: applyFilters, resetFilters: resetFilters, populateSedes: populateSedes,
+  sedeMatch: sedeMatch, ofertaMatch: ofertaMatch, estadoMatch: estadoMatch,
+  nivelMatch: nivelMatch, pregradoMatch: pregradoMatch, itemMatch: itemMatch,
+  // Tree, Table, SedeView
+  renderTree: renderTree, renderTabla: renderTabla, renderSedeView: renderSedeView,
+  // Editor
+  renderEditor: renderEditor, openNewProg: openNewProg, openEditProg: openEditProg,
+  openEditFac: openEditFac, openNewFac: openNewFac, saveFac: saveFac,
+  deleteFac: deleteFac, saveDoc: saveDoc, cancelEdit: cancelEdit,
+  renderProgForm: renderProgForm, addLinea: addLinea, delLinea: delLinea,
+  addMae: addMae, delMae: delMae, saveProg: saveProg, deleteProg: deleteProg,
+  collectLineas: collectLineas, collectMaes: collectMaes, toggleDocForm: toggleDocForm,
+  // SNIES
+  renderSNIES: renderSNIES, snSetFac: snSetFac, snSetProg: snSetProg, exportSNIES: exportSNIES,
+  // Pipeline
+  renderPipeline: renderPipeline, toggleSec: toggleSec,
+  // Indicators
+  renderIndicadores: renderIndicadores,
+  // Storage
+  loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
+  // Utils
+  showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
+};
 
+// ===== EVENT DELEGATION — Fase 3 =====
+// Dispatcher centralizado: click + change.
+// onclick/onchange removido de elementos con data-action.
+// onclick se conserva solo en editor (renderProgForm, renderEditor, openNewFac, openEditFac).
+// TODO [MVC]: migrar editor a data-action.
+var __ACTIONS = {
+  'show-tab': function(b){ showTab(b.dataset.tab); },
+  'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); },
+  'reset-filters': function(){ resetFilters(); },
+  'snies-set-fac': function(b){ snSetFac(b.dataset.fac); },
+  'snies-set-prog': function(b){ snSetProg(b.dataset.prog); },
+  'toggle-section': function(b){ toggleSec(b.dataset.secId); },
+  'download-html': function(){ downloadHTML(); },
+  'print': function(){ window.print(); },
+  'reset-db': function(){ resetDB(); },
+  'open-edit-prog': function(b){ openEditProg(b.dataset.pid); },
+  'del-linea': function(b){ delLinea(b.dataset.lineaId); },
+  'del-mae': function(b){ delMae(b.dataset.maeId); },
+  'add-linea': function(){ addLinea(); },
+  'add-mae': function(){ addMae(); },
+  'save-prog': function(b){ saveProg(b.dataset.pid, b.dataset.isNew === 'true'); },
+  'cancel-edit': function(){ cancelEdit(); },
+  'delete-prog': function(b){ deleteProg(b.dataset.pid); },
+  'save-doc': function(){ saveDoc(); },
+  'toggle-doc-form': function(){ toggleDocForm(); },
+  'open-new-prog': function(){ openNewProg(); },
+  'open-edit-fac': function(){ openEditFac(); },
+  'open-new-fac': function(){ openNewFac(); },
+  'save-fac': function(b){ saveFac(b.dataset.isNew === 'true'); },
+  'delete-fac': function(){ deleteFac(); },
+};
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-action]');
+  if(!b) return;
+  var fn = __ACTIONS[b.getAttribute('data-action')];
+  if(fn) fn(b);
+});
+var __CHANGE = {
+  'apply-filters': function(){ applyFilters(); },
+};
+document.addEventListener('change', function(e){
+  var b = e.target.closest('[data-action]');
+  if(!b) return;
+  var fn = __CHANGE[b.getAttribute('data-action')];
+  if(fn) fn(b);
+});
 
 // ===== TREE =====
 /**
@@ -44,7 +155,7 @@ function renderTree(){
   try{
   const f=DB[curFac];
   // Ensure data integrity before rendering
-  if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" onclick="resetDB()" style="color:#006633">Recargar datos por defecto</a></div>';return;}
+  if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
   const singlePregrado = filtPregrado !== 'ALL';
 
   function vline(h){
@@ -90,7 +201,7 @@ function renderTree(){
     // Pregrado card centered
     h+=`
     <div class="node node-pregrado" style="min-width:260px;max-width:340px">
-      <button class="edit-node-btn no-print" onclick="openEditProg('${p.id}')">✎</button>
+      <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✎</button>
       <div class="node-stripe"></div>
       <div class="node-body">
         <div class="node-label">Programa de pregrado</div>
@@ -220,7 +331,7 @@ function renderTree(){
       h+=`<div class="pcol">
         ${vline(14)}
         <div class="node node-pregrado">
-          <button class="edit-node-btn no-print" onclick="openEditProg('${p.id}')">✎</button>
+          <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✎</button>
           <div class="node-stripe"></div>
           <div class="node-body">
             <div class="node-label">Programa de pregrado</div>
@@ -295,7 +406,7 @@ function renderTree(){
 
   document.getElementById('tree').innerHTML=h;
   }catch(err){
-    document.getElementById('tree').innerHTML='<div class="empty-msg">⚠️ Error al renderizar el árbol. <a href="#" onclick="resetDB()" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
+    document.getElementById('tree').innerHTML='<div class="empty-msg">⚠️ Error al renderizar el árbol. <a href="#" data-action="reset-db" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
     console.error('renderTree error:',err);
   }
 }
@@ -362,87 +473,8 @@ function renderSedeView(){
   document.getElementById('sede-content').innerHTML=h;
 }
 
-// ===== EDITOR (LEGACY — SOMBREADO) =====
-// SOMBREADO por renderEditor en línea 1437.
-// Esta implementación nunca se ejecuta. Mantener solo como referencia temporal.
-// TODO [MVC]: eliminar en Fase 3 cuando se unifique el editor.
-function renderEditor(){
-  const f=DB[curFac];
-  let h=`<div style="padding:1rem">`;
-  h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
-    <div style="font-size:14px;font-weight:700;color:var(--udec-green)">Editor de datos — ${f.name}</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn-green" onclick="openNewProg()">+ Nuevo programa</button>
-      <button onclick="openEditFac()">✎ Editar facultad</button>
-      <button onclick="openNewFac()">+ Nueva facultad</button>
-    </div>
-  </div>`;
-
-  // Programs list
-  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:1rem">`;
-  f.progs.forEach(p=>{
-    const totalL=p.lineas.length, totalM=p.mae.length;
-    h+=`<div class="fac-list-item" style="flex-direction:column;align-items:flex-start;gap:6px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:8px">
-        <div>
-          <div class="fac-list-item-name">${p.n}</div>
-          <div style="font-size:10px;color:#666;margin-top:1px">📍 ${p.sedes.join(', ')}</div>
-          <div style="font-size:10px;color:#888;margin-top:2px">${totalL} línea(s) · ${totalM} maestría(s)</div>
-        </div>
-        <div style="display:flex;gap:5px;flex-shrink:0">
-          <button class="btn-green" style="font-size:10px;padding:3px 8px" onclick="openEditProg('${p.id}')">✎ Editar</button>
-          <button class="btn-red" style="font-size:10px;padding:3px 8px" onclick="deleteProg('${p.id}')">Borrar</button>
-        </div>
-      </div>
-    </div>`;
-  });
-  h+=`</div>`;
-
-  // Faculty settings
-  h+=`<div class="form-section">
-    <h3>Doctorado de la facultad</h3>
-    <div class="grid2">
-      <div class="field"><label>Nombre del doctorado</label>
-        <input id="doc-name" value="${f.doc?f.doc.n:''}" placeholder="Nombre del doctorado">
-      </div>
-      <div class="field"><label>Estado</label>
-        <input id="doc-estado" value="${f.doc?f.doc.e:''}" placeholder="Ej: En construcción">
-      </div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Tipo de oferta</label>
-        <select id="doc-oferta">
-          <option value="V" ${f.doc&&f.doc.o==='V'?'selected':''}>Vigente</option>
-          <option value="P" ${!f.doc||f.doc.o==='P'?'selected':''}>Proyectada</option>
-        </select>
-      </div>
-      <div class="field"><label>Sedes (separadas por coma)</label>
-        <input id="doc-sedes" value="${f.doc?f.doc.sedes.join(', '):''}" placeholder="Ej: Fusagasugá, Chía">
-      </div>
-    </div>
-    <button class="btn-green" onclick="saveDoc()">Guardar doctorado</button>
-  </div>`;
-
-  h+=`</div>`;
-  document.getElementById('editor-content').innerHTML=h;
-}
-
-// SOMBREADO por saveDoc en línea 1484
-function saveDoc(){
-  const f=DB[curFac];
-  const n=document.getElementById('doc-name').value.trim();
-  if(!n){f.doc=null;}
-  else{
-    f.doc={n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,
-      sedes:document.getElementById('doc-sedes').value.split(',').map(s=>s.trim()).filter(Boolean)};
-  }
-  saveDB();toast('Doctorado guardado');renderViews();renderEditor();
-}
 
 // ===== PROG FORM =====
-function openNewProg(){editingProgId='__new__';renderProgForm();}
-function openEditProg(pid){editingProgId=pid;renderProgForm();}
-
 function renderProgForm(){
   var f=DB[curFac],isNew=editingProgId==='__new__';
   var p=isNew?{id:uid(),n:'',sedes:[],lineas:[{id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'V',sedes:[],resp:'',mes:null,ano:null}],mae:[{id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null}]}:f.progs.find(function(x){return x.id===editingProgId;});
@@ -459,7 +491,7 @@ function renderProgForm(){
   function ao(c){return '<option value="">— Año —</option>'+AS.map(function(y){return '<option value="'+y+'"'+(y===c?' selected':'')+'>'+y+'</option>';}).join('');}
   var lH=tmpLineas.map(function(l){
     return '<div class="linea-card" id="lc'+l.id+'">'
-      +'<button class="del-btn" onclick="delLinea(\''+l.id+'\')">✕ Quitar</button>'
+      +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">✕ Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Línea</label><input id="ll'+l.id+'" value="'+(l.l||'')+'" placeholder="Nombre de la línea"></div>'
       +'<div class="field"><label>Tipo</label><select id="lt'+l.id+'"><option'+(l.t==='Profundización 1'?' selected':'')+'>Profundización 1</option><option'+(l.t==='Profundización 2'?' selected':'')+'>Profundización 2</option></select></div></div>'
       +'<div class="grid2"><div class="field"><label>Especialización</label><input id="le'+l.id+'" value="'+(l.esp||'')+'" placeholder="Nombre"></div>'
@@ -472,7 +504,7 @@ function renderProgForm(){
   }).join('');
   var mH=tmpMaes.map(function(m){
     return '<div class="linea-card" id="mc'+m.id+'">'
-      +'<button class="del-btn" onclick="delMae(\''+m.id+'\')">✕ Quitar</button>'
+      +'<button class="del-btn" data-action="del-mae" data-mae-id="'+m.id+'">✕ Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Maestría</label><input id="mn'+m.id+'" value="'+(m.n||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="mes'+m.id+'">'+eo(m.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="mo'+m.id+'"><option value="V"'+(m.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(m.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
@@ -488,14 +520,14 @@ function renderProgForm(){
       +'<div class="field"><label>Sedes</label><input id="psedes" value="'+(p.sedes?p.sedes.join(', '):'')+'" placeholder="Ej: Fusagasugá, Chía"></div></div></div>'
     +'<div class="form-section"><h3>Líneas de profundización y especializaciones</h3>'
       +'<div id="lineas-container">'+lH+'</div>'
-      +'<button onclick="addLinea()" style="margin-top:6px;border-color:#006633;color:#006633">+ Agregar línea</button></div>'
+      +'<button data-action="add-linea" style="margin-top:6px;border-color:#006633;color:#006633">+ Agregar línea</button></div>'
     +'<div class="form-section"><h3>Maestrías</h3>'
       +'<div id="maes-container">'+mH+'</div>'
-      +'<button onclick="addMae()" style="margin-top:6px;border-color:#C8A43A;color:#8a6d00">+ Agregar maestría</button></div>'
+      +'<button data-action="add-mae" style="margin-top:6px;border-color:#C8A43A;color:#8a6d00">+ Agregar maestría</button></div>'
     +'<div class="modal-actions">'
-      +'<button class="btn-green" onclick="saveProg(\''+p.id+'\','+(isNew?'true':'false')+')">💾 Guardar</button>'
-      +'<button onclick="cancelEdit()">Cancelar</button>'
-      +(isNew?'':'<button class="btn-red" onclick="deleteProg(\''+p.id+'\')">🗑 Eliminar</button>')
+      +'<button class="btn-green" data-action="save-prog" data-pid="'+p.id+'" data-is-new="'+(isNew?'true':'false')+'">💾 Guardar</button>'
+      +'<button data-action="cancel-edit">Cancelar</button>'
+      +(isNew?'':'<button class="btn-red" data-action="delete-prog" data-pid="'+p.id+'">🗑 Eliminar</button>')
     +'</div></div></div>';
   document.getElementById('editor-content').innerHTML=h;
 }
@@ -521,39 +553,6 @@ function deleteProg(pid){
 }
 function cancelEdit(){editingProgId=null;tmpLineas=[];tmpMaes=[];renderEditor();}
 
-// SOMBREADO por saveFac(isNew) en línea 1507
-function saveFac(){
-  DB[curFac].name=document.getElementById('fn').value.trim();
-  saveDB();toast('Facultad actualizada');renderFacBar();renderViews();renderEditor();
-}
-// SOMBREADO por deleteFac en línea 1494
-function deleteFac(){
-  
-  DB.splice(curFac,1);curFac=Math.max(0,curFac-1);
-  saveDB();toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
-}
-
-// SOMBREADO por openNewFac en línea 1500
-function openNewFac(){
-  document.getElementById('editor-content').innerHTML=`<div class="modal-overlay"><div class="modal">
-    <div class="modal-title"><span>➕</span>Nueva facultad</div>
-    <div class="form-section">
-      <h3>Datos de la nueva facultad</h3>
-      <div class="field"><label>Nombre de la facultad</label><input id="nfn" placeholder="Ej: Facultad de Derecho"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-green" onclick="saveNewFac()">💾 Crear facultad</button>
-      <button onclick="renderEditor()">Cancelar</button>
-    </div>
-  </div></div>`;
-}
-function saveNewFac(){
-  const n=document.getElementById('nfn').value.trim();
-  if(!n){alert('Escribe el nombre de la facultad');return;}
-  DB.push({id:uid(),name:n,doc:null,progs:[]});
-  curFac=DB.length-1;saveDB();toast('Facultad creada');renderFacBar();populateSedes();renderViews();renderEditor();
-}
-
 
 // ===== PESTAÑAS Y VISTAS =====
 
@@ -563,6 +562,7 @@ function saveNewFac(){
  * @param {string} id - 'arbol' | 'tabla' | 'sede' | 'indicadores' | 'snies' | 'pipeline' | 'editor'
  */
 function showTab(id){
+  AppState.navigation.activeTab=id;
   ['arbol','tabla','sede','indicadores','snies','pipeline','editor'].forEach(t=>{
     document.getElementById('panel-'+t).classList.toggle('act',t===id);
     document.getElementById('tb-'+t).classList.toggle('act',t===id);
@@ -580,666 +580,27 @@ function showTab(id){
 function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();}
 
 
-// ===== SNIES LOOKUP MAPS =====
-const SNIES_PRE_MAP = {
-  'INGENIERÍA DE SOFTWARE|SOACHA': '110946',
-  'INGENIERÍA DE SOFTWARE|GIRARDOT': '116101',
-  'INGENIERIA DE SOFTWARE|GIRARDOT': '116101',
-  'INGENIERIA DE SISTEMAS Y COMPUTACION|FUSAGASUGÁ': '109964',
-  'INGENIERIA DE SISTEMAS Y COMPUTACION|FACATATIVÁ': '109965',
-  'INGENIERÍA DE SISTEMAS Y COMPUTACIÓN|CHÍA': '111350',
-  'INGENIERÍA DE SISTEMAS Y COMPUTACIÓN|UBATE': '116385',
-  'INGENIERIA ELECTRONICA|FUSAGASUGÁ': '4086',
-  'INGENIERIA INDUSTRIAL|SOACHA-CHÍA': '53872',
-  'INGENIERÍA MECATRÓNICA|CHÍA': '116851',
-  'ADMINISTRACIÓN DE EMPRESAS|FUSAGASUGÁ': '19761',
-  'ADMINISTRACIÓN DE EMPRESAS|UBATE': '902',
-  'ADMINISTRACIÓN DE EMPRESAS|CHÍA': '19763',
-  'ADMINISTRACIÓN DE EMPRESAS|FACATATIVÁ': '19785',
-  'ADMINISTRACIÓN DE EMPRESAS|GIRARDOT': '14969',
-  'ADMINISTRACIÓN DE EMPRESAS|SOACHA': '117202',
-  'CONTADURÍA PÚBLICA|FUSAGASUGÁ': '53714',
-  'CONTADURÍA PÚBLICA|SOACHA': '118077',
-  'CONTADURÍA PÚBLICA|FACATATIVÁ': '53668',
-  'CONTADURÍA PÚBLICA|CHÍA': '53668',
-  'CONTADURÍA PÚBLICA|UBATE': '53668',
-  'ZOOTECNIA|FUSAGASUGÁ': '889',
-  'ZOOTECNIA|UBATE': '889',
-  'INGENIERÍA AGRONÓMICA|FUSAGASUGÁ': '1928',
-  'INGENIERÍA AGRONÓMICA|FACATATIVÁ': '1928',
-  'INGENIERÍA AMBIENTAL|GIRARDOT': '52090',
-  'INGENIERÍA AMBIENTAL|FACATATIVÁ': '52090',
-  'MEDICINA VETERINARIA Y ZOOTECNIA|UBATE': '117676',
-  'INGENIERÍA TOPOGRÁFICA Y GEOMÁTICA|SOACHA': '117898',
-  'ENFERMERÍA|GIRARDOT': '898',
-  'PSICOLOGÍA|FACATATIVÁ': '90941',
-  'LIC. EN EDUCACIÓN FÍSICA, RECREACIÓN Y DEPORTES|FUSAGASUGÁ': '116292',
-  'PROFESIONAL EN CIENCIAS DEL DEPORTE|SOACHA': '53776',
-  'LIC. EN CIENCIAS SOCIALES|FUSAGASUGÁ': '107037',
-  'MÚSICA|ZIPAQUIRÁ': '10528'
-};
-const SNIES_ESP_MAP = {
-  'ESPECIALIZACIÓN EN METODOLOGÍAS DE CALIDAD PARA EL DESARROLLO DEL SOFTWARE': '117580',
-  'ESP. EN METODOLOGÍAS DE CALIDAD PARA EL DESARROLLO DEL SOFTWARE': '117580',
-  'ESP. EN METODOLOGÍAS DE CALIDAD': '117580',
-  'ESPECIALIZACIÓN EN ANALÍTICA Y CIENCIA DE DATOS': '117565',
-  'ESP. EN ANALÍTICA Y CIENCIA DE DATOS': '117565',
-  'ESPECIALIZACIÓN EN MARKETING DIGITAL': '116654',
-  'ESPECIALIZACIÓN EN GESTIÓN PÚBLICA': '116475',
-  'ESP. EN GESTIÓN PÚBLICA': '116475',
-  'ESPECIALIZACIÓN EN GERENCIA PARA LA TRANSFORMACIÓN DIGITAL': '115949',
-  'ESP. GERENCIA PARA LA TRANSFORMACIÓN DIGITAL': '115949',
-  'ESPECIALIZACIÓN EN GERENCIA FINANCIERA Y CONTABLE': '117817',
-  'ESP. EN GERENCIA FINANCIERA Y CONTABLE': '117817',
-  'ESPECIALIZACIÓN EN ANALÍTICA APLICADA A NEGOCIOS': '116876',
-  'ESP. EN ANALÍTICA APLICADA A NEGOCIOS': '116876',
-  'ESPECIALIZACIÓN EN RECURSOS ZOOGENÉTICOS': '117568',
-  'ESP. NUTRICIÓN Y ALIMENTACIÓN ANIMAL ESP. NO CONVENCIONALES': '116370',
-  'ESP. NUTRICIÓN Y ALIMENTACIÓN ANIMAL DE ESP. NO CONVENCIONALES': '116370',
-  'ESPECIALIZACIÓN EN AGRONEGOCIOS SOSTENIBLES': '116771',
-  'ESP. EN AGRONEGOCIOS SOSTENIBLES': '116771',
-  'ESP. EN AGROECOLOGÍA Y DESARROLLO AGROECOTURÍSTICO': '116293',
-  'ESPECIALIZACIÓN EN AGROECOLOGÍA Y DESARROLLO AGROECOTURÍSTICO': '116293',
-  'ESPECIALIZACIÓN EN DEPORTE ESCOLAR': '117263',
-  'ESPECIALIZACIÓN EN INFRAESTRUCTURA Y SEGURIDAD DE REDES': '117555',
-  'ESP. EN INFRAESTRUCTURA Y SEGURIDAD DE REDES': '117555',
-  'ESPECIALIZACIÓN EN INTELIGENCIA ARTIFICIAL': '117675',
-  'ESP. EN INTELIGENCIA ARTIFICIAL': '117675',
-  'ESPECIALIZACIÓN EN GESTIÓN Y DESARROLLO DE LA ACTIVIDAD FÍSICA Y EL DEPORTE': '118279',
-  'ESP. EN GESTIÓN Y DESARROLLO DE LA ACTIVIDAD FÍSICA Y EL DEPORTE': '118279',
-  'ESPECIALIZACIÓN EN LOGÍSTICA Y OPERACIONES': 'NO APLICA',
-  'ESP. EN LOGÍSTICA Y OPERACIONES': 'NO APLICA',
-  'ESPECIALIZACIÓN EN LOGÍSTICA Y COMERCIO INTERNACIONAL': 'NO APLICA',
-  'ESP. EN LOGÍSTICA Y COMERCIO INTERNACIONAL': 'NO APLICA',
-  'ESPECIALIZACIÓN EN GERENCIA FINANCIERA Y DIAGNÓSTICO ESTRATÉGICO': 'NO APLICA',
-  'ESP. EN GERENCIA FINANCIERA Y DIAGNÓSTICO ESTRATÉGICO': 'NO APLICA',
-  'ESPECIALIZACIÓN EN GESTIÓN TRIBUTARIA': 'NO APLICA',
-  'ESPECIALIZACIÓN EN ACTIVIDAD FÍSICA Y DISCAPACIDAD': 'NO APLICA',
-  'ESP. EN ACTIVIDAD FÍSICA Y DISCAPACIDAD': 'NO APLICA',
-  'ESPECIALIZACIÓN EN ENTRENAMIENTO DEPORTIVO': 'NO APLICA',
-  'ESP. EN ENTRENAMIENTO DEPORTIVO': 'NO APLICA',
-  'ESPECIALIZACIÓN EN GESTIÓN DEL RECURSO HÍDRICO': 'NO APLICA',
-  'ESP. EN GESTIÓN DEL RECURSO HÍDRICO': 'NO APLICA',
-  'ESP. EN GESTIÓN DEL RIESGO DE DESASTRES Y PLANIFICACIÓN AMBIENTAL DEL TERRITORIO': 'NO APLICA',
-  'ESP. EN GESTIÓN DE LA CALIDAD DEL RECURSO AIRE': 'NO APLICA',
-  'ESPECIALIZACIÓN EN SANIDAD DE ANIMALES SILVESTRES': 'NO APLICA',
-  'ESP. EN SANIDAD DE ANIMALES SILVESTRES': 'NO APLICA',
-  'ESP. EN TÉCNICAS DE REPRODUCCIÓN ANIMAL ASISTIDA': 'NO APLICA',
-  'ESPECIALIZACIÓN EN CIENCIA DE GEO-DATOS': 'NO APLICA',
-  'ESP. EN CIENCIA DE GEO-DATOS': 'NO APLICA',
-  'ESP. EN TOPOGRAFÍA AVANZADA CON FINES CATASTRALES': 'NO APLICA',
-  'ESPECIALIZACIÓN EN SALUD MENTAL COMUNITARIA': 'NO APLICA',
-  'ESP. EN SALUD MENTAL Y COMUNITARIA': 'NO APLICA',
-  'ESP. GERENCIA DE LA CALIDAD E INNOVACIÓN EN SALUD': 'NO APLICA',
-  'ESPECIALIZACIÓN EN INTERVENCIÓN PSICOSOCIAL': 'NO APLICA',
-  'ESP. EN INTERVENCIÓN PSICOSOCIAL': 'NO APLICA',
-  'ESPECIALIZACIÓN EN PSICOMETRÍA Y MEDICIÓN PSICOLÓGICA': 'NO APLICA',
-  'ESP. EN PSICOMETRÍA Y MEDICIÓN PSICOLÓGICA': 'NO APLICA',
-  'ESP. EN EDUCACIÓN, RURALIDADES Y DERECHOS HUMANOS': 'NO APLICA',
-  'ESP. EN CIENCIAS SOCIALES, REGIÓN Y TERRITORIO': 'NO APLICA',
-  'ESP. PARA LÍNEA DE PROFUNDIZACIÓN EN DIRECCIÓN MUSICAL': 'NO APLICA',
-  'ESP. PARA LÍNEA DE PROFUNDIZACIÓN EN PRODUCCIÓN MUSICAL': 'NO APLICA',
-  'ESP. TRANSFORMACIÓN E INNOVACIÓN DE PRODUCTOS LÁCTEOS Y CÁRNICOS': 'NO APLICA',
-  'ESP. HERRAMIENTAS BIOTECNOLÓGICAS PARA LA PRODUCCIÓN ANIMAL': 'NO APLICA',
-  'ESP. EN AUTOMATIZACIÓN INDUSTRIAL': 'NO APLICA',
-  'ESPECIALIZACIÓN EN AUTOMATIZACIÓN INDUSTRIAL': 'NO APLICA',
-  'ESP. EN SOLUCIÓN ENERGÉTICAS SOSTENIBLES': 'NO APLICA',
-  'ESPECIALIZACIÓN EN SEGURIDAD DE LA INFORMACIÓN': 'NO APLICA',
-  'ESP. EN SEGURIDAD DE LA INFORMACIÓN': 'NO APLICA',
-  'ESPECIALIZACIÓN EN GESTIÓN AMBIENTAL PARA EL DESARROLLO SOSTENIBLE': 'NO APLICA',
-  'MAESTRÍA EN GESTIÓN AMBIENTAL PARA EL DESARROLLO SOSTENIBLE': 'NO APLICA'
-};
-function getSniesPreg(nombre, sedes){
-  for(const s of (sedes||[])) {
-    const k=(nombre.toUpperCase()+'|'+s.toUpperCase());
-    if(SNIES_PRE_MAP[k]) return SNIES_PRE_MAP[k];
-  }
-  // try any sede
-  const prefix=nombre.toUpperCase()+'|';
-  for(const [k,v] of Object.entries(SNIES_PRE_MAP)) if(k.startsWith(prefix)) return v;
-  return '';
-}
-function getSniesEsp(esp){
-  if(!esp) return '';
-  const k=esp.toUpperCase().trim();
-  return SNIES_ESP_MAP[k]||'';
-}
-// ===== DOWNLOAD DATABASE =====
-function downloadDB(){
-  const headers = [
-    'Facultad',
-    'SNIES Pregrado',
-    'Programa de Pregrado',
-    'Sede(s) Pregrado',
-    'Tipo de Oferta',
-    'Nivel',
-    'SNIES Posgrado',
-    'Nombre del Programa de Posgrado',
-    'Línea de Profundización',
-    'Tipo Línea',
-    'Especialización',
-    'Estado',
-    'Sede(s) Programa',
-    'Doctorado Facultad',
-    'Estado Doctorado'
-  ];
-  const rows = [headers];
-
-  DB.forEach(fac => {
-    fac.progs.forEach(p => {
-      const sniesPre = getSniesPreg(p.n, p.sedes);
-
-      p.lineas.forEach(l => {
-        const sniesEsp = getSniesEsp(l.esp);
-        rows.push([
-          fac.name,
-          sniesPre,
-          p.n,
-          p.sedes.join(' | '),
-          l.o === 'V' ? 'Oferta Vigente' : 'Oferta Proyectada',
-          'Especialización',
-          sniesEsp,
-          l.esp,
-          l.l,
-          l.t,
-          l.esp,
-          l.e || '',
-          l.sedes.join(' | '),
-          fac.doc ? fac.doc.n : '',
-          fac.doc ? fac.doc.e : ''
-        ]);
-      });
-
-      p.mae.forEach(m => {
-        rows.push([
-          fac.name,
-          sniesPre,
-          p.n,
-          p.sedes.join(' | '),
-          m.o === 'V' ? 'Oferta Vigente' : 'Oferta Proyectada',
-          'Maestría',
-          '',
-          m.n,
-          '',
-          '',
-          '',
-          m.e || '',
-          m.sedes.join(' | '),
-          fac.doc ? fac.doc.n : '',
-          fac.doc ? fac.doc.e : ''
-        ]);
-      });
-
-      if(!p.lineas.length && !p.mae.length){
-        rows.push([
-          fac.name, sniesPre, p.n, p.sedes.join(' | '),
-          '', '', '', '', '', '', '', '', '',
-          fac.doc ? fac.doc.n : '', fac.doc ? fac.doc.e : ''
-        ]);
-      }
-    });
-
-    if(fac.doc){
-      rows.push([
-        fac.name, '', 'Todos los pregrados', fac.doc.sedes.join(' | '),
-        fac.doc.o === 'V' ? 'Oferta Vigente' : 'Oferta Proyectada',
-        'Doctorado', '', fac.doc.n, '', '', '', fac.doc.e || '',
-        fac.doc.sedes.join(' | '), fac.doc.n, fac.doc.e || ''
-      ]);
-    }
-  });
-
-  const bom = '\uFEFF';
-  const csv = bom + rows.map(r =>
-    r.map(cell => {
-      const s = String(cell ?? '').replace(/"/g, '""');
-      return s.includes(',') || s.includes('\n') || s.includes('"') ? `"${s}"` : s;
-    }).join(',')
-  ).join('\n');
-
-  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'Base_Datos_Rutas_Formacion_UdeCundinamarca.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('Base de datos descargada con códigos SNIES');
-}
+// ===== SNIES LOOKUP MAPS + DOWNLOAD DATABASE =====
+// Extraído a assets/js/modules/export.js (Fase 2)
+// window.downloadDB es definido por export.js via window.*
 
 // ===== INDICADORES =====
-function renderIndicadores(){
-  const wrap = document.getElementById('indicadores-content');
-
-  // Build stats from DB
-  let totalPre=0, totalEsp=0, totalMae=0, totalDoc=0;
-  let vigente=0, proyectada=0;
-  const estadoCount={};
-  const facStats=[];
-
-  const ESTADOS_GRUPO = {
-    'obtención': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'radicado men': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'en radicación': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'entregado para radicar': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'en construcción': {label:'En construcción', color:'#BA7517', bg:'#FAEEDA'},
-    'por construir': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'en proyección': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'nueva propuesta de la facultad': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'en reclamación  men': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'en reclamación men': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'renovación': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'renovación y modificación de la denominación': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'pendiente en resolución': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'pendiante en resolución': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'negado men': {label:'Negado MEN', color:'#A32D2D', bg:'#FCEBEB'},
-    'obtención-resignificación': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'con registro calificado': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'en oferta': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-  };
-
-  function getEstGroup(e){
-    if(!e) return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
-    const k=e.trim().toLowerCase();
-    for(const [key,val] of Object.entries(ESTADOS_GRUPO)) if(k.includes(key)||key.includes(k)) return val;
-    return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
-  }
-
-  function countItems(items, nivel){
-    items.forEach(item=>{
-      if(nivel==='espec') totalEsp++;
-      if(nivel==='mae') totalMae++;
-      if(nivel==='doc') totalDoc++;
-      if(item.o==='V') vigente++; else proyectada++;
-      const g=getEstGroup(item.e);
-      estadoCount[g.label]=(estadoCount[g.label]||0)+1;
-    });
-  }
-
-  DB.forEach(fac=>{
-    const fs={name:fac.name, pre:fac.progs.length, esp:0, mae:0, doc:fac.doc?1:0, vigente:0, proyectada:0, estados:{}};
-    totalPre+=fac.progs.length;
-    fac.progs.forEach(p=>{
-      p.lineas.forEach(l=>{
-        fs.esp++; totalEsp++;
-        if(l.o==='V'){vigente++;fs.vigente++;} else{proyectada++;fs.proyectada++;}
-        const g=getEstGroup(l.e); estadoCount[g.label]=(estadoCount[g.label]||0)+1; fs.estados[g.label]=(fs.estados[g.label]||0)+1;
-      });
-      p.mae.forEach(m=>{
-        fs.mae++; totalMae++;
-        if(m.o==='V'){vigente++;fs.vigente++;} else{proyectada++;fs.proyectada++;}
-        const g=getEstGroup(m.e); estadoCount[g.label]=(estadoCount[g.label]||0)+1; fs.estados[g.label]=(fs.estados[g.label]||0)+1;
-      });
-    });
-    if(fac.doc){
-      totalDoc++;
-      if(fac.doc.o==='V'){vigente++;fs.vigente++;} else{proyectada++;fs.proyectada++;}
-      const g=getEstGroup(fac.doc.e); estadoCount[g.label]=(estadoCount[g.label]||0)+1; fs.estados[g.label]=(fs.estados[g.label]||0)+1;
-    }
-    facStats.push(fs);
-  });
-
-  const totalPosg = totalEsp+totalMae+totalDoc;
-  const total = totalPre+totalPosg;
-
-  // Color map for estado groups
-  const EST_COLORS={
-    'Obtención / Con registro':{color:'#1D9E75',bg:'#E1F5EE'},
-    'Radicado MEN':{color:'#378ADD',bg:'#E6F1FB'},
-    'En construcción':{color:'#BA7517',bg:'#FAEEDA'},
-    'Por construir':{color:'#e09020',bg:'#FEF3C7'},
-    'En reclamación':{color:'#D85A30',bg:'#FAECE7'},
-    'Negado MEN':{color:'#A32D2D',bg:'#FCEBEB'},
-    'Sin definir':{color:'#888',bg:'#f5f5f0'},
-  };
-
-  function bar(pct, color){
-    return `<div style="width:100%;height:7px;background:#e8f0e8;border-radius:4px;overflow:hidden;margin-top:4px">
-      <div style="width:${Math.round(pct)}%;height:100%;background:${color};border-radius:4px;transition:width .4s"></div>
-    </div>`;
-  }
-
-  function donut(pct, color, size=52){
-    const r=16, c=2*Math.PI*r;
-    const dash=c*pct/100, gap=c-dash;
-    return `<svg width="${size}" height="${size}" viewBox="0 0 40 40">
-      <circle cx="20" cy="20" r="${r}" fill="none" stroke="#e8f0e8" stroke-width="4"/>
-      <circle cx="20" cy="20" r="${r}" fill="none" stroke="${color}" stroke-width="4"
-        stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-dashoffset="${c*0.25}" stroke-linecap="round"/>
-      <text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="${color}" font-family="Arial">${Math.round(pct)}%</text>
-    </svg>`;
-  }
-
-  // ── RENDER ──
-  let h=`<div style="padding:1.25rem;background:#f4f6f4;min-height:400px">`;
-
-  // SECTION TITLE
-  h+=`<div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px">
-    <span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>
-    Panel de Indicadores — Oferta Académica Universidad de Cundinamarca
-  </div>`;
-
-  // ── FILA 1: KPIs globales ──
-  h+=`<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:1.25rem">`;
-  const kpis=[
-    {v:DB.length, l:'Facultades', c:'#006633', bg:'#e6f2eb'},
-    {v:totalPre, l:'Programas pregrado', c:'#2e8b57', bg:'#f0faf5'},
-    {v:totalEsp, l:'Especializaciones', c:'#3aaa72', bg:'#eaf7f0'},
-    {v:totalMae, l:'Maestrías', c:'#C8A43A', bg:'#fdf6e3'},
-    {v:totalDoc, l:'Doctorados', c:'#0d3d22', bg:'#d4e8da'},
-    {v:totalPosg, l:'Total posgrados', c:'#185FA5', bg:'#e6f0fb'},
-  ];
-  kpis.forEach(k=>{
-    h+=`<div style="background:${k.bg};border-radius:10px;padding:12px 14px;text-align:center;border:1px solid ${k.c}30">
-      <div style="font-size:26px;font-weight:800;color:${k.c}">${k.v}</div>
-      <div style="font-size:9px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;line-height:1.3">${k.l}</div>
-    </div>`;
-  });
-  h+=`</div>`;
-
-  // ── FILA 2: Gráficos de torta ──
-  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem">`;
-
-  // ── TORTA 1: Vigente vs Proyectada ──
-  const pctV=Math.round(vigente/(vigente+proyectada)*100);
-  const pctP=100-pctV;
-
-  function pieSlices(segments){
-    // segments = [{pct, color, label}]
-    const cx=80, cy=80, r=62, ri=36;
-    let angle=-90, paths='';
-    segments.forEach(seg=>{
-      const a1=angle, a2=angle+(seg.pct/100)*360;
-      const r1=a1*Math.PI/180, r2=a2*Math.PI/180;
-      const large=seg.pct>50?1:0;
-      const x1o=cx+r*Math.cos(r1), y1o=cy+r*Math.sin(r1);
-      const x2o=cx+r*Math.cos(r2), y2o=cy+r*Math.sin(r2);
-      const x1i=cx+ri*Math.cos(r2), y1i=cy+ri*Math.sin(r2);
-      const x2i=cx+ri*Math.cos(r1), y2i=cy+ri*Math.sin(r1);
-      // mid angle for label
-      const mid=(r1+r2)/2;
-      const lx=cx+(r+ri)/2*Math.cos(mid), ly=cy+(r+ri)/2*Math.sin(mid);
-      paths+=`<path d="M ${x1o} ${y1o} A ${r} ${r} 0 ${large} 1 ${x2o} ${y2o} L ${x1i} ${y1i} A ${ri} ${ri} 0 ${large} 0 ${x2i} ${y2i} Z"
-        fill="${seg.color}" stroke="#fff" stroke-width="2"/>`;
-      if(seg.pct>8){
-        paths+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle"
-          font-size="10" font-weight="700" fill="#fff" font-family="Arial">${Math.round(seg.pct)}%</text>`;
-      }
-      angle=a2;
-    });
-    return paths;
-  }
-
-  const seg1=[
-    {pct:pctV, color:'#006633', label:'Vigente'},
-    {pct:pctP, color:'#378ADD', label:'Proyectada'},
-  ];
-
-  h+=`<div style="background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #d8e8dc;box-shadow:0 2px 8px rgba(0,102,51,0.06)">
-    <div style="font-size:10px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.09em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
-      <span style="width:3px;height:14px;background:#006633;border-radius:2px;display:inline-block"></span>
-      Oferta vigente vs proyectada
-    </div>
-    <div style="display:flex;align-items:center;gap:18px">
-      <div style="flex-shrink:0">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          ${pieSlices(seg1)}
-          <circle cx="80" cy="80" r="30" fill="#fff"/>
-          <text x="80" y="75" text-anchor="middle" font-size="18" font-weight="800" fill="#006633" font-family="Arial">${vigente+proyectada}</text>
-          <text x="80" y="90" text-anchor="middle" font-size="8" fill="#888" font-family="Arial">TOTAL</text>
-        </svg>
-      </div>
-      <div style="flex:1">
-        <div style="margin-bottom:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#333;font-weight:600">
-              <span style="width:12px;height:12px;border-radius:3px;background:#006633;display:inline-block"></span>Vigente
-            </span>
-            <span style="font-size:13px;font-weight:800;color:#006633">${vigente}</span>
-          </div>
-          <div style="height:8px;background:#e8f0e8;border-radius:4px;overflow:hidden">
-            <div style="width:${pctV}%;height:100%;background:#006633;border-radius:4px"></div>
-          </div>
-          <div style="font-size:9px;color:#888;margin-top:2px;text-align:right">${pctV}% del total</div>
-        </div>
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#333;font-weight:600">
-              <span style="width:12px;height:12px;border-radius:3px;background:#378ADD;display:inline-block"></span>Proyectada
-            </span>
-            <span style="font-size:13px;font-weight:800;color:#378ADD">${proyectada}</span>
-          </div>
-          <div style="height:8px;background:#e6f0fb;border-radius:4px;overflow:hidden">
-            <div style="width:${pctP}%;height:100%;background:#378ADD;border-radius:4px"></div>
-          </div>
-          <div style="font-size:9px;color:#888;margin-top:2px;text-align:right">${pctP}% del total</div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-
-  // ── TORTA 2: Estado actual ──
-  const totalEst=Object.values(estadoCount).reduce((a,b)=>a+b,0);
-  const sortedEst=Object.entries(estadoCount).sort((a,b)=>b[1]-a[1]);
-  const EST_PIE_COLORS=['#1D9E75','#378ADD','#BA7517','#e09020','#D85A30','#A32D2D','#888'];
-  const seg2=sortedEst.map((([est,cnt],i)=>({
-    pct:cnt/totalEst*100,
-    color:(EST_COLORS[est]||{color:EST_PIE_COLORS[i%EST_PIE_COLORS.length]}).color,
-    label:est,cnt
-  })));
-
-  h+=`<div style="background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #d8e8dc;box-shadow:0 2px 8px rgba(0,102,51,0.06)">
-    <div style="font-size:10px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.09em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
-      <span style="width:3px;height:14px;background:#006633;border-radius:2px;display:inline-block"></span>
-      Estado actual de programas
-    </div>
-    <div style="display:flex;align-items:center;gap:16px">
-      <div style="flex-shrink:0">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          ${pieSlices(seg2)}
-          <circle cx="80" cy="80" r="30" fill="#fff"/>
-          <text x="80" y="75" text-anchor="middle" font-size="18" font-weight="800" fill="#1a2e1a" font-family="Arial">${totalEst}</text>
-          <text x="80" y="90" text-anchor="middle" font-size="8" fill="#888" font-family="Arial">PROG.</text>
-        </svg>
-      </div>
-      <div style="flex:1;max-height:140px;overflow-y:auto">
-        ${sortedEst.map(([est,cnt])=>{
-          const ec=EST_COLORS[est]||{color:'#888',bg:'#f5f5f0'};
-          const pct=Math.round(cnt/totalEst*100);
-          return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid #f0f4f0">
-            <span style="width:10px;height:10px;border-radius:50%;background:${ec.color};flex-shrink:0;display:inline-block"></span>
-            <span style="font-size:9px;color:#333;flex:1;line-height:1.3">${est}</span>
-            <span style="font-size:10px;font-weight:700;color:${ec.color};white-space:nowrap">${cnt} <span style="font-size:8px;font-weight:400;color:#999">${pct}%</span></span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-  </div>`;
-
-  h+=`</div>`;
-
-  // ── FILA 2b: Distribución por nivel + por facultad ──
-  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem">`;
-
-  // Torta por nivel
-  const nivelSegs=[
-    {pct:totalEsp/(totalPosg||1)*100, color:'#3aaa72', label:'Especializaciones', cnt:totalEsp},
-    {pct:totalMae/(totalPosg||1)*100, color:'#C8A43A', label:'Maestrías', cnt:totalMae},
-    {pct:totalDoc/(totalPosg||1)*100, color:'#0d3d22', label:'Doctorados', cnt:totalDoc},
-  ];
-
-  h+=`<div style="background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #d8e8dc;box-shadow:0 2px 8px rgba(0,102,51,0.06)">
-    <div style="font-size:10px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.09em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
-      <span style="width:3px;height:14px;background:#006633;border-radius:2px;display:inline-block"></span>
-      Distribución por nivel de posgrado
-    </div>
-    <div style="display:flex;align-items:center;gap:18px">
-      <div style="flex-shrink:0">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          ${pieSlices(nivelSegs)}
-          <circle cx="80" cy="80" r="30" fill="#fff"/>
-          <text x="80" y="75" text-anchor="middle" font-size="18" font-weight="800" fill="#006633" font-family="Arial">${totalPosg}</text>
-          <text x="80" y="90" text-anchor="middle" font-size="8" fill="#888" font-family="Arial">POSGRADOS</text>
-        </svg>
-      </div>
-      <div style="flex:1">
-        ${nivelSegs.map(s=>`
-        <div style="margin-bottom:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#333;font-weight:600">
-              <span style="width:12px;height:12px;border-radius:3px;background:${s.color};display:inline-block"></span>${s.label}
-            </span>
-            <span style="font-size:13px;font-weight:800;color:${s.color}">${s.cnt}</span>
-          </div>
-          <div style="height:7px;background:#f0f4f0;border-radius:4px;overflow:hidden">
-            <div style="width:${Math.round(s.pct)}%;height:100%;background:${s.color};border-radius:4px"></div>
-          </div>
-          <div style="font-size:9px;color:#888;margin-top:2px;text-align:right">${Math.round(s.pct)}% del total</div>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>`;
-
-  // Torta por facultad
-  const FAC_COLORS_PIE=['#006633','#2e8b57','#3aaa72','#C8A43A','#378ADD','#D85A30','#993556','#534AB7'];
-  const facSegments = facStats.map((fs,i)=>({
-    pct:(fs.esp+fs.mae+fs.doc)/(totalPosg||1)*100,
-    color: FAC_COLORS_PIE[i%FAC_COLORS_PIE.length],
-    label: fs.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim(),
-    cnt: fs.esp+fs.mae+fs.doc
-  })).filter(s=>s.cnt>0);
-
-  h+=`<div style="background:#fff;border-radius:12px;padding:16px 18px;border:1px solid #d8e8dc;box-shadow:0 2px 8px rgba(0,102,51,0.06)">
-    <div style="font-size:10px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.09em;margin-bottom:14px;display:flex;align-items:center;gap:6px">
-      <span style="width:3px;height:14px;background:#006633;border-radius:2px;display:inline-block"></span>
-      Participación por facultad
-    </div>
-    <div style="display:flex;align-items:center;gap:16px">
-      <div style="flex-shrink:0">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          ${pieSlices(facSegments)}
-          <circle cx="80" cy="80" r="30" fill="#fff"/>
-          <text x="80" y="75" text-anchor="middle" font-size="18" font-weight="800" fill="#1a2e1a" font-family="Arial">${DB.length}</text>
-          <text x="80" y="90" text-anchor="middle" font-size="8" fill="#888" font-family="Arial">FAC.</text>
-        </svg>
-      </div>
-      <div style="flex:1;max-height:140px;overflow-y:auto">
-        ${facSegments.map(s=>{
-          const pct=Math.round(s.pct);
-          return `<div style="display:flex;align-items:center;gap:5px;padding:3px 0;border-bottom:1px solid #f0f4f0">
-            <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
-            <span style="font-size:9px;color:#333;flex:1;line-height:1.3">${s.label}</span>
-            <span style="font-size:9px;font-weight:700;color:${s.color};white-space:nowrap">${s.cnt} <span style="font-size:8px;font-weight:400;color:#999">${pct}%</span></span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-  </div>`;
-
-  h+=`</div>`;
-  h+=`<div style="background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #d8e8dc;margin-bottom:1.25rem">
-    <div style="font-size:10px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Distribución por facultad</div>
-    <div style="overflow-x:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:10px;min-width:700px">
-      <thead>
-        <tr style="background:#006633;color:#fff">
-          <th style="padding:8px 10px;text-align:left;font-weight:700;border-radius:6px 0 0 0">Facultad</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Pregrados</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Especializaciones</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Maestrías</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Doctorado</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Total posgrados</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Vigente</th>
-          <th style="padding:8px 10px;text-align:center;font-weight:700">Proyectada</th>
-          <th style="padding:8px 10px;text-align:left;font-weight:700;border-radius:0 6px 0 0">% participación</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-  facStats.forEach((fs,i)=>{
-    const tp=fs.esp+fs.mae+fs.doc;
-    const pct=totalPosg>0?Math.round(tp/totalPosg*100):0;
-    const bg=i%2===0?'#f8fbf8':'#fff';
-    h+=`<tr style="background:${bg};border-bottom:1px solid #eef4ee">
-      <td style="padding:8px 10px;font-weight:600;color:#006633;font-size:10px">${fs.name.replace('Facultad de ','').replace('Facultad ','')} </td>
-      <td style="padding:8px 10px;text-align:center;font-weight:700;color:#2e8b57">${fs.pre}</td>
-      <td style="padding:8px 10px;text-align:center">${fs.esp}</td>
-      <td style="padding:8px 10px;text-align:center;color:#9a7c1a;font-weight:600">${fs.mae}</td>
-      <td style="padding:8px 10px;text-align:center;color:#0d3d22;font-weight:600">${fs.doc}</td>
-      <td style="padding:8px 10px;text-align:center;font-weight:700;color:#185FA5">${tp}</td>
-      <td style="padding:8px 10px;text-align:center">
-        <span style="background:#e6f2eb;color:#006633;padding:2px 8px;border-radius:8px;font-weight:600">${fs.vigente}</span>
-      </td>
-      <td style="padding:8px 10px;text-align:center">
-        <span style="background:#e6f0fb;color:#185FA5;padding:2px 8px;border-radius:8px;font-weight:600">${fs.proyectada}</span>
-      </td>
-      <td style="padding:8px 10px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;height:6px;background:#e8f0e8;border-radius:3px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:#006633;border-radius:3px"></div>
-          </div>
-          <span style="font-size:9px;font-weight:700;color:#006633;min-width:28px">${pct}%</span>
-        </div>
-      </td>
-    </tr>`;
-  });
-
-  // Totales
-  h+=`<tr style="background:#006633;color:#fff;font-weight:700">
-    <td style="padding:9px 10px;border-radius:0 0 0 6px">TOTAL</td>
-    <td style="padding:9px 10px;text-align:center">${totalPre}</td>
-    <td style="padding:9px 10px;text-align:center">${totalEsp}</td>
-    <td style="padding:9px 10px;text-align:center">${totalMae}</td>
-    <td style="padding:9px 10px;text-align:center">${totalDoc}</td>
-    <td style="padding:9px 10px;text-align:center">${totalPosg}</td>
-    <td style="padding:9px 10px;text-align:center">${vigente}</td>
-    <td style="padding:9px 10px;text-align:center">${proyectada}</td>
-    <td style="padding:9px 10px;border-radius:0 0 6px 0">100%</td>
-  </tr>`;
-  h+=`</tbody></table></div></div>`;
-
-  // ── FILA 4: Estado por facultad ──
-  h+=`<div style="background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #d8e8dc">
-    <div style="font-size:10px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Estado actual por facultad</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">`;
-
-  facStats.forEach(fs=>{
-    const tp=fs.esp+fs.mae+fs.doc;
-    h+=`<div style="border:1px solid #e0ece4;border-radius:8px;overflow:hidden">
-      <div style="background:#006633;color:#fff;padding:7px 10px;font-size:10px;font-weight:700">${fs.name.replace('Facultad de ','').replace('Facultad ','')}</div>
-      <div style="padding:8px 10px">`;
-    const sortedFs=Object.entries(fs.estados).sort((a,b)=>b[1]-a[1]);
-    sortedFs.forEach(([est,cnt])=>{
-      const ec=EST_COLORS[est]||{color:'#888',bg:'#f5f5f0'};
-      const pct=tp>0?Math.round(cnt/tp*100):0;
-      h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f4f0">
-        <span style="font-size:9px;color:#444;display:flex;align-items:center;gap:4px">
-          <span style="width:7px;height:7px;border-radius:50%;background:${ec.color};display:inline-block;flex-shrink:0"></span>${est}
-        </span>
-        <span style="font-size:9px;font-weight:700;color:${ec.color};white-space:nowrap">${cnt} (${pct}%)</span>
-      </div>`;
-    });
-    h+=`</div></div>`;
-  });
-
-  h+=`</div></div>`;
-  h+=`</div>`;
-
-  wrap.innerHTML=h;
-}
+// Extraído a assets/js/modules/indicators.js (Fase 2)
+// window.renderIndicadores es definido por indicators.js via window.*
 
 // ===== INIT =====
 loadDB();
 renderFacBar();
 populateSedes();
 renderViews();
-
+// Sync AppState with legacy var after bootstrap
+window.AppState.navigation.curFac=curFac;
 
 // ===== SNIES DATA =====
-var SD = {"resumen": [{"AÑO_ARCHIVO": 2020, "INSCRITOS": 319, "ADMITIDOS": 277, "PRIMER_CURSO": 305, "MATRICULADOS": 546, "GRADUADOS": 303, "Hombre": 592.0, "Mujer": 700.0, "T_ABSORCION": 197.1, "T_SELECTIVIDAD": 86.8, "T_GRADUACION": 55.5, "T_PRIMER_CURSO": 55.9, "PCT_H": 45.8, "PCT_M": 54.2}, {"AÑO_ARCHIVO": 2021, "INSCRITOS": 594, "ADMITIDOS": 419, "PRIMER_CURSO": 316, "MATRICULADOS": 466, "GRADUADOS": 296, "Hombre": 637.0, "Mujer": 602.0, "T_ABSORCION": 111.2, "T_SELECTIVIDAD": 70.5, "T_GRADUACION": 63.5, "T_PRIMER_CURSO": 67.8, "PCT_H": 51.4, "PCT_M": 48.6}, {"AÑO_ARCHIVO": 2022, "INSCRITOS": 473, "ADMITIDOS": 425, "PRIMER_CURSO": 317, "MATRICULADOS": 514, "GRADUADOS": 301, "Hombre": 643.0, "Mujer": 764.0, "T_ABSORCION": 120.9, "T_SELECTIVIDAD": 89.9, "T_GRADUACION": 58.6, "T_PRIMER_CURSO": 61.7, "PCT_H": 45.7, "PCT_M": 54.3}, {"AÑO_ARCHIVO": 2023, "INSCRITOS": 424, "ADMITIDOS": 398, "PRIMER_CURSO": 328, "MATRICULADOS": 533, "GRADUADOS": 324, "Hombre": 702.0, "Mujer": 699.0, "T_ABSORCION": 133.9, "T_SELECTIVIDAD": 93.9, "T_GRADUACION": 60.8, "T_PRIMER_CURSO": 61.5, "PCT_H": 50.1, "PCT_M": 49.9}, {"AÑO_ARCHIVO": 2024, "INSCRITOS": 460, "ADMITIDOS": 383, "PRIMER_CURSO": 289, "MATRICULADOS": 403, "GRADUADOS": 306, "Hombre": 454.0, "Mujer": 501.0, "T_ABSORCION": 105.2, "T_SELECTIVIDAD": 83.3, "T_GRADUACION": 75.9, "T_PRIMER_CURSO": 71.7, "PCT_H": 47.5, "PCT_M": 52.5}], "programs": [{"name": "Espec. Educación Ambiental y Desarrollo Comunidad", "nivel": "Especialización", "years": {"2020": {"ins": 61, "adm": 48, "mat": 80, "grad": 85, "tabs": 166.7, "tsel": 78.7, "tgrad": 106.2, "pctH": 48.8, "pctM": 51.2, "brecha": -2.4}, "2021": {"ins": 92, "adm": 65, "mat": 53, "grad": 66, "tabs": 81.5, "tsel": 70.7, "tgrad": 124.5, "pctH": 50.9, "pctM": 49.1, "brecha": 1.8}, "2022": {"ins": 34, "adm": 33, "mat": 47, "grad": 59, "tabs": 142.4, "tsel": 97.1, "tgrad": 125.5, "pctH": 36.2, "pctM": 63.8, "brecha": -27.6}, "2023": {"ins": 15, "adm": 15, "mat": 32, "grad": 19, "tabs": 213.3, "tsel": 100.0, "tgrad": 59.4, "pctH": 34.4, "pctM": 65.6, "brecha": -31.2}, "2024": {"ins": 12, "adm": 8, "mat": 16, "grad": 10, "tabs": 200.0, "tsel": 66.7, "tgrad": 62.5, "pctH": 62.5, "pctM": 37.5, "brecha": 25.0}}}, {"name": "Espec. Gerencia para el Desarrollo Organizacional", "nivel": "Especialización", "years": {"2020": {"ins": 71, "adm": 53, "mat": 99, "grad": 50, "tabs": 186.8, "tsel": 74.6, "tgrad": 50.5, "pctH": 30.3, "pctM": 69.7, "brecha": -39.4}, "2021": {"ins": 206, "adm": 137, "mat": 130, "grad": 45, "tabs": 94.9, "tsel": 66.5, "tgrad": 34.6, "pctH": 46.2, "pctM": 53.8, "brecha": -7.6}, "2022": {"ins": 187, "adm": 181, "mat": 172, "grad": 108, "tabs": 95.0, "tsel": 96.8, "tgrad": 62.8, "pctH": 40.1, "pctM": 59.9, "brecha": -19.8}, "2023": {"ins": 194, "adm": 185, "mat": 187, "grad": 170, "tabs": 101.1, "tsel": 95.4, "tgrad": 90.9, "pctH": 44.4, "pctM": 55.6, "brecha": -11.2}, "2024": {"ins": 174, "adm": 149, "mat": 129, "grad": 144, "tabs": 86.6, "tsel": 85.6, "tgrad": 111.6, "pctH": 42.6, "pctM": 57.4, "brecha": -14.8}}}, {"name": "Espec. Gestión de Sistemas de Información Gerencial", "nivel": "Especialización", "years": {"2020": {"ins": 74, "adm": 71, "mat": 113, "grad": 66, "tabs": 159.2, "tsel": 95.9, "tgrad": 58.4, "pctH": 51.3, "pctM": 48.7, "brecha": 2.6}, "2021": {"ins": 123, "adm": 91, "mat": 85, "grad": 93, "tabs": 93.4, "tsel": 74.0, "tgrad": 109.4, "pctH": 51.8, "pctM": 48.2, "brecha": 3.6}, "2022": {"ins": 112, "adm": 105, "mat": 109, "grad": 66, "tabs": 103.8, "tsel": 93.8, "tgrad": 60.6, "pctH": 56.0, "pctM": 44.0, "brecha": 12.0}, "2023": {"ins": 174, "adm": 164, "mat": 161, "grad": 101, "tabs": 98.2, "tsel": 94.3, "tgrad": 62.7, "pctH": 60.9, "pctM": 39.1, "brecha": 21.8}, "2024": {"ins": 85, "adm": 81, "mat": 84, "grad": 102, "tabs": 103.7, "tsel": 95.3, "tgrad": 121.4, "pctH": 57.1, "pctM": 42.9, "brecha": 14.2}}}, {"name": "Espec. Negocios y Comercio Electrónico", "nivel": "Especialización", "years": {"2020": {"ins": 25, "adm": 24, "mat": 25, "grad": 29, "tabs": 104.2, "tsel": 96.0, "tgrad": 116.0, "pctH": 72.0, "pctM": 28.0, "brecha": 44.0}, "2021": {"ins": 34, "adm": 27, "mat": 24, "grad": 21, "tabs": 88.9, "tsel": 79.4, "tgrad": 87.5, "pctH": 45.8, "pctM": 54.2, "brecha": -8.4}, "2022": {"ins": 20, "adm": 18, "mat": 17, "grad": 22, "tabs": 94.4, "tsel": 90.0, "tgrad": 129.4, "pctH": 64.7, "pctM": 35.3, "brecha": 29.4}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 14, "tabs": 0.0, "tsel": 0.0, "tgrad": 0.0, "pctH": 0.0, "pctM": 0.0, "brecha": 0.0}, "2024": {"ins": 0, "adm": 0, "mat": 0, "grad": 2, "tabs": 0.0, "tsel": 0.0, "tgrad": 0.0, "pctH": 0.0, "pctM": 0.0, "brecha": 0.0}}}, {"name": "Espec. Procesos Pedagógicos Entrenamiento Deportivo", "nivel": "Especialización", "years": {"2020": {"ins": 19, "adm": 14, "mat": 45, "grad": 43, "tabs": 321.4, "tsel": 73.7, "tgrad": 95.6, "pctH": 88.9, "pctM": 11.1, "brecha": 77.8}, "2021": {"ins": 38, "adm": 27, "mat": 30, "grad": 16, "tabs": 111.1, "tsel": 71.1, "tgrad": 53.3, "pctH": 86.7, "pctM": 13.3, "brecha": 73.4}, "2022": {"ins": 17, "adm": 0, "mat": 10, "grad": 22, "tabs": 0.0, "tsel": 0.0, "tgrad": 220.0, "pctH": 70.0, "pctM": 30.0, "brecha": 40.0}, "2023": {"ins": 26, "adm": 23, "mat": 23, "grad": 0, "tabs": 100.0, "tsel": 88.5, "tgrad": 0.0, "pctH": 78.3, "pctM": 21.7, "brecha": 56.6}, "2024": {"ins": 8, "adm": 1, "mat": 8, "grad": 17, "tabs": 800.0, "tsel": 12.5, "tgrad": 212.5, "pctH": 87.5, "pctM": 12.5, "brecha": 75.0}}}, {"name": "Maestría en Ciencias Ambientales", "nivel": "Maestría", "years": {"2020": {"ins": 13, "adm": 11, "mat": 39, "grad": 8, "tabs": 354.5, "tsel": 84.6, "tgrad": 20.5, "pctH": 59.0, "pctM": 41.0, "brecha": 18.0}, "2021": {"ins": 31, "adm": 24, "mat": 27, "grad": 18, "tabs": 112.5, "tsel": 77.4, "tgrad": 66.7, "pctH": 63.0, "pctM": 37.0, "brecha": 26.0}, "2022": {"ins": 43, "adm": 43, "mat": 44, "grad": 10, "tabs": 102.3, "tsel": 100.0, "tgrad": 22.7, "pctH": 59.1, "pctM": 40.9, "brecha": 18.2}, "2023": {"ins": 0, "adm": 0, "mat": 37, "grad": 5, "tabs": 0.0, "tsel": 0.0, "tgrad": 13.5, "pctH": 62.2, "pctM": 37.8, "brecha": 24.4}, "2024": {"ins": 0, "adm": 0, "mat": 14, "grad": 5, "tabs": 0.0, "tsel": 0.0, "tgrad": 35.7, "pctH": 42.9, "pctM": 57.1, "brecha": -14.2}}}, {"name": "Maestría en Educación", "nivel": "Maestría", "years": {"2020": {"ins": 56, "adm": 56, "mat": 145, "grad": 21, "tabs": 258.9, "tsel": 100.0, "tgrad": 14.5, "pctH": 50.3, "pctM": 49.7, "brecha": 0.6}, "2021": {"ins": 70, "adm": 48, "mat": 117, "grad": 37, "tabs": 243.8, "tsel": 68.6, "tgrad": 31.6, "pctH": 56.4, "pctM": 43.6, "brecha": 12.8}, "2022": {"ins": 45, "adm": 33, "mat": 101, "grad": 13, "tabs": 306.1, "tsel": 73.3, "tgrad": 12.9, "pctH": 63.4, "pctM": 36.6, "brecha": 26.8}, "2023": {"ins": 0, "adm": 0, "mat": 65, "grad": 15, "tabs": 0.0, "tsel": 0.0, "tgrad": 23.1, "pctH": 70.8, "pctM": 29.2, "brecha": 41.6}, "2024": {"ins": 0, "adm": 0, "mat": 12, "grad": 26, "tabs": 0.0, "tsel": 0.0, "tgrad": 216.7, "pctH": 50.0, "pctM": 50.0, "brecha": 0.0}}}, {"name": "Doctorado en Ciencias de la Educación", "nivel": "Doctorado", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 15, "adm": 12, "mat": 14, "grad": 0, "tabs": 116.7, "tsel": 80.0, "tgrad": 0.0, "pctH": 50.0, "pctM": 50.0, "brecha": 0.0}, "2023": {"ins": 15, "adm": 11, "mat": 28, "grad": 0, "tabs": 254.5, "tsel": 73.3, "tgrad": 0.0, "pctH": 57.1, "pctM": 42.9, "brecha": 14.2}, "2024": {"ins": 15, "adm": 13, "mat": 37, "grad": 0, "tabs": 284.6, "tsel": 86.7, "tgrad": 0.0, "pctH": 59.5, "pctM": 40.5, "brecha": 19.0}}}, {"name": "Espec. Gerencia para la Transformación Digital", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 68, "adm": 60, "mat": 52, "grad": 0, "tabs": 86.7, "tsel": 88.2, "tgrad": 0.0, "pctH": 65.4, "pctM": 34.6, "brecha": 30.8}}}, {"name": "Espec. Gestión Pública", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 23, "adm": 21, "mat": 11, "grad": 0, "tabs": 52.4, "tsel": 91.3, "tgrad": 0.0, "pctH": 36.4, "pctM": 63.6, "brecha": -27.2}}}, {"name": "Espec. Marketing Digital", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 34, "adm": 33, "mat": 30, "grad": 0, "tabs": 90.9, "tsel": 97.1, "tgrad": 0.0, "pctH": 43.3, "pctM": 56.7, "brecha": -13.4}}}, {"name": "Espec. Agronegocios Sostenibles", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 14, "adm": 11, "mat": 10, "grad": 0, "tabs": 90.9, "tsel": 78.6, "tgrad": 0.0, "pctH": 60.0, "pctM": 40.0, "brecha": 20.0}}}], "genero": [{"COD_SNIES": 4266, "PROG_CORTO": "Espec. Educación Ambiental y Desarrollo Comunidad", "NIVEL_CORTO": "Especialización", "2020_Hombre": 39, "2020_Mujer": 41, "2021_Hombre": 27, "2021_Mujer": 26, "2022_Hombre": 17, "2022_Mujer": 30, "2023_Hombre": 11, "2023_Mujer": 21, "2024_Hombre": 10, "2024_Mujer": 6}, {"COD_SNIES": 9949, "PROG_CORTO": "Espec. Gerencia para el Desarrollo Organizacional", "NIVEL_CORTO": "Especialización", "2020_Hombre": 30, "2020_Mujer": 69, "2021_Hombre": 60, "2021_Mujer": 70, "2022_Hombre": 69, "2022_Mujer": 103, "2023_Hombre": 83, "2023_Mujer": 104, "2024_Hombre": 55, "2024_Mujer": 74}, {"COD_SNIES": 11324, "PROG_CORTO": "Espec. Procesos Pedagógicos Entrenamiento Deportivo", "NIVEL_CORTO": "Especialización", "2020_Hombre": 40, "2020_Mujer": 5, "2021_Hombre": 26, "2021_Mujer": 4, "2022_Hombre": 7, "2022_Mujer": 3, "2023_Hombre": 18, "2023_Mujer": 5, "2024_Hombre": 7, "2024_Mujer": 1}, {"COD_SNIES": 104239, "PROG_CORTO": "Espec. Negocios y Comercio Electrónico", "NIVEL_CORTO": "Especialización", "2020_Hombre": 18, "2020_Mujer": 7, "2021_Hombre": 11, "2021_Mujer": 13, "2022_Hombre": 11, "2022_Mujer": 6, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 0, "2024_Mujer": 0}, {"COD_SNIES": 104968, "PROG_CORTO": "Maestría en Educación", "NIVEL_CORTO": "Maestría", "2020_Hombre": 73, "2020_Mujer": 72, "2021_Hombre": 66, "2021_Mujer": 51, "2022_Hombre": 64, "2022_Mujer": 37, "2023_Hombre": 46, "2023_Mujer": 19, "2024_Hombre": 6, "2024_Mujer": 6}, {"COD_SNIES": 105093, "PROG_CORTO": "Maestría en Ciencias Ambientales", "NIVEL_CORTO": "Maestría", "2020_Hombre": 23, "2020_Mujer": 16, "2021_Hombre": 17, "2021_Mujer": 10, "2022_Hombre": 26, "2022_Mujer": 18, "2023_Hombre": 23, "2023_Mujer": 14, "2024_Hombre": 6, "2024_Mujer": 8}, {"COD_SNIES": 105401, "PROG_CORTO": "Espec. Gestión de Sistemas de Información Gerencial", "NIVEL_CORTO": "Especialización", "2020_Hombre": 58, "2020_Mujer": 55, "2021_Hombre": 44, "2021_Mujer": 41, "2022_Hombre": 61, "2022_Mujer": 48, "2023_Hombre": 98, "2023_Mujer": 63, "2024_Hombre": 48, "2024_Mujer": 36}, {"COD_SNIES": 110008, "PROG_CORTO": "Doctorado en Ciencias de la Educación", "NIVEL_CORTO": "Doctorado", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 7, "2022_Mujer": 7, "2023_Hombre": 16, "2023_Mujer": 12, "2024_Hombre": 22, "2024_Mujer": 15}, {"COD_SNIES": 115949, "PROG_CORTO": "Espec. Gerencia para la Transformación Digital", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 34, "2024_Mujer": 18}, {"COD_SNIES": 116475, "PROG_CORTO": "Espec. Gestión Pública", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 4, "2024_Mujer": 7}, {"COD_SNIES": 116654, "PROG_CORTO": "Espec. Marketing Digital", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 13, "2024_Mujer": 17}, {"COD_SNIES": 116771, "PROG_CORTO": "Espec. Agronegocios Sostenibles", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 6, "2024_Mujer": 4}]};
-var _snFac = 'TODAS', _snProg = null;
+Object.defineProperty(window,'SD',{get:function(){return window.AppState.snies.SD;},set:function(v){window.AppState.snies.SD=v;},configurable:true});
+AppState.snies.SD = {"resumen": [{"AÑO_ARCHIVO": 2020, "INSCRITOS": 319, "ADMITIDOS": 277, "PRIMER_CURSO": 305, "MATRICULADOS": 546, "GRADUADOS": 303, "Hombre": 592.0, "Mujer": 700.0, "T_ABSORCION": 197.1, "T_SELECTIVIDAD": 86.8, "T_GRADUACION": 55.5, "T_PRIMER_CURSO": 55.9, "PCT_H": 45.8, "PCT_M": 54.2}, {"AÑO_ARCHIVO": 2021, "INSCRITOS": 594, "ADMITIDOS": 419, "PRIMER_CURSO": 316, "MATRICULADOS": 466, "GRADUADOS": 296, "Hombre": 637.0, "Mujer": 602.0, "T_ABSORCION": 111.2, "T_SELECTIVIDAD": 70.5, "T_GRADUACION": 63.5, "T_PRIMER_CURSO": 67.8, "PCT_H": 51.4, "PCT_M": 48.6}, {"AÑO_ARCHIVO": 2022, "INSCRITOS": 473, "ADMITIDOS": 425, "PRIMER_CURSO": 317, "MATRICULADOS": 514, "GRADUADOS": 301, "Hombre": 643.0, "Mujer": 764.0, "T_ABSORCION": 120.9, "T_SELECTIVIDAD": 89.9, "T_GRADUACION": 58.6, "T_PRIMER_CURSO": 61.7, "PCT_H": 45.7, "PCT_M": 54.3}, {"AÑO_ARCHIVO": 2023, "INSCRITOS": 424, "ADMITIDOS": 398, "PRIMER_CURSO": 328, "MATRICULADOS": 533, "GRADUADOS": 324, "Hombre": 702.0, "Mujer": 699.0, "T_ABSORCION": 133.9, "T_SELECTIVIDAD": 93.9, "T_GRADUACION": 60.8, "T_PRIMER_CURSO": 61.5, "PCT_H": 50.1, "PCT_M": 49.9}, {"AÑO_ARCHIVO": 2024, "INSCRITOS": 460, "ADMITIDOS": 383, "PRIMER_CURSO": 289, "MATRICULADOS": 403, "GRADUADOS": 306, "Hombre": 454.0, "Mujer": 501.0, "T_ABSORCION": 105.2, "T_SELECTIVIDAD": 83.3, "T_GRADUACION": 75.9, "T_PRIMER_CURSO": 71.7, "PCT_H": 47.5, "PCT_M": 52.5}], "programs": [{"name": "Espec. Educación Ambiental y Desarrollo Comunidad", "nivel": "Especialización", "years": {"2020": {"ins": 61, "adm": 48, "mat": 80, "grad": 85, "tabs": 166.7, "tsel": 78.7, "tgrad": 106.2, "pctH": 48.8, "pctM": 51.2, "brecha": -2.4}, "2021": {"ins": 92, "adm": 65, "mat": 53, "grad": 66, "tabs": 81.5, "tsel": 70.7, "tgrad": 124.5, "pctH": 50.9, "pctM": 49.1, "brecha": 1.8}, "2022": {"ins": 34, "adm": 33, "mat": 47, "grad": 59, "tabs": 142.4, "tsel": 97.1, "tgrad": 125.5, "pctH": 36.2, "pctM": 63.8, "brecha": -27.6}, "2023": {"ins": 15, "adm": 15, "mat": 32, "grad": 19, "tabs": 213.3, "tsel": 100.0, "tgrad": 59.4, "pctH": 34.4, "pctM": 65.6, "brecha": -31.2}, "2024": {"ins": 12, "adm": 8, "mat": 16, "grad": 10, "tabs": 200.0, "tsel": 66.7, "tgrad": 62.5, "pctH": 62.5, "pctM": 37.5, "brecha": 25.0}}}, {"name": "Espec. Gerencia para el Desarrollo Organizacional", "nivel": "Especialización", "years": {"2020": {"ins": 71, "adm": 53, "mat": 99, "grad": 50, "tabs": 186.8, "tsel": 74.6, "tgrad": 50.5, "pctH": 30.3, "pctM": 69.7, "brecha": -39.4}, "2021": {"ins": 206, "adm": 137, "mat": 130, "grad": 45, "tabs": 94.9, "tsel": 66.5, "tgrad": 34.6, "pctH": 46.2, "pctM": 53.8, "brecha": -7.6}, "2022": {"ins": 187, "adm": 181, "mat": 172, "grad": 108, "tabs": 95.0, "tsel": 96.8, "tgrad": 62.8, "pctH": 40.1, "pctM": 59.9, "brecha": -19.8}, "2023": {"ins": 194, "adm": 185, "mat": 187, "grad": 170, "tabs": 101.1, "tsel": 95.4, "tgrad": 90.9, "pctH": 44.4, "pctM": 55.6, "brecha": -11.2}, "2024": {"ins": 174, "adm": 149, "mat": 129, "grad": 144, "tabs": 86.6, "tsel": 85.6, "tgrad": 111.6, "pctH": 42.6, "pctM": 57.4, "brecha": -14.8}}}, {"name": "Espec. Gestión de Sistemas de Información Gerencial", "nivel": "Especialización", "years": {"2020": {"ins": 74, "adm": 71, "mat": 113, "grad": 66, "tabs": 159.2, "tsel": 95.9, "tgrad": 58.4, "pctH": 51.3, "pctM": 48.7, "brecha": 2.6}, "2021": {"ins": 123, "adm": 91, "mat": 85, "grad": 93, "tabs": 93.4, "tsel": 74.0, "tgrad": 109.4, "pctH": 51.8, "pctM": 48.2, "brecha": 3.6}, "2022": {"ins": 112, "adm": 105, "mat": 109, "grad": 66, "tabs": 103.8, "tsel": 93.8, "tgrad": 60.6, "pctH": 56.0, "pctM": 44.0, "brecha": 12.0}, "2023": {"ins": 174, "adm": 164, "mat": 161, "grad": 101, "tabs": 98.2, "tsel": 94.3, "tgrad": 62.7, "pctH": 60.9, "pctM": 39.1, "brecha": 21.8}, "2024": {"ins": 85, "adm": 81, "mat": 84, "grad": 102, "tabs": 103.7, "tsel": 95.3, "tgrad": 121.4, "pctH": 57.1, "pctM": 42.9, "brecha": 14.2}}}, {"name": "Espec. Negocios y Comercio Electrónico", "nivel": "Especialización", "years": {"2020": {"ins": 25, "adm": 24, "mat": 25, "grad": 29, "tabs": 104.2, "tsel": 96.0, "tgrad": 116.0, "pctH": 72.0, "pctM": 28.0, "brecha": 44.0}, "2021": {"ins": 34, "adm": 27, "mat": 24, "grad": 21, "tabs": 88.9, "tsel": 79.4, "tgrad": 87.5, "pctH": 45.8, "pctM": 54.2, "brecha": -8.4}, "2022": {"ins": 20, "adm": 18, "mat": 17, "grad": 22, "tabs": 94.4, "tsel": 90.0, "tgrad": 129.4, "pctH": 64.7, "pctM": 35.3, "brecha": 29.4}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 14, "tabs": 0.0, "tsel": 0.0, "tgrad": 0.0, "pctH": 0.0, "pctM": 0.0, "brecha": 0.0}, "2024": {"ins": 0, "adm": 0, "mat": 0, "grad": 2, "tabs": 0.0, "tsel": 0.0, "tgrad": 0.0, "pctH": 0.0, "pctM": 0.0, "brecha": 0.0}}}, {"name": "Espec. Procesos Pedagógicos Entrenamiento Deportivo", "nivel": "Especialización", "years": {"2020": {"ins": 19, "adm": 14, "mat": 45, "grad": 43, "tabs": 321.4, "tsel": 73.7, "tgrad": 95.6, "pctH": 88.9, "pctM": 11.1, "brecha": 77.8}, "2021": {"ins": 38, "adm": 27, "mat": 30, "grad": 16, "tabs": 111.1, "tsel": 71.1, "tgrad": 53.3, "pctH": 86.7, "pctM": 13.3, "brecha": 73.4}, "2022": {"ins": 17, "adm": 0, "mat": 10, "grad": 22, "tabs": 0.0, "tsel": 0.0, "tgrad": 220.0, "pctH": 70.0, "pctM": 30.0, "brecha": 40.0}, "2023": {"ins": 26, "adm": 23, "mat": 23, "grad": 0, "tabs": 100.0, "tsel": 88.5, "tgrad": 0.0, "pctH": 78.3, "pctM": 21.7, "brecha": 56.6}, "2024": {"ins": 8, "adm": 1, "mat": 8, "grad": 17, "tabs": 800.0, "tsel": 12.5, "tgrad": 212.5, "pctH": 87.5, "pctM": 12.5, "brecha": 75.0}}}, {"name": "Maestría en Ciencias Ambientales", "nivel": "Maestría", "years": {"2020": {"ins": 13, "adm": 11, "mat": 39, "grad": 8, "tabs": 354.5, "tsel": 84.6, "tgrad": 20.5, "pctH": 59.0, "pctM": 41.0, "brecha": 18.0}, "2021": {"ins": 31, "adm": 24, "mat": 27, "grad": 18, "tabs": 112.5, "tsel": 77.4, "tgrad": 66.7, "pctH": 63.0, "pctM": 37.0, "brecha": 26.0}, "2022": {"ins": 43, "adm": 43, "mat": 44, "grad": 10, "tabs": 102.3, "tsel": 100.0, "tgrad": 22.7, "pctH": 59.1, "pctM": 40.9, "brecha": 18.2}, "2023": {"ins": 0, "adm": 0, "mat": 37, "grad": 5, "tabs": 0.0, "tsel": 0.0, "tgrad": 13.5, "pctH": 62.2, "pctM": 37.8, "brecha": 24.4}, "2024": {"ins": 0, "adm": 0, "mat": 14, "grad": 5, "tabs": 0.0, "tsel": 0.0, "tgrad": 35.7, "pctH": 42.9, "pctM": 57.1, "brecha": -14.2}}}, {"name": "Maestría en Educación", "nivel": "Maestría", "years": {"2020": {"ins": 56, "adm": 56, "mat": 145, "grad": 21, "tabs": 258.9, "tsel": 100.0, "tgrad": 14.5, "pctH": 50.3, "pctM": 49.7, "brecha": 0.6}, "2021": {"ins": 70, "adm": 48, "mat": 117, "grad": 37, "tabs": 243.8, "tsel": 68.6, "tgrad": 31.6, "pctH": 56.4, "pctM": 43.6, "brecha": 12.8}, "2022": {"ins": 45, "adm": 33, "mat": 101, "grad": 13, "tabs": 306.1, "tsel": 73.3, "tgrad": 12.9, "pctH": 63.4, "pctM": 36.6, "brecha": 26.8}, "2023": {"ins": 0, "adm": 0, "mat": 65, "grad": 15, "tabs": 0.0, "tsel": 0.0, "tgrad": 23.1, "pctH": 70.8, "pctM": 29.2, "brecha": 41.6}, "2024": {"ins": 0, "adm": 0, "mat": 12, "grad": 26, "tabs": 0.0, "tsel": 0.0, "tgrad": 216.7, "pctH": 50.0, "pctM": 50.0, "brecha": 0.0}}}, {"name": "Doctorado en Ciencias de la Educación", "nivel": "Doctorado", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 15, "adm": 12, "mat": 14, "grad": 0, "tabs": 116.7, "tsel": 80.0, "tgrad": 0.0, "pctH": 50.0, "pctM": 50.0, "brecha": 0.0}, "2023": {"ins": 15, "adm": 11, "mat": 28, "grad": 0, "tabs": 254.5, "tsel": 73.3, "tgrad": 0.0, "pctH": 57.1, "pctM": 42.9, "brecha": 14.2}, "2024": {"ins": 15, "adm": 13, "mat": 37, "grad": 0, "tabs": 284.6, "tsel": 86.7, "tgrad": 0.0, "pctH": 59.5, "pctM": 40.5, "brecha": 19.0}}}, {"name": "Espec. Gerencia para la Transformación Digital", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 68, "adm": 60, "mat": 52, "grad": 0, "tabs": 86.7, "tsel": 88.2, "tgrad": 0.0, "pctH": 65.4, "pctM": 34.6, "brecha": 30.8}}}, {"name": "Espec. Gestión Pública", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 23, "adm": 21, "mat": 11, "grad": 0, "tabs": 52.4, "tsel": 91.3, "tgrad": 0.0, "pctH": 36.4, "pctM": 63.6, "brecha": -27.2}}}, {"name": "Espec. Marketing Digital", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 34, "adm": 33, "mat": 30, "grad": 0, "tabs": 90.9, "tsel": 97.1, "tgrad": 0.0, "pctH": 43.3, "pctM": 56.7, "brecha": -13.4}}}, {"name": "Espec. Agronegocios Sostenibles", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 14, "adm": 11, "mat": 10, "grad": 0, "tabs": 90.9, "tsel": 78.6, "tgrad": 0.0, "pctH": 60.0, "pctM": 40.0, "brecha": 20.0}}}], "genero": [{"COD_SNIES": 4266, "PROG_CORTO": "Espec. Educación Ambiental y Desarrollo Comunidad", "NIVEL_CORTO": "Especialización", "2020_Hombre": 39, "2020_Mujer": 41, "2021_Hombre": 27, "2021_Mujer": 26, "2022_Hombre": 17, "2022_Mujer": 30, "2023_Hombre": 11, "2023_Mujer": 21, "2024_Hombre": 10, "2024_Mujer": 6}, {"COD_SNIES": 9949, "PROG_CORTO": "Espec. Gerencia para el Desarrollo Organizacional", "NIVEL_CORTO": "Especialización", "2020_Hombre": 30, "2020_Mujer": 69, "2021_Hombre": 60, "2021_Mujer": 70, "2022_Hombre": 69, "2022_Mujer": 103, "2023_Hombre": 83, "2023_Mujer": 104, "2024_Hombre": 55, "2024_Mujer": 74}, {"COD_SNIES": 11324, "PROG_CORTO": "Espec. Procesos Pedagógicos Entrenamiento Deportivo", "NIVEL_CORTO": "Especialización", "2020_Hombre": 40, "2020_Mujer": 5, "2021_Hombre": 26, "2021_Mujer": 4, "2022_Hombre": 7, "2022_Mujer": 3, "2023_Hombre": 18, "2023_Mujer": 5, "2024_Hombre": 7, "2024_Mujer": 1}, {"COD_SNIES": 104239, "PROG_CORTO": "Espec. Negocios y Comercio Electrónico", "NIVEL_CORTO": "Especialización", "2020_Hombre": 18, "2020_Mujer": 7, "2021_Hombre": 11, "2021_Mujer": 13, "2022_Hombre": 11, "2022_Mujer": 6, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 0, "2024_Mujer": 0}, {"COD_SNIES": 104968, "PROG_CORTO": "Maestría en Educación", "NIVEL_CORTO": "Maestría", "2020_Hombre": 73, "2020_Mujer": 72, "2021_Hombre": 66, "2021_Mujer": 51, "2022_Hombre": 64, "2022_Mujer": 37, "2023_Hombre": 46, "2023_Mujer": 19, "2024_Hombre": 6, "2024_Mujer": 6}, {"COD_SNIES": 105093, "PROG_CORTO": "Maestría en Ciencias Ambientales", "NIVEL_CORTO": "Maestría", "2020_Hombre": 23, "2020_Mujer": 16, "2021_Hombre": 17, "2021_Mujer": 10, "2022_Hombre": 26, "2022_Mujer": 18, "2023_Hombre": 23, "2023_Mujer": 14, "2024_Hombre": 6, "2024_Mujer": 8}, {"COD_SNIES": 105401, "PROG_CORTO": "Espec. Gestión de Sistemas de Información Gerencial", "NIVEL_CORTO": "Especialización", "2020_Hombre": 58, "2020_Mujer": 55, "2021_Hombre": 44, "2021_Mujer": 41, "2022_Hombre": 61, "2022_Mujer": 48, "2023_Hombre": 98, "2023_Mujer": 63, "2024_Hombre": 48, "2024_Mujer": 36}, {"COD_SNIES": 110008, "PROG_CORTO": "Doctorado en Ciencias de la Educación", "NIVEL_CORTO": "Doctorado", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 7, "2022_Mujer": 7, "2023_Hombre": 16, "2023_Mujer": 12, "2024_Hombre": 22, "2024_Mujer": 15}, {"COD_SNIES": 115949, "PROG_CORTO": "Espec. Gerencia para la Transformación Digital", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 34, "2024_Mujer": 18}, {"COD_SNIES": 116475, "PROG_CORTO": "Espec. Gestión Pública", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 4, "2024_Mujer": 7}, {"COD_SNIES": 116654, "PROG_CORTO": "Espec. Marketing Digital", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 13, "2024_Mujer": 17}, {"COD_SNIES": 116771, "PROG_CORTO": "Espec. Agronegocios Sostenibles", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 6, "2024_Mujer": 4}]};
+Object.defineProperty(window,'_snFac',{get:function(){return window.AppState.snies.fac;},set:function(v){window.AppState.snies.fac=v;},configurable:true});
+Object.defineProperty(window,'_snProg',{get:function(){return window.AppState.snies.prog;},set:function(v){window.AppState.snies.prog=v;},configurable:true});
 
 function renderSNIES(){
   var wrap=document.getElementById('snies-content');
@@ -1255,8 +616,8 @@ function renderSNIES(){
   if(!_snProg||!progs.find(function(p){return p.name===_snProg;})) _snProg=progs.length?progs[0].name:null;
   var prog=_snProg?SD.programs.find(function(p){return p.name===_snProg;}):null;
   var fc=_snFac==='TODAS'?'#006633':(FAC_COL[_snFac]||'#006633');
-  var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-fac="'+f.replace(/"/g,'&quot;')+'" onclick="snSetFac(this.dataset.fac)" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
-  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-prog="'+p.name.replace(/"/g,'&quot;')+'" onclick="snSetProg(this.dataset.prog)" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
+  var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+f.replace(/"/g,'&quot;')+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
+  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Análisis SNIES · Posgrados 2020–2024</div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:10px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
@@ -1303,12 +664,7 @@ function renderSNIES(){
 }
 function snSetFac(f){_snFac=f;_snProg=null;renderSNIES();}
 function snSetProg(p){_snProg=p;renderSNIES();}
-function exportSNIES(){
-  var rows=[['Programa','Nivel','Año','Inscritos','Admitidos','Matriculados','Graduados','T.Absorcion','T.Selectividad','T.Graduacion','%H','%M']];
-  SD.programs.forEach(function(p){[2020,2021,2022,2023,2024].forEach(function(y){var d=p.years[String(y)];rows.push([p.name,p.nivel,y,d.ins,d.adm,d.mat,d.grad,d.tabs,d.tsel,d.tgrad,d.pctH,d.pctM]);});});
-  var csv='\ufeff'+rows.map(function(r){return r.map(function(v){var s=String(v==null?'':v);return s.includes(',')? '"'+s+'"':s;}).join(',');}).join('\n');
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='SNIES_UDEC.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
-}
+// exportSNIES extraído a assets/js/modules/export.js (Fase 2)
 
 // ===== PIPELINE =====
 function renderPipeline(){
@@ -1404,7 +760,7 @@ function renderPipeline(){
   function sec(ic,titulo,sub,items,col,bg){
     var id='sec'+(secIdx++);
     return '<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:.75rem">'
-      +'<div style="background:'+bg+';padding:13px 16px;border-bottom:2px solid '+col+';display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-sec-id="'+id+'" onclick="toggleSec(this.dataset.secId)">'
+      +'<div style="background:'+bg+';padding:13px 16px;border-bottom:2px solid '+col+';display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="'+id+'"'
         +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">'+ic+'</div>'
         +'<div><div style="font-size:13px;font-weight:700;color:'+col+'">'+titulo+'</div><div style="font-size:10px;color:#666;margin-top:1px">'+sub+'</div></div></div>'
         +'<div style="display:flex;align-items:center;gap:10px"><span style="background:'+col+';color:#fff;border-radius:20px;padding:3px 14px;font-size:13px;font-weight:700">'+items.length+'</span><span id="icon-'+id+'" style="color:'+col+';font-size:16px;font-weight:700">▼</span></div>'
@@ -1424,7 +780,7 @@ function renderPipeline(){
   +'</div>';
   // Timeline
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
-    +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-sec-id="timeline" onclick="toggleSec(this.dataset.secId)">'
+    +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="timeline"'
       +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">📅</span><div><div style="font-size:13px;font-weight:700;color:#fff">Cronograma por trimestre</div><div style="font-size:10px;color:rgba(200,164,58,.8)">Programas en desarrollo con fecha asignada · '+conFecha.length+' programas</div></div></div>'
       +'<span id="icon-timeline" style="color:#C8A43A;font-size:16px;font-weight:700">▼</span>'
     +'</div>'
@@ -1447,9 +803,9 @@ function toggleSec(id){var el=document.getElementById(id),ic=document.getElement
 function renderEditor(){
   var f=DB[curFac];
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
-  var facBtns=DB.map(function(fac,i){var a=i===curFac;return '<button onclick="selFac('+i+')" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
+  var facBtns=DB.map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   var h='<div style="padding:1rem">';
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" onclick="openNewProg()">+ Nuevo programa</button><button onclick="openEditFac()">✎ Editar facultad</button><button onclick="openNewFac()">+ Nueva facultad</button></div></div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button></div></div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Selecciona la facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
   h+='<div style="background:#006633;border-radius:10px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12px;font-weight:700;color:#fff">'+f.name+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">'+f.progs.length+' programa(s)</div></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:1.5rem">';
@@ -1470,13 +826,13 @@ function renderEditor(){
           +(p.lineas.length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+(p.lineas.length-3)+' más...</div>':'')
           +p.mae.slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.n+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
         +'</div>'
-        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" onclick="openEditProg(this.dataset.pid)" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">✎ Editar programa</button><button data-pid="'+p.id+'" onclick="deleteProg(this.dataset.pid)" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">🗑</button></div>'
+        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">✎ Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">🗑</button></div>'
       +'</div></div>';
   });
   h+='</div>';
   // Doctorado colapsable
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
-    +'<div style="background:#0d3d22;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleDocForm()">'
+    +'<div style="background:#0d3d22;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-doc-form">'
       +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px">🏆</span><div><div style="font-size:12px;font-weight:700;color:#fff">Doctorado de la facultad</div><div style="font-size:10px;color:rgba(200,164,58,.8);margin-top:1px">'+(f.doc?f.doc.n:'Sin doctorado — haz clic para agregar')+'</div></div></div>'
       +'<span id="doc-toggle-icon" style="color:#C8A43A;font-size:18px;font-weight:700">▼</span>'
     +'</div>'
@@ -1484,7 +840,7 @@ function renderEditor(){
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Nombre del doctorado</label><input id="doc-name" value="'+(f.doc?f.doc.n:'')+'" placeholder="Nombre del doctorado"></div><div class="field"><label>Estado actual</label><input id="doc-estado" value="'+(f.doc?f.doc.e:'')+'" placeholder="Ej: En construcción"></div></div>'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>👤 Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>📅 Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>📅 Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
-      +'<button class="btn-green" onclick="saveDoc()">💾 Guardar doctorado</button>'
+      +'<button class="btn-green" data-action="save-doc">💾 Guardar doctorado</button>'
     +'</div>'
   +'</div>';
   h+='</div>';
@@ -1508,11 +864,11 @@ function deleteFac(){
   });
 }
 function openNewFac(){
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" onclick="saveFac(true)">💾 Crear facultad</button><button onclick="cancelEdit()">Cancelar</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">💾 Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
 }
 function openEditFac(){
   var f=DB[curFac];
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+f.name+'"></div></div><div class="modal-actions"><button class="btn-green" onclick="saveFac(false)">💾 Guardar</button><button onclick="cancelEdit()">Cancelar</button><button class="btn-red" onclick="deleteFac()">🗑 Eliminar facultad</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+f.name+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
 }
 function saveFac(isNew){
   var n=document.getElementById('fac-name').value.trim();
