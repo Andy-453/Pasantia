@@ -87,9 +87,9 @@ window.App = {
 };
 
 // ===== EVENT DELEGATION — Piloto Fase 3 =====
-// Reemplazo progresivo de onclick inline por data-action + dispatcher centralizado.
-// Compatibilidad legacy: onclick coexistente (llamada doble es idempotente).
-// TODO [MVC]: migrar más acciones y eliminar onclick cuando event delegation cubra todo.
+// Dispatcher centralizado: onclick removido de elementos con data-action.
+// onclick se conserva en elementos sin data-action (descargas, SNIES, etc.).
+// TODO [MVC]: migrar más acciones a data-action.
 var __ACTIONS = {
   'show-tab': function(b){ showTab(b.dataset.tab); },
   'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); },

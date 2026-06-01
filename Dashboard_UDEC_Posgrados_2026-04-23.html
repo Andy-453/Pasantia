@@ -23,7 +23,7 @@
     <h1>Rutas de Formación Académica</h1>
     <p>Oferta vigente y proyectada · Líneas de profundización · Especializaciones · Maestrías · Doctorados</p>
     <div class="header-btns no-print" style="margin-top:6px">
-      <button class="btn-white" data-action="show-tab" data-tab="editor" onclick="showTab('editor')">✎ Editar / Agregar datos</button>
+      <button class="btn-white" data-action="show-tab" data-tab="editor">✎ Editar / Agregar datos</button>
       <button class="btn-white" onclick="downloadDB()" title="Descarga la base de datos en CSV">⬇ Descargar CSV</button>
       <button class="btn-gold" onclick="downloadHTML()" title="Descarga el dashboard completo con todos los datos actuales guardados dentro">💾 Guardar dashboard</button>
       <button class="btn-white" onclick="window.print()">🖨 PDF</button>
@@ -43,7 +43,7 @@
 
 <div id="toast" class="toast" style="display: none;">Programa guardado</div>
 
-<div class="fac-bar no-print" id="facbar"><button class="fac-btn act" data-action="sel-fac" data-fac="0" onclick="selFac(0)">Ciencias Admin., Económicas y Contables</button><button class="fac-btn" data-action="sel-fac" data-fac="1" onclick="selFac(1)">Ingeniería</button><button class="fac-btn" data-action="sel-fac" data-fac="2" onclick="selFac(2)">Ciencias Agropecuarias</button><button class="fac-btn" data-action="sel-fac" data-fac="3" onclick="selFac(3)">Ciencias de la Salud</button><button class="fac-btn" data-action="sel-fac" data-fac="4" onclick="selFac(4)">Ciencias del Deporte y Ed. Física</button><button class="fac-btn" data-action="sel-fac" data-fac="5" onclick="selFac(5)">Educación</button><button class="fac-btn" data-action="sel-fac" data-fac="6" onclick="selFac(6)">Ciencias Sociales, Humanidades y Políticas</button></div>
+<div class="fac-bar no-print" id="facbar"><button class="fac-btn act" data-action="sel-fac" data-fac="0">Ciencias Admin., Económicas y Contables</button><button class="fac-btn" data-action="sel-fac" data-fac="1">Ingeniería</button><button class="fac-btn" data-action="sel-fac" data-fac="2">Ciencias Agropecuarias</button><button class="fac-btn" data-action="sel-fac" data-fac="3">Ciencias de la Salud</button><button class="fac-btn" data-action="sel-fac" data-fac="4">Ciencias del Deporte y Ed. Física</button><button class="fac-btn" data-action="sel-fac" data-fac="5">Educación</button><button class="fac-btn" data-action="sel-fac" data-fac="6">Ciencias Sociales, Humanidades y Políticas</button></div>
 
 <div class="filters no-print">
   <div class="fgroup"><label>Sede / Municipio</label><select id="filt-sede" onchange="applyFilters()"><option value="ALL">Todas las sedes</option><option value="Chía">Chía</option><option value="Facatativá">Facatativá</option><option value="Fusagasugá">Fusagasugá</option><option value="Girardot">Girardot</option><option value="Soacha">Soacha</option><option value="Ubate">Ubate</option></select></div>
@@ -73,7 +73,7 @@
       <option value="doc">Doctorado</option>
     </select>
   </div>
-  <div class="fgroup"><button class="btn-reset" data-action="reset-filters" onclick="resetFilters()">Limpiar</button></div>
+  <div class="fgroup"><button class="btn-reset" data-action="reset-filters">Limpiar</button></div>
 </div>
 
 <div class="legend">
@@ -97,19 +97,19 @@
     <div class="kpi" style="background:#FCEBEB;border-color:#F09595"><div class="kpi-v" style="color:#A32D2D">0</div><div class="kpi-l">Negados MEN</div></div></div>
 
 <div class="tab-bar no-print">
-  <button class="tb" data-action="show-tab" data-tab="arbol" onclick="showTab('arbol')" id="tb-arbol">
+  <button class="tb" data-action="show-tab" data-tab="arbol" id="tb-arbol">
     <div class="tb-icon">🌳</div>
     <div class="tb-info"><span class="tb-label">Diagrama árbol</span><span class="tb-desc">Ruta por facultad</span></div>
   </button>
-  <button class="tb" data-action="show-tab" data-tab="tabla" onclick="showTab('tabla')" id="tb-tabla">
+  <button class="tb" data-action="show-tab" data-tab="tabla" id="tb-tabla">
     <div class="tb-icon">📋</div>
     <div class="tb-info"><span class="tb-label">Tabla</span><span class="tb-desc">Listado completo</span></div>
   </button>
-  <button class="tb" data-action="show-tab" data-tab="sede" onclick="showTab('sede')" id="tb-sede">
+  <button class="tb" data-action="show-tab" data-tab="sede" id="tb-sede">
     <div class="tb-icon">📍</div>
     <div class="tb-info"><span class="tb-label">Por sede</span><span class="tb-desc">Distribución regional</span></div>
   </button>
-  <button class="tb" data-action="show-tab" data-tab="indicadores" onclick="showTab('indicadores')" id="tb-indicadores">
+  <button class="tb" data-action="show-tab" data-tab="indicadores" id="tb-indicadores">
     <div class="tb-icon">📊</div>
     <div class="tb-info"><span class="tb-label">Indicadores</span><span class="tb-desc">Métricas y avance</span></div>
   </button>
@@ -117,11 +117,11 @@
     <div class="tb-icon">📈</div>
     <div class="tb-info"><span class="tb-label">SNIES 2020–2024</span><span class="tb-desc">Histórico oficial</span></div>
   </button>
-  <button class="tb act" data-action="show-tab" data-tab="pipeline" onclick="showTab('pipeline')" id="tb-pipeline">
+  <button class="tb act" data-action="show-tab" data-tab="pipeline" id="tb-pipeline">
     <div class="tb-icon">🚧</div>
     <div class="tb-info"><span class="tb-label">En desarrollo</span><span class="tb-desc">Programas en proceso</span></div>
   </button>
-  <button class="tb" data-action="show-tab" data-tab="editor" onclick="showTab('editor')" id="tb-editor">
+  <button class="tb" data-action="show-tab" data-tab="editor" id="tb-editor">
     <div class="tb-icon">✎</div>
     <div class="tb-info"><span class="tb-label">Editor de datos</span><span class="tb-desc">Agregar · editar</span></div>
   </button>

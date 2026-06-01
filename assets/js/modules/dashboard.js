@@ -24,7 +24,7 @@
  */
 function renderFacBar(){
   document.getElementById('facbar').innerHTML=DB.map(function(f,i){
-    return '<button class="fac-btn'+(i===curFac?' act':'')+'" data-action="sel-fac" data-fac="'+i+'" onclick="selFac('+i+')">'+f.name.replace('Facultad de ','').replace('Facultad ','')+'</button>';
+    return '<button class="fac-btn'+(i===curFac?' act':'')+'" data-action="sel-fac" data-fac="'+i+'">'+f.name.replace('Facultad de ','').replace('Facultad ','')+'</button>';
   }).join('');
 }
 

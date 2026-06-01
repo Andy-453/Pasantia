@@ -16,7 +16,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 879 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 836 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -345,7 +345,7 @@ window.AppState = {
 - [ ] Extraer lógica CRUD de editor → `Controller.Editor`
 - [ ] Extraer lógica de filtros → `Controller.Filters`
 - [ ] Extraer lógica de navegación → `Controller.Navigation`
-- [ ] Eliminar handlers inline (`onclick`) reemplazando por event delegation
+- [x] Eliminar handlers inline (`onclick`) reemplazando por event delegation (show-tab, sel-fac, reset-filters)
 
 ### Fase 4: Desacoplamiento render
 - [ ] Reemplazar ciclo `applyFilters → renderViews → renderKPIs` por event emitter
@@ -711,28 +711,28 @@ document.addEventListener('click', function(e){
 });
 ```
 
-### 14.2. Handlers migrados en el piloto
+### 14.2. Handlers migrados
 
 | data-action | data-* | Handler | Riesgo |
 |---|---|---|---|
-| `show-tab` | `data-tab="arbol\|tabla\|sede\|..."` | `showTab(id)` | Bajo — idempotente |
-| `sel-fac` | `data-fac="0\|1\|2\|..."` | `selFac(i)` | Bajo — idempotente |
-| `reset-filters` | — | `resetFilters()` | Bajo — idempotente |
+| `show-tab` | `data-tab="arbol\|tabla\|sede\|..."` | `showTab(id)` | Bajo |
+| `sel-fac` | `data-fac="0\|1\|2\|..."` | `selFac(i)` | Bajo |
+| `reset-filters` | — | `resetFilters()` | Bajo |
 
 ### 14.3. Elementos con data-action (origen)
 
 | Origen | Tipo | Acción |
 |---|---|---|
-| HTML estático (Dashboard_*.html) | 7 tabs + 7 fac-buttons + reset + header | data-action + onclick coexistente |
-| `renderFacBar()` (dashboard.js) | N fac-buttons (dinámicos) | data-action + onclick coexistente |
+| HTML estático (Dashboard_*.html) | 7 tabs + 7 fac-buttons + reset + header | data-action (onclick removido) |
+| `renderFacBar()` (dashboard.js) | N fac-buttons (dinámicos) | data-action (onclick removido) |
 
-### 14.4. Estrategia de coexistencia
+### 14.4. Estrategia de migración
 
-Cada elemento migrado mantiene su `onclick` original junto con `data-action`. Como `showTab`, `selFac` y `resetFilters` son **idempotentes**, la doble invocación no produce efectos secundarios. Esto permite:
+Se removió `onclick` de todos los elementos con `data-action`. Esto elimina la doble ejecución y sus efectos secundarios (error Chart.js en SNIES, render duplicado). La transición es segura porque:
 
-1. **Transición segura**: si el dispatcher falla, el onclick legacy sigue funcionando.
-2. **Rollback inmediato**: basta quitar el `data-action`.
-3. **Validación progresiva**: se puede monitorear qué mecanismo se activa.
+1. **El dispatcher es el único canal**: no hay riesgo de doble invocación.
+2. **Las funciones globales persisten**: `showTab`, `selFac`, `resetFilters` siguen en `window` para onclick no migrados.
+3. **Rollback inmediato**: restaurar onclick en elementos selectivos si se detecta regresión.
 
 ### 14.5. Handlers NO migrados (pendientes)
 
@@ -757,11 +757,11 @@ Cada elemento migrado mantiene su `onclick` original junto con `data-action`. Co
 
 ### 14.6. Próximos pasos para event delegation completo
 
-1. **Migrar onchange de filtros**: los 5 `<select onchange="applyFilters()">` se pueden migrar a data-action + listener de change.
+1. **Migrar onchange de filtros**: los 5 `<select onchange="applyFilters()">` a data-action + listener change.
 2. **Migrar renderTree**: reemplazar `onclick="openEditProg(...)"` en templates dinámicos.
-3. **Migrar editor**: migrar ~15 handlers en renderProgForm y renderEditor.
+3. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
 4. **Migrar pipeline**: `toggleSec` ya tiene `data-sec-id` — estandarizar a data-action.
-5. **Eliminar onclick legacy**: solo cuando todos los handlers estén migrados.
+5. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (el único tab sin data-action).
 
 ### 14.7. Bloqueadores para migración completa
 
