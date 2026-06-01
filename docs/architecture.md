@@ -1,0 +1,499 @@
+# Análisis Arquitectónico — Dashboard UDEC Posgrados
+
+## 1. Resumen del sistema
+
+Aplicación web monolítica embebida (single-file HTML + JS modularizado) para la gestión y visualización de la oferta de posgrados de la Universidad de Cundinamarca. Opera completamente en el cliente (navegador) con persistencia en localStorage y exportación a CSV/HTML.
+
+### Stack técnico
+- Sin framework — JavaScript plano (ES5/ES6 híbrido)
+- Chart.js 4.4.1 (CDN) para gráficos SNIES
+- SVG inline para gráficos de indicadores
+- localStorage para persistencia
+- Single-file HTML con datos embebidos (DEFAULT_DATA en HTML serializado)
+
+### Archivos del proyecto
+
+| Archivo | Líneas | Rol |
+|---|---|---|
+| `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
+| `assets/js/app.js` | 879 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
+| `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
+| `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
+| `assets/js/modules/dashboard.js` | 65 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
+| `assets/js/modules/indicators.js` | 435 | Panel de indicadores (renderIndicadores, helpers SVG) |
+| `assets/js/modules/export.js` | 278 | Exportaciones (downloadDB, exportSNIES, mapas SNIES) |
+
+**Total: ~1765 líneas JS, 6 módulos extraídos + 1 orquestador legacy**
+
+### Orden de carga
+```
+Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
+→ indicators.js → export.js → app.js
+```
+
+---
+
+## 2. Mapa de estado global actual
+
+### 2.1. Variables globales (`var` en ventana global)
+
+| Variable | Tipo | Define en | Modificado por | Consumido por | Acoplamiento | Riesgo |
+|---|---|---|---|---|---|---|
+| `DB` | `Array` | app.js:30 | storage.js (loadDB), app.js (editor CRUD), dashboard.js (selFac) | TODOS los módulos | **CRÍTICO** — 15+ consumidores | ALTO |
+| `DEFAULT_DATA` | `Array` | app.js:27 (inline en HTML) | downloadHTML (reescritura en descarga) | storage.js (loadDB) | BAJO | BAJO |
+| `ALL_SEDES` | `Array` | app.js:29 | Nunca | filters.js (populateSedes) | BAJO | BAJO |
+| `curFac` | `Number` | app.js:31 | dashboard.js (selFac), app.js (deleteFac, saveFac, saveNewFac) | filters.js, dashboard.js, app.js (tree, tabla, editor, pipeline) | **ALTO** — 10+ referencias | ALTO |
+| `filtSede` | `String` | app.js:31 | filters.js (applyFilters, resetFilters, populateSedes) | filters.js (sedeMatch), app.js (tree vía itemMatch) | MEDIO | MEDIO |
+| `filtOferta` | `String` | app.js:31 | filters.js (applyFilters, resetFilters) | filters.js (ofertaMatch) | BAJO | BAJO |
+| `filtEstado` | `String` | app.js:31 | filters.js (applyFilters, resetFilters) | filters.js (estadoMatch) | BAJO | BAJO |
+| `filtNivel` | `String` | app.js:31 | filters.js (applyFilters, resetFilters) | filters.js (nivelMatch) | BAJO | BAJO |
+| `filtPregrado` | `String` | app.js:31 | filters.js (applyFilters, resetFilters, populateSedes) | filters.js (pregradoMatch) | MEDIO | MEDIO |
+| `editingProgId` | `String|null` | app.js:32 | app.js (openNewProg, openEditProg, saveProg, deleteProg, cancelEdit) | app.js (renderProgForm) | BAJO (solo editor) | BAJO |
+| `tmpLineas` | `Array` | app.js:33 | app.js (renderProgForm, saveProg, deleteProg, cancelEdit, addLinea, delLinea, collectLineas) | app.js (renderProgForm, saveProg) | BAJO (solo editor) | BAJO |
+| `tmpMaes` | `Array` | app.js:33 | app.js (renderProgForm, saveProg, deleteProg, cancelEdit, addMae, delMae, collectMaes) | app.js (renderProgForm, saveProg) | BAJO (solo editor) | BAJO |
+| `SD` | `Object` | app.js:599 | Nunca (solo lectura) | app.js (renderSNIES), export.js (exportSNIES) | MEDIO | BAJO |
+| `_snFac` | `String` | app.js:600 | app.js (snSetFac) | app.js (renderSNIES) | BAJO | BAJO |
+| `_snProg` | `String` | app.js:600 | app.js (snSetFac, snSetProg, renderSNIES) | app.js (renderSNIES) | BAJO | BAJO |
+| `ST_MAP` | `Object` | modules/utils.js:18 | Nunca (solo lectura) | utils.js (getSt) | BAJO | BAJO |
+| `__UDEC_EMBEDDED__` | `Boolean` | app.js:24 | Nunca | storage.js (loadDB) | BAJO | BAJO |
+
+### 2.2. Estado global mutable — Mapa de dependencias
+
+```
+                    ┌─────────────┐
+                    │     DB      │ ← JSON de datos completo (facultades, programas)
+                    └──────┬──────┘
+                           │
+          ┌────────────────┼────────────────────┐
+          ▼                ▼                    ▼
+    filters.js       dashboard.js          app.js
+    (populateSedes)  (renderKPIs,    (tree, tabla, sedeView,
+                       renderFacBar)    editor, pipeline)
+          │                │                    │
+          └────────────────┼────────────────────┘
+                           ▼
+                    ┌─────────────┐
+                    │   curFac    │ ← índice de facultad activa
+                    └─────────────┘
+                           │
+          ┌────────────────┼────────────────────┐
+          ▼                ▼                    ▼
+    filters.js       dashboard.js          app.js
+    (sedeMatch)      (selFac,        (tree, tabla, editor,
+                     renderFacBar)     pipeline, progForm)
+
+                    ┌─────────────┐
+                    │  filtros*   │ ← 5 flags: sede, oferta, estado, nivel, pregrado
+                    └─────────────┘
+                           │
+          ┌────────────────┘
+          ▼
+    filters.js → itemMatch → usado por app.js (tree, tabla, sedeView)
+
+                    ┌─────────────┐
+                    │  SD         │ ← Datos SNIES (lectura solamente)
+                    └─────────────┘
+                           │
+          ┌────────────────┼──────────────┐
+          ▼                ▼              ▼
+    app.js            export.js      renderSNIES
+    (renderSNIES)     (exportSNIES)
+```
+
+---
+
+## 3. Clasificación MVC tentativa
+
+### 3.1. Posibles Models (gestión de datos)
+
+| Candidato | Estado actual | Propuesta MVC |
+|---|---|---|
+| `DB` (estructura datos) | `var` global en app.js, modificado directamente por funciones de editor | **AppState.DB** — con métodos get/set validados |
+| `DEFAULT_DATA` | inline en HTML, reescrito por downloadHTML | **AppState.defaultData** — constante |
+| `ALL_SEDES` | `var` en app.js | **AppState.ALL_SEDES** — constante |
+| `ST_MAP` | `var` en utils.js | **Model.ST_MAP** — estable, migrar primero |
+| `SD` | `var` en app.js (línea 599) | **Model.SNIES_DATA** — independiente |
+| `curFac` | `var` en app.js, mutado en 4 lugares | **AppState.activeFaculty** |
+| `filtros` (5 vars) | `var` en app.js, mutados en filters.js | **AppState.filters** |
+| `editingProgId`, `tmpLineas`, `tmpMaes` | `var` en app.js | **AppState.editor** |
+| `_snFac`, `_snProg` | `var` en app.js | **AppState.snies** |
+| `SNIES_PRE_MAP`, `SNIES_ESP_MAP` | `const` en export.js | **Model.SNIES_MAPS** — datos puros |
+
+### 3.2. Posibles Views (renderizado)
+
+| Candidato | Estado actual | Propuesta MVC | Líneas |
+|---|---|---|---|
+| `renderTree()` | app.js:43 | **View.Tree** | ~260 |
+| `renderTabla()` | app.js:304 | **View.TableView** | ~33 |
+| `renderSedeView()` | app.js:338 | **View.SedeView** | ~26 |
+| `renderEditor()` (activo) | app.js:800 | **View.Editor** | ~46 |
+| `renderEditor()` (sombreado) | app.js:369 | **ELIMINAR** | ~60 |
+| `renderProgForm()` | app.js:446 | **View.ProgForm** | ~56 |
+| `renderPipeline()` | app.js:667 | **View.Pipeline** | ~129 |
+| `renderSNIES()` | app.js:602 | **View.SNIES** | ~62 |
+| `renderIndicadores()` | indicators.js:28 | **View.Indicators** | ~405 |
+| `renderKPIs()` | dashboard.js:42 | **View.KPIs** | ~16 |
+| `renderFacBar()` | dashboard.js:25 | **View.FacBar** | ~5 |
+| `renderViews()` | app.js:580 | **View.orquestador** (Controller híbrido) | 1 línea |
+
+### 3.3. Posibles Controllers (lógica de negocio)
+
+| Candidato | Estado actual | Propuesta MVC |
+|---|---|---|
+| `loadDB()` | storage.js | **Controller.Storage.init** |
+| `saveDB()` | storage.js | **Controller.Storage.persist** |
+| `downloadHTML()` | storage.js | **Controller.Export.downloadHTML** |
+| `resetDB()` | storage.js | **Controller.Storage.reset** |
+| `selFac(i)` | dashboard.js | **Controller.Faculty.select** |
+| `applyFilters()` | filters.js | **Controller.Filters.apply** |
+| `resetFilters()` | filters.js | **Controller.Filters.reset** |
+| `populateSedes()` | filters.js | **Controller.Filters.populateSedes** |
+| `showTab(id)` | app.js:565 | **Controller.Navigation.switchTab** |
+| `saveProg()` | app.js | **Controller.Program.save** |
+| `deleteProg()` | app.js | **Controller.Program.delete** |
+| `saveDoc()` | app.js | **Controller.Program.saveDoctorado** |
+| `saveFac()` | app.js | **Controller.Faculty.save** |
+| `deleteFac()` | app.js | **Controller.Faculty.delete** |
+| `openNewFac()` | app.js | **Controller.Faculty.openNewForm** |
+| `openNewProg()` | app.js | **Controller.Program.openNewForm** |
+| `openEditProg()` | app.js | **Controller.Program.openEditForm** |
+| `cancelEdit()` | app.js | **Controller.Editor.cancel** |
+| `addLinea()` / `delLinea()` | app.js | **Controller.Editor.addLinea** / **removeLinea** |
+| `addMae()` / `delMae()` | app.js | **Controller.Editor.addMae** / **removeMae** |
+| `collectLineas()` / `collectMaes()` | app.js | **Controller.Editor.collectLineas** / **collectMaes** |
+| `downloadDB()` | export.js | **Controller.Export.downloadCSV** |
+| `exportSNIES()` | export.js | **Controller.Export.downloadSNIES** |
+| `snSetFac()` / `snSetProg()` | app.js | **Controller.SNIES.select** |
+| `toggleSec()` | app.js | **Controller.UI.toggleSection** |
+| `toggleDocForm()` | app.js | **Controller.UI.toggleDocForm** |
+
+---
+
+## 4. Zonas críticas
+
+### 4.1. `renderTree()` (app.js:43-301) — **CRÍTICO**
+
+| Aspecto | Detalle |
+|---|---|
+| Líneas | ~260 |
+| Dependencias globales | `DB`, `curFac`, `filtPregrado`, `pregradoMatch`, `itemMatch`, `getSt`, `pll` |
+| Complejidad | ALTA — SVG inline, 2 modos (single/multi pregrado), lógica de conectores |
+| Acoplamiento | **MUY ALTO** — conoce estructura de DB, filtros, sistema de badges |
+| Riesgo migración | **MUY ALTO** — cambiar la fuente de datos requiere reescribir toda la función |
+| Inline handlers | `onclick="openEditProg('${p.id}')"` (previene ESModules) |
+| Notas | Contiene 3 closures internos (`vline`, `stBadge`) que duplican lógica de utils.js |
+
+### 4.2. Editor (app.js:800-878 + 446-522) — **CRÍTICO**
+
+| Aspecto | Detalle |
+|---|---|
+| Líneas | ~155 (2 implementaciones + progForm) |
+| Dependencias globales | `DB`, `curFac`, `editingProgId`, `tmpLineas`, `tmpMaes`, `saveDB`, `toast`, `populateSedes`, `renderFacBar`, `renderViews` |
+| Complejidad | ALTA — CRUD completo con modal overlay |
+| Acoplamiento | **MUY ALTO** — conoce estructura DB, DOM IDs de formularios |
+| Riesgo migración | **ALTO** — funciones sombreadas (duplicadas), lógica de recolecta frágil |
+| Sombreado | `renderEditor` en línea 369 (NUNCA ejecutada), `saveDoc` en línea 431 (idem), `deleteFac` en 530, `saveFac` en 525 — **BASURA TÉCNICA** |
+
+### 4.3. `renderPipeline()` (app.js:667-794) — **ALTO**
+
+| Aspecto | Detalle |
+|---|---|
+| Líneas | ~129 |
+| Dependencias globales | `DB`, `toggleSec` |
+| Complejidad | ALTA — 5 grupos dinámicos, timeline por trimestre, SVG inline, tablas dinámicas |
+| Acoplamiento | ALTO — conoce estructura DB, fórmula de agrupación por estado |
+| Inline handlers | `onclick="toggleSec(this.dataset.secId)"` en secciones colapsables |
+| Notas | Contiene 7 closures internos (`grp`, `kpi`, `nivBadge`, `tabla`, `buildTimeline`, `sec`, `getTri`, `estCol`) |
+
+### 4.4. `renderSNIES()` (app.js:602-663) — **MEDIO-ALTO**
+
+| Aspecto | Detalle |
+|---|---|
+| Líneas | ~62 |
+| Dependencias globales | `SD`, `_snFac`, `_snProg`, Chart.js (global) |
+| Complejidad | MEDIA — generación de HTML + gráficos Chart.js con setTimeout |
+| Acoplamiento | ALTO — conoce estructura exacta de SD, FAC_MP, nombres de programas |
+| Notas | Datos SD son independientes de DB (no hay acoplamiento con editor) |
+| Inline handlers | `onclick="snSetFac(this.dataset.fac)"`, `onclick="snSetProg(this.dataset.prog)"` |
+
+### 4.5. `renderViews()` (app.js:580) — **PUNTO ÚNICO DE ORQUESTACIÓN**
+
+```js
+function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();}
+```
+
+Dependencia: llama a 4 funciones de render. Cualquier cambio en la firma de estas funciones rompe el dashboard.
+
+### 4.6. `showTab()` (app.js:565-574) — **NAVEGACIÓN CENTRAL**
+
+```js
+function showTab(id){
+  // toggle 7 paneles
+  if(id==='editor') renderEditor();
+  if(id==='indicadores') renderIndicadores();
+  if(id==='snies') renderSNIES();
+  if(id==='pipeline') renderPipeline();
+}
+```
+
+Dependencia: llama directamente a 4 renderers. Acoplamiento por nombre de función.
+
+---
+
+## 5. Dependencias circulares implícitas
+
+Actualmente NO hay dependencias circulares porque:
+1. Los módulos extraídos solo dependen de `window.*` globales
+2. No hay import/export entre módulos
+3. El orden de carga secuencial garantiza disponibilidad
+
+Sin embargo, existen **dependencias cruzadas frágiles**:
+
+```
+dashboard.js:renderKPIs() → app.js:renderViews (llamada indirecta vía filters.applyFilters)
+dashboard.js:selFac()     → app.js:showTab (para refrescar pestaña activa)
+filters.js:applyFilters() → app.js:renderViews (global, definida en app.js)
+app.js:renderViews()      → dashboard.js:renderKPIs()
+```
+
+Esto crea un **ciclo de llamadas** que funciona solo porque todo está en el mismo ámbito global:
+```
+applyFilters → renderViews → renderKPIs → (consume DB, curFac)
+                                 ↓
+                           renderTree, renderTabla, renderSedeView
+```
+
+**Riesgo**: al extraer un módulo a ESModule, se rompería este ciclo porque `renderViews` está en app.js y `renderKPIs` en dashboard.js. Solución: inyectar el callback `onRender` en lugar de llamar directamente.
+
+---
+
+## 6. Propuesta de AppState gradual
+
+### 6.1. Estructura inicial propuesta
+
+```js
+// Fase 1: AppState mínimo (solo agrupar vars existentes)
+window.AppState = {
+  DB: [],
+  DEFAULT_DATA: [],
+  ALL_SEDES: [],
+  activeFaculty: 0,
+  filters: {
+    sede: 'ALL',
+    oferta: 'ALL',
+    estado: 'ALL',
+    nivel: 'ALL',
+    pregrado: 'ALL'
+  },
+  editor: {
+    editingProgId: null,
+    tmpLineas: [],
+    tmpMaes: []
+  },
+  snies: {
+    data: null,        // SD
+    activeFac: 'TODAS',
+    activeProg: null
+  },
+  embedded: true
+};
+```
+
+### 6.2. Migración incremental segura
+
+| Paso | Qué migrar | Cómo | Riesgo |
+|---|---|---|---|
+| **1** | `ST_MAP` → `AppState.stateColors` | Reemplazar var global por AppState en utils.js | NINGUNO (solo lectura) |
+| **2** | `filtros` (5 vars) → `AppState.filters` | En filters.js, cambiar window.filt* por AppState.filters.* | BAJO (solo filters.js consume) |
+| **3** | `curFac` → `AppState.activeFaculty` | En dashboard.js + app.js, reemplazar acceso directo | MEDIO (10+ referencias) |
+| **4** | `SD` → `AppState.snies.data` | En app.js, mover SD a AppState | BAJO (solo lectura) |
+| **5** | `editingProgId`, `tmpLineas`, `tmpMaes` → `AppState.editor` | En app.js, agrupar en objeto editor | BAJO (solo editor) |
+| **6** | `DB` → `AppState.DB` | **ÚLTIMO** — requiere refactor completo (15+ consumidores) | ALTO |
+
+### 6.3. Qué NO migrar todavía
+
+- `DB` — demasiados consumidores, requiere refactor mayor
+- `DEFAULT_DATA` — estable, solo usado por storage.js
+- `ALL_SEDES` — estable, solo usado por filters.js
+
+---
+
+## 7. Roadmap MVC incremental
+
+### Fase 0: Preparación (ahora)
+- [x] Modularización funcional (6 módulos extraídos)
+- [x] Documentación arquitectónica (este archivo)
+- [ ] Eliminar funciones sombreadas (renderEditor legacy, saveDoc legacy, etc.)
+- [ ] Estandarizar window.* exports
+
+### Fase 1: Centralización de estado
+- [ ] Crear `window.AppState` con estructura definida
+- [ ] Migrar filtros a `AppState.filters`
+- [ ] Migrar `curFac` a `AppState.activeFaculty`
+- [ ] Migrar estado del editor a `AppState.editor`
+- [ ] Mantener compatibilidad: `window.curFac = AppState.activeFaculty`
+
+### Fase 2: Separación View
+- [ ] Extraer `renderTree()` → `View.Tree` module
+- [ ] Extraer `renderPipeline()` → `View.Pipeline` module
+- [ ] Extraer `renderSNIES()` → `View.SNIES` module
+- [ ] Extraer editor Views (renderEditor, renderProgForm) → `View.Editor`
+- [ ] Cada View recibe `(state)` en lugar de leer `window.*`
+
+### Fase 3: Separación Controller
+- [ ] Extraer lógica CRUD de editor → `Controller.Editor`
+- [ ] Extraer lógica de filtros → `Controller.Filters`
+- [ ] Extraer lógica de navegación → `Controller.Navigation`
+- [ ] Eliminar handlers inline (`onclick`) reemplazando por event delegation
+
+### Fase 4: Desacoplamiento render
+- [ ] Reemplazar ciclo `applyFilters → renderViews → renderKPIs` por event emitter
+- [ ] Views se suscriben a cambios de estado en lugar de ser llamadas directamente
+- [ ] Introducir `AppState.subscribe(callback)` o patrón Observer mínimo
+
+### Fase 5: MVC híbrido
+- [ ] Migrar módulos a ESModules (`type="module"`)
+- [ ] Reemplazar `window.*` exports por `import`/`export`
+- [ ] Eliminar compatibilidad legacy progresivamente
+- [ ] Inyectar dependencias en lugar de acceder a globales
+
+### Fase 6: MVC completo
+- [ ] AppState como objeto inmutable (patrón Redux mínimo o similar)
+- [ ] Views puras: `render(state) → string`
+- [ ] Controllers sin acceso directo al DOM
+- [ ] Testing unitario posible (sin DOM)
+
+---
+
+## 8. Riesgos de migración
+
+### 8.1. Inline onclick handlers
+
+**Problema**: +50 handlers `onclick` en HTML renderizado dinámicamente y en HTML embebido. Ejemplos:
+```html
+<button onclick="openEditProg('${p.id}')">
+<button onclick="selFac(0)">
+<button onclick="saveDoc()">
+<div data-sec-id="timeline" onclick="toggleSec(this.dataset.secId)">
+```
+
+**Impacto**: Impide migrar a ESModules (los módulos no contaminan window). Requiere event delegation.
+
+**Solución**: Reemplazar por `data-action` attributes + listener centralizado:
+```js
+document.addEventListener('click', e => {
+  const action = e.target.closest('[data-action]')?.dataset.action;
+  if (action === 'editProg') Controller.Program.openEditForm(e.target.dataset.pid);
+});
+```
+
+### 8.2. Funciones sombreadas (dead code)
+
+| Función sombreada | Línea (no ejecutada) | Línea (activa) |
+|---|---|---|
+| `renderEditor()` | 369 | 800 |
+| `saveDoc()` | 431 | 847 |
+| `deleteFac()` | 530 | 857 |
+| `saveFac()` | 525 | 870 |
+| `openNewFac()` | 537 | 863 |
+
+**Riesgo**: Confusión durante refactor. **Prioridad**: eliminar las versiones sombreadas.
+
+### 8.3. Ciclo applyFilters → renderViews → renderKPIs
+
+**Riesgo**: Si se extrae `renderKPIs` a un módulo ESModule, no podrá llamar a `renderViews` (definida en app.js) porque se crearía una dependencia circular.
+
+**Solución actual**: Pasar callbacks como parámetros:
+```js
+// en filters.js
+function applyFilters(onDone){
+  // ... leer filtros ...
+  onDone();
+}
+// app.js: applyFilters(() => renderViews());
+```
+
+### 8.4. Inicialización síncrona
+
+```js
+loadDB();
+renderFacBar();
+populateSedes();
+renderViews();
+```
+
+Todo se ejecuta al cargar app.js. Si se migra a ESModules, `type="module"` tiene semántica de defer, lo que cambia el timing. Las Views embebidas en HTML (datos serializados) dependen de que app.js se ejecute después de los módulos.
+
+### 8.5. Dependencia de Chart.js global
+
+`renderSNIES()` usa `new Chart(...)` asumiendo que Chart.js está en window. Si se migra a ESModules, Chart.js debe importarse o cargarse como script independiente antes.
+
+---
+
+## 9. Recomendaciones inmediatas
+
+### Prioridad 1 (antes de cualquier refactor MVC)
+1. **Eliminar funciones sombreadas** — las 5 versiones legacy en app.js
+2. **Estandarizar window.* exports** — algunos módulos exportan, otros no consistentemente
+
+### Prioridad 2 (bajo riesgo, alto beneficio)
+3. **Migrar filtros a AppState.filters** — solo afecta filters.js
+4. **Migrar curFac a AppState.activeFaculty** — requiere cambiar 4 archivos
+
+### Prioridad 3 (preparar terreno)
+5. **Implementar event delegation** para reemplazar onclick inline
+6. **Eliminar dependencia directa renderKPIs→renderViews** inyectando callback
+
+### Prioridad 4 (no tocar todavía)
+7. **renderTree** — esperar a que AppState esté estable
+8. **renderPipeline** — esperar a que event delegation funcione
+9. **Editor** — esperar a eliminar código sombreado primero
+
+---
+
+## 10. Diagrama de flujo general
+
+```
+[Inicio: HTML embebido]
+       │
+       ▼
+  loadDB() ← localStorage / DEFAULT_DATA
+       │
+       ▼
+  renderFacBar() ← DB, curFac
+  populateSedes() ← DB[curFac], ALL_SEDES
+  renderViews() ← DB[curFac], filtros
+       │
+       ├── renderKPIs() ← DB[curFac], filtros
+       ├── renderTree() ← DB[curFac], filtros
+       ├── renderTabla() ← DB[curFac], filtros
+       └── renderSedeView() ← DB[curFac], filtros
+       │
+       ▼
+  [Interacción del usuario]
+       │
+       ├── click facultad → selFac(i) → populateSedes + renderFacBar + renderViews + showTab
+       ├── click filtros → applyFilters → renderViews
+       ├── click pestaña → showTab(id) → renderEditor|renderIndicadores|renderSNIES|renderPipeline
+       ├── click editor → openNewProg|openEditProg|saveProg|deleteProg → saveDB + renderViews + renderEditor
+       └── click exportar → downloadDB|exportSNIES|downloadHTML
+```
+
+---
+
+## 11. Convenciones de código
+
+### Estilo actual
+- `var` para todo (ES5 legacy)
+- HTML templates concatenados con `+=`
+- `onclick` attributes en HTML generado
+- Funciones globales (sin namespace)
+- `window.*` exports para compatibilidad módulo → HTML
+
+### Estilo objetivo (Fase 5-6)
+- `const`/`let` (ES6+)
+- Template literals con `${}`
+- Event delegation
+- ESModules con `import`/`export`
+- Views como funciones puras: `render(state) → HTMLString`
