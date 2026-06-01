@@ -1,3 +1,26 @@
+/**
+ * app.js — orquestador principal
+ * ---
+ * Responsabilidad:
+ *   - inicialización de datos (DB, DEFAULT_DATA, ALL_SEDES, curFac)
+ *   - renderizado de árbol, tabla, vista por sede, editor, SNIES, pipeline, indicadores
+ *   - orquestación de vistas (renderViews, showTab)
+ *   - editor de datos (CRUD de facultades/programas)
+ *
+ * Dependencias:
+ *   - utils.js     → getSt, pll, uid, gv, gi, toast, showConfirm
+ *   - storage.js   → saveDB, loadDB, downloadHTML, resetDB
+ *   - filters.js   → pregradoMatch, itemMatch, populateSedes, applyFilters
+ *   - dashboard.js → renderKPIs, renderFacBar, selFac
+ *
+ * Estado:
+ *   Módulo monolítico en proceso de fragmentación (Fase 2).
+ *   Contiene renderizados legacy que serán extraídos en fases siguientes.
+ *   Varias funciones tienen definiciones duplicadas (sombreado) — ver SOMBREADO.
+ *   TODO [MVC]: migrar a controladores por dominio cuando se adopte ESModules.
+ */
+
+// COMPAT LEGACY: flag embed para evitar localStorage en entorno embebido
 window.__UDEC_EMBEDDED__=true;
 
 // ========== DEFAULT DATA ==========
@@ -13,6 +36,10 @@ var tmpLineas=[], tmpMaes=[];
 
 
 // ===== TREE =====
+/**
+ * Renderiza el árbol jerárquico (pregrado → línea → especialización / maestría / doctorado).
+ * Soporta modo single-pregrado y multi-pregrado.
+ */
 function renderTree(){
   try{
   const f=DB[curFac];
@@ -335,7 +362,10 @@ function renderSedeView(){
   document.getElementById('sede-content').innerHTML=h;
 }
 
-// ===== EDITOR =====
+// ===== EDITOR (LEGACY — SOMBREADO) =====
+// SOMBREADO por renderEditor en línea 1437.
+// Esta implementación nunca se ejecuta. Mantener solo como referencia temporal.
+// TODO [MVC]: eliminar en Fase 3 cuando se unifique el editor.
 function renderEditor(){
   const f=DB[curFac];
   let h=`<div style="padding:1rem">`;
@@ -397,6 +427,7 @@ function renderEditor(){
   document.getElementById('editor-content').innerHTML=h;
 }
 
+// SOMBREADO por saveDoc en línea 1484
 function saveDoc(){
   const f=DB[curFac];
   const n=document.getElementById('doc-name').value.trim();
@@ -490,16 +521,19 @@ function deleteProg(pid){
 }
 function cancelEdit(){editingProgId=null;tmpLineas=[];tmpMaes=[];renderEditor();}
 
+// SOMBREADO por saveFac(isNew) en línea 1507
 function saveFac(){
   DB[curFac].name=document.getElementById('fn').value.trim();
   saveDB();toast('Facultad actualizada');renderFacBar();renderViews();renderEditor();
 }
+// SOMBREADO por deleteFac en línea 1494
 function deleteFac(){
   
   DB.splice(curFac,1);curFac=Math.max(0,curFac-1);
   saveDB();toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
 }
 
+// SOMBREADO por openNewFac en línea 1500
 function openNewFac(){
   document.getElementById('editor-content').innerHTML=`<div class="modal-overlay"><div class="modal">
     <div class="modal-title"><span>➕</span>Nueva facultad</div>
@@ -521,7 +555,13 @@ function saveNewFac(){
 }
 
 
-// ===== TAB =====
+// ===== PESTAÑAS Y VISTAS =====
+
+/**
+ * Cambia la pestaña activa y renderiza el panel correspondiente.
+ * Alto acoplamiento: conoce los 7 paneles y llama a 4 renderers distintos.
+ * @param {string} id - 'arbol' | 'tabla' | 'sede' | 'indicadores' | 'snies' | 'pipeline' | 'editor'
+ */
 function showTab(id){
   ['arbol','tabla','sede','indicadores','snies','pipeline','editor'].forEach(t=>{
     document.getElementById('panel-'+t).classList.toggle('act',t===id);
@@ -533,6 +573,10 @@ function showTab(id){
   if(id==='pipeline') renderPipeline();
 }
 
+/**
+ * Orquesta la actualización del dashboard principal.
+ * Llama a 4 renderers. Dependencia: renderKPIs (dashboard.js).
+ */
 function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();}
 
 
@@ -1398,6 +1442,8 @@ function renderPipeline(){
 function toggleSec(id){var el=document.getElementById(id),ic=document.getElementById('icon-'+id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';if(ic)ic.textContent=open?'▼':'▲';}
 
 // ===== EDITOR CON SELECTOR DE FACULTAD =====
+// Versión ACTIVA — sombrea a renderEditor en línea 364.
+// TODO [MVC]: unificar con la implementación legacy en Fase 3.
 function renderEditor(){
   var f=DB[curFac];
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}

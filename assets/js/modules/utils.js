@@ -1,4 +1,17 @@
-// ===== UTILITIES =====
+/**
+ * utils.js — utilidades globales
+ * ---
+ * Responsabilidad:
+ *   - mapa de colores de estado (ST_MAP / getSt)
+ *   - helpers de UI: confirm, toast, uid, gv, gi
+ *   - badge de oferta (pll)
+ *
+ * Dependencias:
+ *   - Ninguna (nivel base, primer módulo en carga)
+ *
+ * Estado:
+ *   Estable. Sin dependencias externas. Listo para migrar a ESModule.
+ */
 function showConfirm(t,m,ok){var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';o.innerHTML='<div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2)"><div style="font-size:15px;font-weight:700;color:#1a2e1a;margin-bottom:8px">'+t+'</div><div style="font-size:12px;color:#555;margin-bottom:20px">'+m+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button id="__cc" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer">Cancelar</button><button id="__co" style="padding:8px 18px;border-radius:8px;border:none;background:#c0392b;color:#fff;font-weight:700;cursor:pointer">Eliminar</button></div></div>';document.body.appendChild(o);document.getElementById('__cc').onclick=function(){document.body.removeChild(o);};document.getElementById('__co').onclick=function(){document.body.removeChild(o);ok();};o.onclick=function(e){if(e.target===o)document.body.removeChild(o);};}
 
 // ========== STATE COLORS ==========
@@ -37,7 +50,7 @@ function toast(msg){
   setTimeout(function(){t.style.display='none';},2500);
 }
 
-// ===== GLOBAL COMPATIBILITY =====
+// ===== COMPATIBILIDAD GLOBAL =====
 window.showConfirm=showConfirm;
 window.getSt=getSt;
 window.pll=pll;

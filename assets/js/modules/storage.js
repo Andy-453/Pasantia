@@ -1,4 +1,19 @@
-// ===== SAVE/LOAD =====
+/**
+ * storage.js — persistencia y descarga
+ * ---
+ * Responsabilidad:
+ *   - carga/guarda de DB en localStorage
+ *   - validación de estructura de datos (_validateDB)
+ *   - descarga de HTML completo con datos actualizados (downloadHTML)
+ *   - restablecimiento a datos por defecto (resetDB)
+ *
+ * Dependencias:
+ *   - utils.js → uid, toast
+ *   - window.DB, window.DEFAULT_DATA, window.__UDEC_EMBEDDED__
+ *
+ * Estado:
+ *   Estable. Dependencia de window.* para acceso a DB.
+ */
 function saveDB(){try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
 function _validateDB(data){
   if(!Array.isArray(data)||!data.length) return false;
@@ -18,6 +33,11 @@ function _validateDB(data){
   }
   return true;
 }
+/**
+ * Carga DB desde localStorage o datos por defecto según flag embed.
+ * @global window.__UDEC_EMBEDDED__ — si true, ignora localStorage
+ * @global window.DEFAULT_DATA — datos iniciales
+ */
 function loadDB(){
   if(window.__UDEC_EMBEDDED__){window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));return;}
   try{
@@ -26,6 +46,10 @@ function loadDB(){
   }catch(e){}
   window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));
 }
+/**
+ * Descarga el HTML completo de la página con DB actualizada inline.
+ * Reemplaza var DEFAULT_DATA en el HTML serializado con los datos actuales.
+ */
 function downloadHTML(){
   var html=document.documentElement.outerHTML;
   html=html.replace(
@@ -46,7 +70,7 @@ function downloadHTML(){
 }
 function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){try{localStorage.removeItem('udec_rutas_db');}catch(e){}location.reload();}}
 
-// ===== GLOBAL COMPATIBILITY =====
+// ===== COMPATIBILIDAD GLOBAL =====
 window.saveDB=saveDB;
 window._validateDB=_validateDB;
 window.loadDB=loadDB;
