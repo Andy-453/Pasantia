@@ -9,57 +9,6 @@ let curFac=0,filtSede='ALL',filtOferta='ALL',filtEstado='ALL',filtNivel='ALL',fi
 let editingFacIdx=null, editingProgId=null;
 let tmpLineas=[], tmpMaes=[];
 
-// ===== SAVE/LOAD =====
-function saveDB(){try{localStorage.setItem('udec_rutas_db',JSON.stringify(DB));}catch(e){}}
-function _validateDB(data){
-  // Validate that loaded data has the expected structure
-  if(!Array.isArray(data)||!data.length) return false;
-  for(var i=0;i<data.length;i++){
-    var f=data[i];
-    if(!f||typeof f!=='object') return false;
-    if(!f.name||!Array.isArray(f.progs)) return false;
-    for(var j=0;j<f.progs.length;j++){
-      var p=f.progs[j];
-      if(!p||typeof p!=='object') return false;
-      // Ensure lineas and mae are always arrays
-      if(!Array.isArray(p.lineas)) p.lineas=[];
-      if(!Array.isArray(p.mae)) p.mae=[];
-      if(!Array.isArray(p.sedes)) p.sedes=[];
-      if(!p.id) p.id=uid();
-      if(!p.n) return false;
-    }
-  }
-  return true;
-}
-function loadDB(){
-  if(window.__UDEC_EMBEDDED__){DB=JSON.parse(JSON.stringify(DEFAULT_DATA));return;}
-  try{
-    var d=localStorage.getItem('udec_rutas_db');
-    if(d){var parsed=JSON.parse(d);if(_validateDB(parsed)){DB=parsed;return;}}
-  }catch(e){}
-  DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
-}
-
-function downloadHTML(){
-  var html=document.documentElement.outerHTML;
-  // Reemplaza DEFAULT_DATA con los datos actuales
-  html=html.replace(
-    /const DEFAULT_DATA=\[[\s\S]*?\](?=\s*\nconst ALL_SEDES)/,
-    'const DEFAULT_DATA='+JSON.stringify(DB)
-  );
-  // Marca el archivo como embebido para que loadDB use DEFAULT_DATA directamente
-  html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
-  var blob=new Blob([html],{type:'text/html;charset=utf-8;'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');
-  a.href=url;
-  var hoy=new Date();
-  var fecha=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
-  a.download='Dashboard_UDEC_Posgrados_'+fecha+'.html';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  toast('✅ Dashboard guardado con datos actualizados');
-}
 
 
 // ===== FILTERS =====
@@ -1312,7 +1261,6 @@ function renderIndicadores(){
 }
 
 // ===== INIT =====
-function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){try{localStorage.removeItem('udec_rutas_db');}catch(e){}location.reload();}}
 loadDB();
 renderFacBar();
 populateSedes();
