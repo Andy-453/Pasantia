@@ -16,7 +16,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 836 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 846 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -345,7 +345,7 @@ window.AppState = {
 - [ ] Extraer lógica CRUD de editor → `Controller.Editor`
 - [ ] Extraer lógica de filtros → `Controller.Filters`
 - [ ] Extraer lógica de navegación → `Controller.Navigation`
-- [x] Eliminar handlers inline (`onclick`) reemplazando por event delegation (show-tab, sel-fac, reset-filters)
+- [x] Eliminar handlers inline (`onclick` + `onchange`) reemplazando por event delegation (show-tab, sel-fac, reset-filters, apply-filters)
 
 ### Fase 4: Desacoplamiento render
 - [ ] Reemplazar ciclo `applyFilters → renderViews → renderKPIs` por event emitter
@@ -692,12 +692,9 @@ Los módulos individuales usarán `export function fn(){}` estándar.
 
 ## 14. Event Delegation — migración progresiva
 
-### 14.1. Arquitectura del dispatcher
-
-Se implementó un listener centralizado que captura clicks con `data-action`:
+### 14.1. Dispatcher click
 
 ```js
-// app.js (después de window.App)
 var __ACTIONS = {
   'show-tab':      function(b){ showTab(b.dataset.tab); },
   'sel-fac':       function(b){ selFac(parseInt(b.dataset.fac,10)); },
@@ -711,30 +708,44 @@ document.addEventListener('click', function(e){
 });
 ```
 
-### 14.2. Handlers migrados
+### 14.2. Dispatcher change
 
-| data-action | data-* | Handler | Riesgo |
-|---|---|---|---|
-| `show-tab` | `data-tab="arbol\|tabla\|sede\|..."` | `showTab(id)` | Bajo |
-| `sel-fac` | `data-fac="0\|1\|2\|..."` | `selFac(i)` | Bajo |
-| `reset-filters` | — | `resetFilters()` | Bajo |
+```js
+var __CHANGE = {
+  'apply-filters': function(){ applyFilters(); },
+};
+document.addEventListener('change', function(e){
+  var b = e.target.closest('[data-action]');
+  if(!b) return;
+  var fn = __CHANGE[b.getAttribute('data-action')];
+  if(fn) fn(b);
+});
+```
 
-### 14.3. Elementos con data-action (origen)
+### 14.3. Handlers migrados
 
-| Origen | Tipo | Acción |
+| data-action | Tipo evento | data-* | Handler | Riesgo |
+|---|---|---|---|---|
+| `show-tab` | click | `data-tab="arbol\|tabla\|sede\|..."` | `showTab(id)` | Bajo |
+| `sel-fac` | click | `data-fac="0\|1\|2\|..."` | `selFac(i)` | Bajo |
+| `reset-filters` | click | — | `resetFilters()` | Bajo |
+| `apply-filters` | change | — | `applyFilters()` | Bajo |
+
+### 14.4. Elementos con data-action
+
+| Origen | Tipo | Evento |
 |---|---|---|
-| HTML estático (Dashboard_*.html) | 7 tabs + 7 fac-buttons + reset + header | data-action (onclick removido) |
-| `renderFacBar()` (dashboard.js) | N fac-buttons (dinámicos) | data-action (onclick removido) |
+| HTML estático | 7 tabs + 7 fac-buttons + reset + header | click |
+| `renderFacBar()` (dashboard.js) | N fac-buttons dinámicos | click |
+| HTML estático | 5 selects (#filt-sede, #filt-pregrado, #filt-oferta, #filt-estado, #filt-nivel) | change |
 
-### 14.4. Estrategia de migración
+### 14.5. Estrategia de migración
 
-Se removió `onclick` de todos los elementos con `data-action`. Esto elimina la doble ejecución y sus efectos secundarios (error Chart.js en SNIES, render duplicado). La transición es segura porque:
+Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada tipo de evento (click, change) tiene su propio mapa (`__ACTIONS`, `__CHANGE`) y su propio listener. Las funciones globales persisten en `window` para handlers no migrados.
 
-1. **El dispatcher es el único canal**: no hay riesgo de doble invocación.
-2. **Las funciones globales persisten**: `showTab`, `selFac`, `resetFilters` siguen en `window` para onclick no migrados.
-3. **Rollback inmediato**: restaurar onclick en elementos selectivos si se detecta regresión.
+`resetFilters()` y `populateSedes()` modifican valores de selects vía `.value = ...` (programático), que no dispara eventos change — no hay loops.
 
-### 14.5. Handlers NO migrados (pendientes)
+### 14.6. Handlers NO migrados (pendientes)
 
 | Handler | Ubicación | Por qué no se migró |
 |---|---|---|
@@ -749,21 +760,19 @@ Se removió `onclick` de todos los elementos con `data-action`. Esto elimina la 
 | `saveDoc()` | renderEditor | Editor excluido |
 | `deleteFac()` / `saveFac(isNew)` | renderEditor | Editor excluido |
 | `openNewFac()` / `openEditFac()` | renderEditor | Editor excluido |
-| `downloadDB()` | HTML estático | No idempotente (crea 2 CSVs) |
-| `downloadHTML()` | HTML estático | No idempotente (crea 2 descargas) |
-| `resetDB()` | HTML estático | No idempotente (doble confirm) |
+| `downloadDB()` | HTML estático | No idempotente |
+| `downloadHTML()` | HTML estático | No idempotente |
+| `resetDB()` | HTML estático | No idempotente |
 | `window.print()` | HTML estático | Nativo, sin cambio |
-| `applyFilters()` | selects (onchange) | No es click, es onchange |
 
-### 14.6. Próximos pasos para event delegation completo
+### 14.7. Próximos pasos
 
-1. **Migrar onchange de filtros**: los 5 `<select onchange="applyFilters()">` a data-action + listener change.
-2. **Migrar renderTree**: reemplazar `onclick="openEditProg(...)"` en templates dinámicos.
-3. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
-4. **Migrar pipeline**: `toggleSec` ya tiene `data-sec-id` — estandarizar a data-action.
-5. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (el único tab sin data-action).
+1. **Migrar renderTree**: reemplazar `onclick="openEditProg(...)"` en templates dinámicos.
+2. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
+3. **Migrar pipeline**: `toggleSec` ya tiene `data-sec-id` — estandarizar a data-action.
+4. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (único tab sin data-action).
 
-### 14.7. Bloqueadores para migración completa
+### 14.8. Bloqueadores
 
 | Bloqueador | Impacto |
 |---|---|
@@ -771,3 +780,56 @@ Se removió `onclick` de todos los elementos con `data-action`. Esto elimina la 
 | Handlers con args dinámicos `openEditProg('${p.id}')` | data-* resuelve, ~20 templates por refactorizar |
 | Mezcla onclick en HTML estático y dinámico | Dos orígenes, misma estrategia |
 | Sin tests automatizados | No se puede verificar regresión |
+
+---
+
+## 15. Event Architecture — consolidado
+
+### 15.1. Click delegation
+
+| Acción | Elemento(s) | data-action | Handler | data-* |
+|---|---|---|---|---|
+| Navegación tabs | 7 tabs | `show-tab` | `showTab(id)` | `data-tab` |
+| Header editor | 1 button | `show-tab` | `showTab('editor')` | `data-tab` |
+| Selección facultad | fac-bar buttons | `sel-fac` | `selFac(i)` | `data-fac` |
+| Limpiar filtros | 1 button | `reset-filters` | `resetFilters()` | — |
+
+### 15.2. Change delegation
+
+| Acción | Elemento(s) | data-action | Handler | Comportamiento |
+|---|---|---|---|---|
+| Filtro sede | `#filt-sede` | `apply-filters` | `applyFilters()` | Lee DOM completo |
+| Filtro pregrado | `#filt-pregrado` | `apply-filters` | `applyFilters()` | Lee DOM completo |
+| Filtro oferta | `#filt-oferta` | `apply-filters` | `applyFilters()` | Lee DOM completo |
+| Filtro estado | `#filt-estado` | `apply-filters` | `applyFilters()` | Lee DOM completo |
+| Filtro nivel | `#filt-nivel` | `apply-filters` | `applyFilters()` | Lee DOM completo |
+
+### 15.3. Handlers inline restantes
+
+| Evento | Handler | Ubicación | Prioridad migración |
+|---|---|---|---|
+| click | `showTab('snies')` | tb-snies | Alta (único tab sin data-action) |
+| click | `openNewProg()` | editor | Media (zona excluida) |
+| click | `openEditFac()` | editor | Media (zona excluida) |
+| click | `openNewFac()` | editor | Media (zona excluida) |
+| click | `selFac(i)` | editor panel | Media (zona excluida) |
+| click | `openEditProg(...)` | renderTree | Media (zona excluida) |
+| click | `deleteProg(...)` | renderTree | Media (zona excluida) |
+| click | `saveProg(...)` | renderProgForm | Media (zona excluida) |
+| click | `snSetFac(...)` / `snSetProg(...)` | renderSNIES | Baja (zona excluida) |
+| click | `toggleSec(...)` | renderPipeline | Baja (zona excluida) |
+| click | `downloadDB()` / `downloadHTML()` / `resetDB()` | HTML header | Baja (no idempotente) |
+| click | `window.print()` | HTML header | Sin cambio |
+
+### 15.4. Preparación ESModules
+
+Estado actual de dependencias para migración a `<script type="module">`:
+
+| Requisito | Estado |
+|---|---|
+| Sin `var` globales en módulos | ❌ `var DB, curFac, filtSede, filtOferta, filtEstado, filtNivel, SD, _snFac, _snProg, ALL_SEDES, DEFAULT_DATA` persisten |
+| Sin `onclick` inline en HTML | ⚠️ Parcial: 15+ onclick en editor, tree, SNIES, pipeline |
+| Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
+| Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |
+| `window.App` como namespace de transición | ✅ ~50 funciones exportadas |
+| `import`/`export` en lugar de contaminación global | ❌ Pendiente — requiere eliminar `var` globales primero |

@@ -86,9 +86,10 @@ window.App = {
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
 };
 
-// ===== EVENT DELEGATION — Piloto Fase 3 =====
-// Dispatcher centralizado: onclick removido de elementos con data-action.
-// onclick se conserva en elementos sin data-action (descargas, SNIES, etc.).
+// ===== EVENT DELEGATION — Fase 3 =====
+// Dispatcher centralizado: click + change.
+// onclick/onchange removido de elementos con data-action.
+// onclick/onchange se conserva en elementos sin data-action (descargas, SNIES, editor, etc.).
 // TODO [MVC]: migrar más acciones a data-action.
 var __ACTIONS = {
   'show-tab': function(b){ showTab(b.dataset.tab); },
@@ -99,6 +100,15 @@ document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
   if(!b) return;
   var fn = __ACTIONS[b.getAttribute('data-action')];
+  if(fn) fn(b);
+});
+var __CHANGE = {
+  'apply-filters': function(){ applyFilters(); },
+};
+document.addEventListener('change', function(e){
+  var b = e.target.closest('[data-action]');
+  if(!b) return;
+  var fn = __CHANGE[b.getAttribute('data-action')];
   if(fn) fn(b);
 });
 

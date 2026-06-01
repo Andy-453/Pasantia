@@ -46,17 +46,17 @@
 <div class="fac-bar no-print" id="facbar"><button class="fac-btn act" data-action="sel-fac" data-fac="0">Ciencias Admin., Económicas y Contables</button><button class="fac-btn" data-action="sel-fac" data-fac="1">Ingeniería</button><button class="fac-btn" data-action="sel-fac" data-fac="2">Ciencias Agropecuarias</button><button class="fac-btn" data-action="sel-fac" data-fac="3">Ciencias de la Salud</button><button class="fac-btn" data-action="sel-fac" data-fac="4">Ciencias del Deporte y Ed. Física</button><button class="fac-btn" data-action="sel-fac" data-fac="5">Educación</button><button class="fac-btn" data-action="sel-fac" data-fac="6">Ciencias Sociales, Humanidades y Políticas</button></div>
 
 <div class="filters no-print">
-  <div class="fgroup"><label>Sede / Municipio</label><select id="filt-sede" onchange="applyFilters()"><option value="ALL">Todas las sedes</option><option value="Chía">Chía</option><option value="Facatativá">Facatativá</option><option value="Fusagasugá">Fusagasugá</option><option value="Girardot">Girardot</option><option value="Soacha">Soacha</option><option value="Ubate">Ubate</option></select></div>
-  <div class="fgroup"><label>Programa de pregrado</label><select id="filt-pregrado" onchange="applyFilters()"><option value="ALL">Todos los programas</option><option value="Administración de Empresas">Administración de Empresas</option><option value="Contaduría Pública">Contaduría Pública</option></select></div>
+  <div class="fgroup"><label>Sede / Municipio</label><select id="filt-sede" data-action="apply-filters"><option value="ALL">Todas las sedes</option><option value="Chía">Chía</option><option value="Facatativá">Facatativá</option><option value="Fusagasugá">Fusagasugá</option><option value="Girardot">Girardot</option><option value="Soacha">Soacha</option><option value="Ubate">Ubate</option></select></div>
+  <div class="fgroup"><label>Programa de pregrado</label><select id="filt-pregrado" data-action="apply-filters"><option value="ALL">Todos los programas</option><option value="Administración de Empresas">Administración de Empresas</option><option value="Contaduría Pública">Contaduría Pública</option></select></div>
   <div class="fgroup"><label>Tipo de oferta</label>
-    <select id="filt-oferta" onchange="applyFilters()">
+    <select id="filt-oferta" data-action="apply-filters">
       <option value="ALL">Vigente + Proyectada</option>
       <option value="V">Solo vigente</option>
       <option value="P">Solo proyectada</option>
     </select>
   </div>
   <div class="fgroup"><label>Estado</label>
-    <select id="filt-estado" onchange="applyFilters()">
+    <select id="filt-estado" data-action="apply-filters">
       <option value="ALL">Todos los estados</option>
       <option value="obtención">Obtención / Con registro</option>
       <option value="radicado">Radicado MEN</option>
@@ -66,7 +66,7 @@
     </select>
   </div>
   <div class="fgroup"><label>Nivel</label>
-    <select id="filt-nivel" onchange="applyFilters()">
+    <select id="filt-nivel" data-action="apply-filters">
       <option value="ALL">Todos</option>
       <option value="espec">Especialización</option>
       <option value="mae">Maestría</option>
