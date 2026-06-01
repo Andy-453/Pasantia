@@ -1,5 +1,5 @@
 // ===== SAVE/LOAD =====
-function saveDB(){try{localStorage.setItem('udec_rutas_db',JSON.stringify(DB));}catch(e){}}
+function saveDB(){try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
 function _validateDB(data){
   if(!Array.isArray(data)||!data.length) return false;
   for(var i=0;i<data.length;i++){
@@ -19,18 +19,18 @@ function _validateDB(data){
   return true;
 }
 function loadDB(){
-  if(window.__UDEC_EMBEDDED__){DB=JSON.parse(JSON.stringify(DEFAULT_DATA));return;}
+  if(window.__UDEC_EMBEDDED__){window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));return;}
   try{
     var d=localStorage.getItem('udec_rutas_db');
-    if(d){var parsed=JSON.parse(d);if(_validateDB(parsed)){DB=parsed;return;}}
+    if(d){var parsed=JSON.parse(d);if(_validateDB(parsed)){window.DB=parsed;return;}}
   }catch(e){}
-  DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));
 }
 function downloadHTML(){
   var html=document.documentElement.outerHTML;
   html=html.replace(
-    /const DEFAULT_DATA=\[[\s\S]*?\](?=\s*\nconst ALL_SEDES)/,
-    'const DEFAULT_DATA='+JSON.stringify(DB)
+    /(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,
+    'var DEFAULT_DATA='+JSON.stringify(window.DB)
   );
   html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
   var blob=new Blob([html],{type:'text/html;charset=utf-8;'});
