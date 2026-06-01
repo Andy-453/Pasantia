@@ -1,5 +1,8 @@
 # Análisis Arquitectónico — Dashboard UDEC Posgrados
 
+> **Hito**: 2026-06-01 — 0 onclick en `app.js`, 1 en HTML (`downloadDB` excluido). Todos los handlers migrados a `data-action` + dispatcher centralizado.
+> Pendiente: migrar 10 `var` globales legacy a `window.AppState` via getter/setter.
+
 ## 1. Resumen del sistema
 
 Aplicación web monolítica embebida (single-file HTML + JS modularizado) para la gestión y visualización de la oferta de posgrados de la Universidad de Cundinamarca. Opera completamente en el cliente (navegador) con persistencia en localStorage y exportación a CSV/HTML.
@@ -16,7 +19,7 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 | Archivo | Líneas | Rol |
 |---|---|---|
 | `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 868 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/app.js` | 882 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
 | `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
 | `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
@@ -181,7 +184,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Complejidad | ALTA — SVG inline, 2 modos (single/multi pregrado), lógica de conectores |
 | Acoplamiento | **MUY ALTO** — conoce estructura de DB, filtros, sistema de badges |
 | Riesgo migración | **MUY ALTO** — cambiar la fuente de datos requiere reescribir toda la función |
-| Inline handlers | `onclick="openEditProg('${p.id}')"` (previene ESModules) |
+| Inline handlers | `data-action="open-edit-prog"` (migrado a event delegation) |
 | Notas | Contiene 3 closures internos (`vline`, `stBadge`) que duplican lógica de utils.js |
 
 ### 4.2. Editor (app.js:800-878 + 446-522) — **CRÍTICO**
@@ -203,7 +206,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Dependencias globales | `DB`, `toggleSec` |
 | Complejidad | ALTA — 5 grupos dinámicos, timeline por trimestre, SVG inline, tablas dinámicas |
 | Acoplamiento | ALTO — conoce estructura DB, fórmula de agrupación por estado |
-| Inline handlers | `onclick="toggleSec(this.dataset.secId)"` en secciones colapsables |
+| Inline handlers | `data-action="toggle-section"` (migrado a event delegation) |
 | Notas | Contiene 7 closures internos (`grp`, `kpi`, `nivBadge`, `tabla`, `buildTimeline`, `sec`, `getTri`, `estCol`) |
 
 ### 4.4. `renderSNIES()` (app.js:602-663) — **MEDIO-ALTO**
@@ -215,7 +218,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Complejidad | MEDIA — generación de HTML + gráficos Chart.js con setTimeout |
 | Acoplamiento | ALTO — conoce estructura exacta de SD, FAC_MP, nombres de programas |
 | Notas | Datos SD son independientes de DB (no hay acoplamiento con editor) |
-| Inline handlers | `onclick="snSetFac(this.dataset.fac)"`, `onclick="snSetProg(this.dataset.prog)"` |
+| Inline handlers | `data-action="snies-set-fac"`, `data-action="snies-set-prog"` (migrado a event delegation) |
 
 ### 4.5. `renderViews()` (app.js:580) — **PUNTO ÚNICO DE ORQUESTACIÓN**
 
@@ -371,7 +374,7 @@ window.AppState = {
 
 ## 8. Riesgos de migración
 
-### 8.1. Inline onclick handlers
+### 8.1. Inline onclick handlers — RESUELTO
 
 **Problema**: +50 handlers `onclick` en HTML renderizado dinámicamente y en HTML embebido. Ejemplos:
 ```html
@@ -381,15 +384,15 @@ window.AppState = {
 <div data-sec-id="timeline" onclick="toggleSec(this.dataset.secId)">
 ```
 
-**Impacto**: Impide migrar a ESModules (los módulos no contaminan window). Requiere event delegation.
-
-**Solución**: Reemplazar por `data-action` attributes + listener centralizado:
+**Solución aplicada**: Todos los handlers `onclick` fueron reemplazados por `data-action` + dispatcher centralizado:
 ```js
 document.addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
-  if (action === 'editProg') Controller.Program.openEditForm(e.target.dataset.pid);
+  if (action in dispatch) dispatch[action](e.target);
 });
 ```
+
+**Estado actual**: **0 onclick en app.js**, **1 onclick en HTML** (`downloadDB()` excluido por riesgo de doble descarga).
 
 ### 8.2. Funciones sombreadas — ELIMINADAS (Fase 3)
 
@@ -834,18 +837,7 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 
 | Evento | Handler | Ubicación | Prioridad migración |
 |---|---|---|---|
-| click | `showTab('snies')` | tb-snies | Alta (único tab sin data-action) |
-| click | `deleteProg(...)` | renderEditor | Media (editor excluido) |
-| click | `saveProg(...)` | renderProgForm | Media (editor excluido) |
-| click | `delLinea(...)` / `delMae(...)` | renderProgForm | Media (editor excluido) |
-| click | `addLinea()` / `addMae()` | renderProgForm | Media (editor excluido) |
-| click | `saveDoc()` | renderEditor | Media (editor excluido) |
-| click | `toggleDocForm()` | renderEditor | Media (editor excluido) |
-| click | `deleteFac()` / `saveFac(isNew)` | editor modal | Media (editor excluido) |
-| click | `openNewFac()` / `openEditFac()` | editor modal | Media (editor excluido) |
-| click | `openNewProg()` | editor | Media (editor excluido) |
-| click | `selFac(i)` | editor panel | Media (editor excluido) |
-| click | `downloadDB()` | HTML header | Baja (no idempotente) |
+| click | `downloadDB()` | HTML header | Baja (excluido por riesgo doble descarga) |
 
 ### 15.4. Preparación ESModules
 
@@ -854,7 +846,7 @@ Estado actual de dependencias para migración a `<script type="module">`:
 | Requisito | Estado |
 |---|---|
 | Sin `var` globales en módulos | ❌ `var DB, curFac, filtSede, filtOferta, filtEstado, filtNivel, SD, _snFac, _snProg, ALL_SEDES, DEFAULT_DATA` persisten |
-| Sin `onclick` inline en HTML | ⚠️ Parcial: 14 onclick en editor (renderProgForm, renderEditor, modales) |
+| Sin `onclick` inline en HTML | ✅ **0 onclick en JS, 1 en HTML (downloadDB excluido)** |
 | Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
 | Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |
 | `window.App` como namespace de transición | ✅ ~50 funciones exportadas |

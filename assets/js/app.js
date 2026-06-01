@@ -115,6 +115,20 @@ var __ACTIONS = {
   'print': function(){ window.print(); },
   'reset-db': function(){ resetDB(); },
   'open-edit-prog': function(b){ openEditProg(b.dataset.pid); },
+  'del-linea': function(b){ delLinea(b.dataset.lineaId); },
+  'del-mae': function(b){ delMae(b.dataset.maeId); },
+  'add-linea': function(){ addLinea(); },
+  'add-mae': function(){ addMae(); },
+  'save-prog': function(b){ saveProg(b.dataset.pid, b.dataset.isNew === 'true'); },
+  'cancel-edit': function(){ cancelEdit(); },
+  'delete-prog': function(b){ deleteProg(b.dataset.pid); },
+  'save-doc': function(){ saveDoc(); },
+  'toggle-doc-form': function(){ toggleDocForm(); },
+  'open-new-prog': function(){ openNewProg(); },
+  'open-edit-fac': function(){ openEditFac(); },
+  'open-new-fac': function(){ openNewFac(); },
+  'save-fac': function(b){ saveFac(b.dataset.isNew === 'true'); },
+  'delete-fac': function(){ deleteFac(); },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -477,7 +491,7 @@ function renderProgForm(){
   function ao(c){return '<option value="">— Año —</option>'+AS.map(function(y){return '<option value="'+y+'"'+(y===c?' selected':'')+'>'+y+'</option>';}).join('');}
   var lH=tmpLineas.map(function(l){
     return '<div class="linea-card" id="lc'+l.id+'">'
-      +'<button class="del-btn" onclick="delLinea(\''+l.id+'\')">✕ Quitar</button>'
+      +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">✕ Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Línea</label><input id="ll'+l.id+'" value="'+(l.l||'')+'" placeholder="Nombre de la línea"></div>'
       +'<div class="field"><label>Tipo</label><select id="lt'+l.id+'"><option'+(l.t==='Profundización 1'?' selected':'')+'>Profundización 1</option><option'+(l.t==='Profundización 2'?' selected':'')+'>Profundización 2</option></select></div></div>'
       +'<div class="grid2"><div class="field"><label>Especialización</label><input id="le'+l.id+'" value="'+(l.esp||'')+'" placeholder="Nombre"></div>'
@@ -490,7 +504,7 @@ function renderProgForm(){
   }).join('');
   var mH=tmpMaes.map(function(m){
     return '<div class="linea-card" id="mc'+m.id+'">'
-      +'<button class="del-btn" onclick="delMae(\''+m.id+'\')">✕ Quitar</button>'
+      +'<button class="del-btn" data-action="del-mae" data-mae-id="'+m.id+'">✕ Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Maestría</label><input id="mn'+m.id+'" value="'+(m.n||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="mes'+m.id+'">'+eo(m.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="mo'+m.id+'"><option value="V"'+(m.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(m.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
@@ -506,14 +520,14 @@ function renderProgForm(){
       +'<div class="field"><label>Sedes</label><input id="psedes" value="'+(p.sedes?p.sedes.join(', '):'')+'" placeholder="Ej: Fusagasugá, Chía"></div></div></div>'
     +'<div class="form-section"><h3>Líneas de profundización y especializaciones</h3>'
       +'<div id="lineas-container">'+lH+'</div>'
-      +'<button onclick="addLinea()" style="margin-top:6px;border-color:#006633;color:#006633">+ Agregar línea</button></div>'
+      +'<button data-action="add-linea" style="margin-top:6px;border-color:#006633;color:#006633">+ Agregar línea</button></div>'
     +'<div class="form-section"><h3>Maestrías</h3>'
       +'<div id="maes-container">'+mH+'</div>'
-      +'<button onclick="addMae()" style="margin-top:6px;border-color:#C8A43A;color:#8a6d00">+ Agregar maestría</button></div>'
+      +'<button data-action="add-mae" style="margin-top:6px;border-color:#C8A43A;color:#8a6d00">+ Agregar maestría</button></div>'
     +'<div class="modal-actions">'
-      +'<button class="btn-green" onclick="saveProg(\''+p.id+'\','+(isNew?'true':'false')+')">💾 Guardar</button>'
-      +'<button onclick="cancelEdit()">Cancelar</button>'
-      +(isNew?'':'<button class="btn-red" onclick="deleteProg(\''+p.id+'\')">🗑 Eliminar</button>')
+      +'<button class="btn-green" data-action="save-prog" data-pid="'+p.id+'" data-is-new="'+(isNew?'true':'false')+'">💾 Guardar</button>'
+      +'<button data-action="cancel-edit">Cancelar</button>'
+      +(isNew?'':'<button class="btn-red" data-action="delete-prog" data-pid="'+p.id+'">🗑 Eliminar</button>')
     +'</div></div></div>';
   document.getElementById('editor-content').innerHTML=h;
 }
@@ -789,9 +803,9 @@ function toggleSec(id){var el=document.getElementById(id),ic=document.getElement
 function renderEditor(){
   var f=DB[curFac];
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
-  var facBtns=DB.map(function(fac,i){var a=i===curFac;return '<button onclick="selFac('+i+')" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
+  var facBtns=DB.map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   var h='<div style="padding:1rem">';
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" onclick="openNewProg()">+ Nuevo programa</button><button onclick="openEditFac()">✎ Editar facultad</button><button onclick="openNewFac()">+ Nueva facultad</button></div></div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button></div></div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Selecciona la facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
   h+='<div style="background:#006633;border-radius:10px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12px;font-weight:700;color:#fff">'+f.name+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">'+f.progs.length+' programa(s)</div></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:1.5rem">';
@@ -812,13 +826,13 @@ function renderEditor(){
           +(p.lineas.length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+(p.lineas.length-3)+' más...</div>':'')
           +p.mae.slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.n+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
         +'</div>'
-        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" onclick="openEditProg(this.dataset.pid)" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">✎ Editar programa</button><button data-pid="'+p.id+'" onclick="deleteProg(this.dataset.pid)" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">🗑</button></div>'
+        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">✎ Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">🗑</button></div>'
       +'</div></div>';
   });
   h+='</div>';
   // Doctorado colapsable
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
-    +'<div style="background:#0d3d22;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleDocForm()">'
+    +'<div style="background:#0d3d22;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-doc-form">'
       +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px">🏆</span><div><div style="font-size:12px;font-weight:700;color:#fff">Doctorado de la facultad</div><div style="font-size:10px;color:rgba(200,164,58,.8);margin-top:1px">'+(f.doc?f.doc.n:'Sin doctorado — haz clic para agregar')+'</div></div></div>'
       +'<span id="doc-toggle-icon" style="color:#C8A43A;font-size:18px;font-weight:700">▼</span>'
     +'</div>'
@@ -826,7 +840,7 @@ function renderEditor(){
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Nombre del doctorado</label><input id="doc-name" value="'+(f.doc?f.doc.n:'')+'" placeholder="Nombre del doctorado"></div><div class="field"><label>Estado actual</label><input id="doc-estado" value="'+(f.doc?f.doc.e:'')+'" placeholder="Ej: En construcción"></div></div>'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>👤 Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>📅 Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>📅 Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
-      +'<button class="btn-green" onclick="saveDoc()">💾 Guardar doctorado</button>'
+      +'<button class="btn-green" data-action="save-doc">💾 Guardar doctorado</button>'
     +'</div>'
   +'</div>';
   h+='</div>';
@@ -850,11 +864,11 @@ function deleteFac(){
   });
 }
 function openNewFac(){
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" onclick="saveFac(true)">💾 Crear facultad</button><button onclick="cancelEdit()">Cancelar</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">💾 Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
 }
 function openEditFac(){
   var f=DB[curFac];
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+f.name+'"></div></div><div class="modal-actions"><button class="btn-green" onclick="saveFac(false)">💾 Guardar</button><button onclick="cancelEdit()">Cancelar</button><button class="btn-red" onclick="deleteFac()">🗑 Eliminar facultad</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+f.name+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
 }
 function saveFac(isNew){
   var n=document.getElementById('fac-name').value.trim();
