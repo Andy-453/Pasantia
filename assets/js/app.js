@@ -556,15 +556,15 @@ function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(funct
 function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id)};});tmpMaes._progId=pid;}
 function saveProg(pid,isNew){
   collectLineas();collectMaes();
-  var f=DB[curFac],prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
-  if(isNew){f.progs.push(prog);}else{var i=f.progs.findIndex(function(x){return x.id===pid;});if(i>=0)f.progs[i]=prog;}
-  editingProgId=null;tmpLineas=[];tmpMaes=[];saveDB();toast('Programa guardado');populateSedes();renderFacBar();renderViews();renderEditor();
+  var prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
+  AppData.savePrograma(curFac,prog,isNew);
+  editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Programa guardado');populateSedes();renderFacBar();renderViews();renderEditor();
 }
 function deleteProg(pid){
-  var p=DB[curFac].progs.find(function(x){return x.id===pid;});
-  showConfirm('¿Eliminar?','Se eliminará <strong>'+(p?p.n:'este programa')+'</strong>.',function(){
-    DB[curFac].progs=DB[curFac].progs.filter(function(x){return x.id!==pid;});
-    editingProgId=null;tmpLineas=[];tmpMaes=[];saveDB();toast('Eliminado');renderViews();renderEditor();
+  var r=AppData.findProgramById(pid);
+  showConfirm('¿Eliminar?','Se eliminará <strong>'+(r?r.programa.n:'este programa')+'</strong>.',function(){
+    if(r) AppData.deletePrograma(r.facIndex,pid);
+    editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Eliminado');renderViews();renderEditor();
   });
 }
 function cancelEdit(){editingProgId=null;tmpLineas=[];tmpMaes=[];renderEditor();}
@@ -694,7 +694,7 @@ function renderPipeline(){
   function fsn(name){return name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim();}
   function estCol(e){var k=(e||'').toLowerCase();if(k.includes('obtención')||k.includes('registro'))return G;if(k.includes('radicado')||k.includes('radicación'))return BL;if(k.includes('en construcción'))return AM;if(k.includes('por construir')||k.includes('proyección'))return OR;if(k.includes('negado'))return RD;return '#888';}
   var all=[];
-  DB.forEach(function(fac){
+  AppData.getFacultades().forEach(function(fac){
     fac.progs.forEach(function(p){
       p.lineas.forEach(function(l){all.push({fac:fsn(fac.name),nivel:'Especialización',nombre:l.esp,estado:l.e||'',oferta:l.o,resp:l.resp||'',mes:l.mes||null,ano:l.ano||null});});
       p.mae.forEach(function(m){all.push({fac:fsn(fac.name),nivel:'Maestría',nombre:m.n,estado:m.e||'',oferta:m.o,resp:m.resp||'',mes:m.mes||null,ano:m.ano||null});});
@@ -818,7 +818,7 @@ function toggleSec(id){var el=document.getElementById(id),ic=document.getElement
 function renderEditor(){
   var f=DB[curFac];
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
-  var facBtns=DB.map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
+  var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   var h='<div style="padding:1rem">';
   h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button></div></div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Selecciona la facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
@@ -863,34 +863,35 @@ function renderEditor(){
 }
 function toggleDocForm(){var b=document.getElementById('doc-form-body'),ic=document.getElementById('doc-toggle-icon');if(!b)return;var o=b.style.display!=='none';b.style.display=o?'none':'block';if(ic)ic.textContent=o?'▼':'▲';}
 function saveDoc(){
-  var f=DB[curFac],n=document.getElementById('doc-name').value.trim();
-  if(!n){f.doc=null;}
+  var n=document.getElementById('doc-name').value.trim();
+  if(!n){AppData.saveDocumento(curFac,null);}
   else{
     var mes=parseInt(document.getElementById('doc-mes').value)||null;
     var ano=parseInt(document.getElementById('doc-ano').value)||null;
-    f.doc={n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano};
+    AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano});
   }
-  saveDB();toast('Doctorado guardado');renderViews();renderEditor();
+  toast('Doctorado guardado');renderViews();renderEditor();
 }
 function deleteFac(){
-  showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+DB[curFac].name+'</strong> y todos sus programas.',function(){
-    DB.splice(curFac,1);curFac=Math.max(0,curFac-1);
-    saveDB();toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
+  var f=AppData.getFacultad(curFac);
+  showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+(f?f.name:'')+'</strong> y todos sus programas.',function(){
+    AppData.deleteFacultad(curFac);curFac=Math.max(0,curFac-1);
+    toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
   });
 }
 function openNewFac(){
   document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">💾 Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
 }
 function openEditFac(){
-  var f=DB[curFac];
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+f.name+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
+  var f=AppData.getFacultad(curFac);
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+(f?f.name:'')+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
 }
 function saveFac(isNew){
   var n=document.getElementById('fac-name').value.trim();
   if(!n){toast('Escribe el nombre de la facultad');return;}
-  if(isNew){DB.push({name:n,progs:[],doc:null});curFac=DB.length-1;}
-  else{DB[curFac].name=n;}
-  saveDB();toast('Facultad guardada');renderFacBar();renderViews();renderEditor();
+  if(isNew){AppData.saveFacultad({name:n,progs:[],doc:null},true);curFac=AppData.getFacultadCount()-1;}
+  else{AppData.updateFacultadName(curFac,n);}
+  toast('Facultad guardada');renderFacBar();renderViews();renderEditor();
 }
 function openNewProg(){editingProgId='__new__';tmpLineas=[];tmpMaes=[];renderProgForm();}
 function openEditProg(pid){editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}

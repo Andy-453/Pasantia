@@ -181,7 +181,7 @@ function downloadDB(){
   ];
   const rows = [headers];
 
-  DB.forEach(fac => {
+  AppData.getFacultades().forEach(fac => {
     fac.progs.forEach(p => {
       const sniesPre = getSniesPreg(p.n, p.sedes);
 

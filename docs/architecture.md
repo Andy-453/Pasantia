@@ -703,8 +703,9 @@ Los módulos individuales usarán `export function fn(){}` estándar.
 
 1. ✅ ~~**Event delegation**~~ — **PILOTO IMPLEMENTADO (Fase 3)**: ver sección 14.
 2. ✅ ~~**Eliminar `var` legacy (~6 vars)**~~ — **MIGRADO (Fase 3)**: `curFac` → `AppState.navigation.curFac`, `filt*` → `AppState.filters.*`. Restan `DB`, `DEFAULT_DATA`, `ALL_SEDES` + accessors SNIES.
-3. **Data como módulo**: extraer `DEFAULT_DATA`, `SD`, `ALL_SEDES` a módulos separados.
+3. ✅ ~~**Data como módulo**~~ — **INICIADO (Fase 4)**: `AppData` creado en `assets/js/data/app-data.js` (encapsula consultas + writes simples sobre DB). Resta: `DEFAULT_DATA`, `SD`, `ALL_SEDES` como módulos separados.
 4. **ESModules**: cambiar `<script>` tags a `<script type="module">`.
+5. **Refactor renderers**: migrar `DB[curFac]` en renderTree/renderTabla/renderSedeView/renderProgForm/renderEditor a `AppData.getFacultad()`.
 
 ---
 
@@ -850,4 +851,58 @@ Estado actual de dependencias para migración a `<script type="module">`:
 | Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
 | Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |
 | `window.App` como namespace de transición | ✅ ~50 funciones exportadas |
+| Capa de acceso a datos | ✅ `AppData` (`assets/js/data/app-data.js`) encapsula queries + writes |
 | `import`/`export` en lugar de contaminación global | ❌ Pendiente — requiere eliminar `var` globales primero |
+
+---
+
+## 16. Capa de acceso a datos — `AppData`
+
+### 16.1. Ubicación
+
+`assets/js/data/app-data.js` — cargado después de `storage.js`, antes de los módulos de UI.
+
+### 16.2. API expuesta
+
+```
+AppData.getFacultades()                → Array completo de facultades
+AppData.getFacultad(index)             → Facultad por índice
+AppData.getProgramas(facIndex)         → Programas de una facultad
+AppData.getFacultadCount()             → Número de facultades
+AppData.findProgramById(pid)           → {facIndex, programa} | null
+AppData.findFacultadIndexByProgId(pid) → índice | -1
+AppData.savePrograma(facIndex, prog, isNew)   → muta + persiste
+AppData.deletePrograma(facIndex, pid)         → muta + persiste
+AppData.saveFacultad(facultad, isNew, idx)    → muta + persiste
+AppData.updateFacultadName(facIndex, name)    → muta + persiste
+AppData.deleteFacultad(facIndex)              → muta + persiste
+AppData.saveDocumento(facIndex, doc)          → muta + persiste
+```
+
+### 16.3. Módulos migrados a AppData
+
+| Módulo | Antes (DB directo) | Después (AppData) |
+|---|---|---|
+| `dashboard.js` | `DB.map()`, `DB[curFac]` | `AppData.getFacultades()`, `AppData.getFacultad()` |
+| `filters.js` | `window.DB[window.curFac]` | `AppData.getFacultad()` |
+| `indicators.js` | `DB.forEach()`, `DB.length` | `AppData.getFacultades()`, `AppData.getFacultadCount()` |
+| `export.js` | `DB.forEach()` | `AppData.getFacultades()` |
+| `app.js` (writes) | `DB[curFac].progs.push/filter/splice`, `DB[curFac].doc`, `DB[curFac].name` | `AppData.savePrograma/deletePrograma/saveFacultad/updateFacultadName/deleteFacultad/saveDocumento` |
+| `app.js` (renderers) | `DB[curFac]` en tree/tabla/sedeView/progForm/editor | ❌ Pendiente (renderers complejos) |
+
+### 16.4. DB references restantes
+
+| Ubicación | Ref | Motivo |
+|---|---|---|
+| `app-data.js` | `window.DB` (14) | Capa misma — fuente de verdad legacy |
+| `storage.js` | `window.DB` (4) | Persistencia — `loadDB`, `downloadHTML` |
+| `app.js` | `DB` bare (6) | Renderers complejos (tree, tabla, sedeView, progForm, editor) |
+
+**Total: 6 referencias bare en renderers + 4 en storage + 14 internas en AppData.**
+
+### 16.5. Próximos pasos
+
+1. Migrar renderers (tree, tabla, sedeView, progForm, editor) a `AppData.getFacultad()`
+2. Extraer `DEFAULT_DATA`, `ALL_SEDES`, `SD` a módulos separados bajo `assets/js/data/`
+3. Migrar `storage.js` a usar `AppData` en lugar de `window.DB`
+4. Evaluar eliminación de `var DB` una vez migrados todos los consumidores

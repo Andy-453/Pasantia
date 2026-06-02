@@ -45,7 +45,7 @@ function resetFilters(){
 }
 
 function populateSedes(){
-  var f=window.DB[window.curFac];
+  var f=AppData.getFacultad(window.curFac);
   var s=new Set();
   f.progs.forEach(function(p){p.sedes.forEach(function(x){s.add(x);});});
   var sel=document.getElementById('filt-sede');

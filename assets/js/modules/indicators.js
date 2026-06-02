@@ -74,7 +74,7 @@ function renderIndicadores(){
     });
   }
 
-  DB.forEach(fac=>{
+  AppData.getFacultades().forEach(fac=>{
     const fs={name:fac.name, pre:fac.progs.length, esp:0, mae:0, doc:fac.doc?1:0, vigente:0, proyectada:0, estados:{}};
     totalPre+=fac.progs.length;
     fac.progs.forEach(p=>{
@@ -136,7 +136,7 @@ function renderIndicadores(){
 
   h+=`<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:1.25rem">`;
   const kpis=[
-    {v:DB.length, l:'Facultades', c:'#006633', bg:'#e6f2eb'},
+    {v:AppData.getFacultadCount(), l:'Facultades', c:'#006633', bg:'#e6f2eb'},
     {v:totalPre, l:'Programas pregrado', c:'#2e8b57', bg:'#f0faf5'},
     {v:totalEsp, l:'Especializaciones', c:'#3aaa72', bg:'#eaf7f0'},
     {v:totalMae, l:'Maestrías', c:'#C8A43A', bg:'#fdf6e3'},
@@ -325,7 +325,7 @@ function renderIndicadores(){
         <svg width="160" height="160" viewBox="0 0 160 160">
           ${pieSlices(facSegments)}
           <circle cx="80" cy="80" r="30" fill="#fff"/>
-          <text x="80" y="75" text-anchor="middle" font-size="18" font-weight="800" fill="#1a2e1a" font-family="Arial">${DB.length}</text>
+          <text x="80" y="75" text-anchor="middle" font-size="18" font-weight="800" fill="#1a2e1a" font-family="Arial">${AppData.getFacultadCount()}</text>
           <text x="80" y="90" text-anchor="middle" font-size="8" fill="#888" font-family="Arial">FAC.</text>
         </svg>
       </div>
