@@ -702,7 +702,7 @@ Los módulos individuales usarán `export function fn(){}` estándar.
 ### 13.7. Bloqueadores para MVC real
 
 1. ✅ ~~**Event delegation**~~ — **PILOTO IMPLEMENTADO (Fase 3)**: ver sección 14.
-2. **Eliminar `var` legacy**: reemplazar `var DB`, `var curFac`, `var filt*` por referencias a `AppState`.
+2. ✅ ~~**Eliminar `var` legacy (~6 vars)**~~ — **MIGRADO (Fase 3)**: `curFac` → `AppState.navigation.curFac`, `filt*` → `AppState.filters.*`. Restan `DB`, `DEFAULT_DATA`, `ALL_SEDES` + accessors SNIES.
 3. **Data como módulo**: extraer `DEFAULT_DATA`, `SD`, `ALL_SEDES` a módulos separados.
 4. **ESModules**: cambiar `<script>` tags a `<script type="module">`.
 
@@ -845,7 +845,7 @@ Estado actual de dependencias para migración a `<script type="module">`:
 
 | Requisito | Estado |
 |---|---|
-| Sin `var` globales en módulos | ❌ `var DB, curFac, filtSede, filtOferta, filtEstado, filtNivel, SD, _snFac, _snProg, ALL_SEDES, DEFAULT_DATA` persisten |
+| Sin `var` globales en módulos | ⚠️ **6 migradas** (`curFac`,`filtSede`,`filtOferta`,`filtEstado`,`filtNivel`,`filtPregrado` → `AppState.*`). Restan: `var DB`, `DEFAULT_DATA`, `ALL_SEDES` + `SD`, `_snFac`, `_snProg` (via accessor) |
 | Sin `onclick` inline en HTML | ✅ **0 onclick en JS, 1 en HTML (downloadDB excluido)** |
 | Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
 | Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |

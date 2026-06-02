@@ -2,7 +2,7 @@
  * app.js — orquestador principal
  * ---
  * Responsabilidad:
- *   - inicialización de datos (DB, DEFAULT_DATA, ALL_SEDES, curFac)
+ *   - inicialización de datos (DB, DEFAULT_DATA, ALL_SEDES)
  *   - renderizado de árbol, tabla, vista por sede, editor, SNIES, pipeline, indicadores
  *   - orquestación de vistas (renderViews, showTab)
  *   - editor de datos (CRUD de facultades/programas)
@@ -14,8 +14,9 @@
  *   - dashboard.js → renderKPIs, renderFacBar, selFac
  *
  * Estado:
- *   Módulo monolítico en proceso de fragmentación (Fase 2).
- *   Contiene renderizados legacy que serán extraídos en fases siguientes.
+ *   Módulo monolítico en proceso de fragmentación (Fase 3).
+ *   var globals legacy: DB, DEFAULT_DATA, ALL_SEDES (pendientes encapsulación).
+ *   curFac y filt* migrados a AppState via window accessors.
  *   Varias funciones tienen definiciones duplicadas (sombreado) — ver SOMBREADO.
  *   TODO [MVC]: migrar a controladores por dominio cuando se adopte ESModules.
  */
@@ -28,15 +29,14 @@ var DEFAULT_DATA=[{"id":"admin","name":"Facultad de Ciencias Admin., Económicas
 
 var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
 var DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
-var curFac=0,filtSede='ALL',filtOferta='ALL',filtEstado='ALL',filtNivel='ALL',filtPregrado='ALL';
-var editingFacIdx=null;
+// Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors a continuación
 // Legacy aliases: AppState.editor es fuente única (Fase 3)
 Object.defineProperty(window,'editingProgId',{get:function(){return window.AppState.editor.editingProgId;},set:function(v){window.AppState.editor.editingProgId=v;},configurable:true});
 Object.defineProperty(window,'tmpLineas',{get:function(){return window.AppState.editor.tmpLineas;},set:function(v){window.AppState.editor.tmpLineas=v;},configurable:true});
 Object.defineProperty(window,'tmpMaes',{get:function(){return window.AppState.editor.tmpMaes;},set:function(v){window.AppState.editor.tmpMaes=v;},configurable:true});
 
 // Estado centralizado — Fase 3 (migración gradual)
-// Compatibilidad legacy: mantener var* globales hasta migración completa
+// Acceso legacy via window accessors (curFac, filtSede, etc.)
 window.AppState = {
   navigation: {
     curFac: 0,
@@ -59,8 +59,24 @@ window.AppState = {
     SD: null,
     fac: 'TODAS',
     prog: null
+  },
+  staticData: {
+    ALL_SEDES: null,
+    DEFAULT_DATA: null
   }
 };
+
+// ===== GLOBAL ACCESSORS — Fase 3 =====
+// Aliases transparentes: window.curFac / window.filt* → AppState.*
+Object.defineProperty(window,'curFac',{get:function(){return window.AppState.navigation.curFac;},set:function(v){window.AppState.navigation.curFac=v;},configurable:true});
+Object.defineProperty(window,'filtSede',{get:function(){return window.AppState.filters.sede;},set:function(v){window.AppState.filters.sede=v;},configurable:true});
+Object.defineProperty(window,'filtOferta',{get:function(){return window.AppState.filters.oferta;},set:function(v){window.AppState.filters.oferta=v;},configurable:true});
+Object.defineProperty(window,'filtEstado',{get:function(){return window.AppState.filters.estado;},set:function(v){window.AppState.filters.estado=v;},configurable:true});
+Object.defineProperty(window,'filtNivel',{get:function(){return window.AppState.filters.nivel;},set:function(v){window.AppState.filters.nivel=v;},configurable:true});
+Object.defineProperty(window,'filtPregrado',{get:function(){return window.AppState.filters.pregrado;},set:function(v){window.AppState.filters.pregrado=v;},configurable:true});
+// Inicializar staticData (readonly)
+window.AppState.staticData.ALL_SEDES=ALL_SEDES;
+window.AppState.staticData.DEFAULT_DATA=DEFAULT_DATA;
 
 // ===== EXPORT MANIFEST — Fase 3 =====
 // Namespace global para migración futura a ESModules.
@@ -593,8 +609,7 @@ loadDB();
 renderFacBar();
 populateSedes();
 renderViews();
-// Sync AppState with legacy var after bootstrap
-window.AppState.navigation.curFac=curFac;
+// curFac sync legacy → AppState: manejado por window accessors
 
 // ===== SNIES DATA =====
 Object.defineProperty(window,'SD',{get:function(){return window.AppState.snies.SD;},set:function(v){window.AppState.snies.SD=v;},configurable:true});
