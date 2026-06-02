@@ -126,9 +126,32 @@ window.AppData = {
   },
 
   // ===== Write operations =====
+
+  /** @private validación ligera: índice facultad válido */
+  _validFacIndex: function(fi) {
+    if(typeof fi !== 'number' || fi < 0 || !window.DB || fi >= window.DB.length) {
+      console.warn('AppData: facIndex inválido', fi);
+      return false;
+    }
+    return true;
+  },
+
+  /** @private validación ligera: objeto programa */
+  _validPrograma: function(prog) {
+    if(!prog || typeof prog !== 'object') {
+      console.warn('AppData: programa inválido', prog);
+      return false;
+    }
+    if(typeof prog.id !== 'string' && typeof prog.id !== 'number') {
+      console.warn('AppData: programa sin id válido', prog);
+      return false;
+    }
+    return true;
+  },
+
   savePrograma: function(facIndex,prog,isNew) {
+    if(!this._validFacIndex(facIndex) || !this._validPrograma(prog)) return;
     var f=window.DB[facIndex];
-    if(!f) return;
     if(isNew) { f.progs.push(prog); }
     else {
       var i=f.progs.findIndex(function(p){return p.id===prog.id;});
@@ -138,33 +161,49 @@ window.AppData = {
   },
 
   deletePrograma: function(facIndex,pid) {
+    if(!this._validFacIndex(facIndex) || !pid) return;
     var f=window.DB[facIndex];
-    if(!f) return;
     f.progs=f.progs.filter(function(p){return p.id!==pid;});
     saveDB();
   },
 
   saveFacultad: function(facultad,isNew,currentIndex) {
+    if(!facultad || typeof facultad !== 'object') {
+      console.warn('AppData: facultad inválida', facultad);
+      return;
+    }
+    if(typeof facultad.name !== 'string' || !facultad.name.trim()) {
+      console.warn('AppData: facultad sin name', facultad);
+      return;
+    }
     if(isNew) { window.DB.push(facultad); }
-    else if(typeof currentIndex==='number') { window.DB[currentIndex]=facultad; }
+    else if(typeof currentIndex==='number') {
+      if(!this._validFacIndex(currentIndex)) return;
+      window.DB[currentIndex]=facultad;
+    }
     saveDB();
   },
 
   updateFacultadName: function(facIndex,name) {
+    if(!this._validFacIndex(facIndex)) return;
+    if(typeof name !== 'string' || !name.trim()) {
+      console.warn('AppData: name inválido para updateFacultadName');
+      return;
+    }
     var f=window.DB[facIndex];
-    if(!f) return;
     f.name=name;
     saveDB();
   },
 
   deleteFacultad: function(facIndex) {
+    if(!this._validFacIndex(facIndex)) return;
     window.DB.splice(facIndex,1);
     saveDB();
   },
 
   saveDocumento: function(facIndex,doc) {
+    if(!this._validFacIndex(facIndex)) return;
     var f=window.DB[facIndex];
-    if(!f) return;
     if(doc) { f.doc=doc; }
     else { f.doc=null; }
     saveDB();

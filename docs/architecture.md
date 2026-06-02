@@ -1361,12 +1361,14 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 - [x] renderTree `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
 - [x] renderTabla `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
 - [x] renderSedeView `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
-- [ ] filters.js `window.curFac` → `AppState.navigation.curFac` (pendiente)
+- [x] filters.js `window.curFac` → `AppState.navigation.curFac` (Fase 4)
 - [x] renderProgForm `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
 - [x] renderEditor `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
+- [x] AppData writes: validaciones ligeras (null, arrays, tipos) (Fase 4)
+- [x] default-data.js creado con `window.__DEFAULT_DATA` (Fase 4)
 - [ ] storage.js → AppData (loadDB, saveDB)
 - [ ] embed.js → AppData (buildStandalone)
-- [ ] Extraer DEFAULT_DATA a módulo separado
+- [ ] Eliminar copia inline DEFAULT_DATA de app.js (requiere actualizar regex en storage/embed)
 - [ ] Extraer ALL_SEDES a módulo separado
 - [ ] Extraer SD (SNIES) a módulo separado
 
@@ -1379,11 +1381,11 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 | indicators.js | 11 | 11 | 0 | 100% |
 | export.js | 5 | 5 | 0 | 100% |
 | app.js (writes) | 7 | 7 | 0 | 100% |
-| filters.js | 3 | 2 | 1 (`window.curFac`) | 67% |
+| filters.js | 3 | 3 | 0 | 100% |
 | app.js (renderers) | 30 | 30 | 0 | 100% |
 | storage.js | 11 | 0 | 11 (`window.DB`) | 0% |
 | embed.js | 1 | 0 | 1 (`window.DB`) | 0% |
-| **Total** | **90** | **77** | **13** | **86%** |
+| **Total** | **90** | **78** | **12** | **87%** |
 
 ### 19.15. Accesos legacy restantes (pendientes Fase 4)
 
@@ -1391,7 +1393,6 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 |---|---|---|---|---|---|---|---|
 | R1 | `window.DB` en save/load | storage.js | 17,42,61,67,77 | 🟡 Medio | persistencia (no tocar) |
 | R2 | `window.DB` en embed | embed.js | 67 | 🟢 Bajo | export (no tocar) |
-| R3 | `window.curFac` en filters | filters.js | 48 | 🟢 Bajo | acceso legacy |
 
 ### 19.16. Referencias compartidas detectadas
 
@@ -1407,11 +1408,12 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 2. **1 referencia en embed.js**: `JSON.stringify(window.DB)` en `buildStandalone()`. Migrar requiere AppData serializable.
 3. **Mutable references**: `getFacultades()` y `getFacultad()` retornan referencias directas. Callers actualmente no mutan, pero no hay protección.
 4. **ALL_SEDES sin extraer**: datos inline en app.js, no modularizados. Filtros dependen de `AppState.staticData.ALL_SEDES` que apunta al mismo array.
+5. **DEFAULT_DATA inline bloqueado por regex**: la variable `var DEFAULT_DATA=[...]` en app.js no puede eliminarse porque storage.js y embed.js usan un regex que busca ese patrón exacto para actualizar datos en exportaciones. `window.__DEFAULT_DATA` ya existe en módulo separado, pero la copia inline debe mantenerse hasta migrar storage/embed.
 
 ### 19.18. Recomendaciones para Fase 4 (siguiente iteración)
 
-1. ~~Migrar renderTree, renderTabla, renderSedeView~~ ✅ Completado. ~~Migrar renderProgForm~~ ✅ Completado. ~~Migrar renderEditor~~ ✅ Completado.
-2. **Agregar validación en AppData writes**: antes de mutar, validar estructura del programa (campos obligatorios, tipos).
-3. **Extraer DEFAULT_DATA**: archivo separado `default-data.js` para no contaminar app.js con ~50 líneas de datos serializados.
-4. **Migrar storage.js**: que `loadDB` use `AppData.loadDB()` y que `saveDB` acceda a datos via AppData.
-5. **Evaluar inmutabilidad**: congelar (`Object.freeze`) los objetos retornados por AppData queries para prevenir mutaciones accidentales fuera de la capa.
+1. ~~Migrar renderTree, renderTabla, renderSedeView~~ ✅ ~~renderProgForm~~ ✅ ~~renderEditor~~ ✅ ~~filters.js legacy~~ ✅ ~~validaciones AppData~~ ✅ ~~default-data.js creado~~ ✅
+2. **Eliminar copia inline DEFAULT_DATA de app.js**: requiere actualizar el regex `/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/` en storage.js y embed.js para que apunte a `window.__DEFAULT_DATA`.
+3. **Migrar storage.js**: que `loadDB` use `AppData.loadDB()` y que `saveDB` acceda a datos via AppData.
+4. **Evaluar inmutabilidad**: congelar (`Object.freeze`) los objetos retornados por AppData queries para prevenir mutaciones accidentales fuera de la capa.
+5. **ALL_SEDES y SD (SNIES)**: extraer a módulo separado similar a default-data.js.
