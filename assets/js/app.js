@@ -169,7 +169,7 @@ document.addEventListener('change', function(e){
  */
 function renderTree(){
   try{
-  const f=DB[curFac];
+  const f=AppData.getFacultad(AppState.navigation.curFac);
   // Ensure data integrity before rendering
   if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
   const singlePregrado = filtPregrado !== 'ALL';
@@ -429,7 +429,7 @@ function renderTree(){
 
 // ===== TABLE =====
 function renderTabla(){
-  const f=DB[curFac];let rows='';
+  const f=AppData.getFacultad(AppState.navigation.curFac);let rows='';
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     const items=[
@@ -463,7 +463,7 @@ function renderTabla(){
 
 // ===== SEDE VIEW =====
 function renderSedeView(){
-  const f=DB[curFac];const sm={};
+  const f=AppData.getFacultad(AppState.navigation.curFac);const sm={};
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     [...p.lineas.filter(l=>itemMatch(l,'espec')),...p.mae.filter(m=>itemMatch(m,'mae'))].forEach(item=>{
