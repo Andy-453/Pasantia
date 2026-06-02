@@ -1480,6 +1480,22 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 | `countItems`, `bar`, `donut` eliminados (dead code) | ✅ Resuelto | — |
 | Comentarios SOMBREADA y dependencias legacy | ✅ Resuelto | — |
 
+#### Acciones dinámicas del dispatcher
+
+El dispatcher `__ACTIONS` en app.js centraliza todas las acciones `data-action`.
+Acción añadida para enlaces de obtención:
+
+| Acción | data-* | Comportamiento |
+|---|---|---|
+| `open-program-link` | `data-url` | `window.open(url, '_blank', 'noopener,noreferrer')` |
+
+**Campo opcional `enlaceObtencion`** en items de especialización (`lineas`):
+- String URL (`https://...`), guardado como parte del objeto item
+- Renderizado solo cuando `item.e === "Obtención"` y URL válida (http/https)
+- Editado via `type="url"` en el formulario del editor
+- `renderObtencionLink(item)` helper genera `<button data-action="open-program-link" data-url="...">`
+- Compatibilidad total: datos sin el campo o con estado distinto a "Obtención" no muestran botón
+
 #### Roadmap post-Fase 4
 
 1. **Fase 5**: Migrar storage.js → AppData persistence (autorizar toque de persistencia)

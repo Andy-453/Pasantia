@@ -148,6 +148,10 @@ var __ACTIONS = {
   'open-new-fac': function(){ openNewFac(); },
   'save-fac': function(b){ saveFac(b.dataset.isNew === 'true'); },
   'delete-fac': function(){ deleteFac(); },
+  'open-program-link': function(b){
+    var url = b.getAttribute('data-url');
+    if(url) window.open(url, '_blank', 'noopener,noreferrer');
+  },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -184,6 +188,13 @@ function renderTree(){
     if(!e) return '';
     const s=getSt(e);
     return `<div class="badge" style="background:${s.bg};color:${s.tx}"><div class="bdot" style="background:${s.dot}"></div>${e}</div>`;
+  }
+  function renderObtencionLink(item){
+    if(!item || !item.enlaceObtencion) return '';
+    if((item.e||'').toLowerCase() !== 'obtención') return '';
+    var url = item.enlaceObtencion.trim();
+    if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
+    return '<button data-action="open-program-link" data-url="'+url+'" style="display:inline-flex;align-items:center;gap:2px;margin-left:4px;padding:1px 6px;border:none;border-radius:4px;background:#1D9E75;color:#fff;font-size:9px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap" title="Abrir enlace del programa">🔗</button>';
   }
 
   // Filter programs (defensive: guard against undefined lineas/mae from stale data)
@@ -286,7 +297,7 @@ function renderTree(){
               <div class="node-label">Especialización</div>
               <div class="node-title">${l.esp}</div>
               <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
-              ${stBadge(l.e)}
+              ${stBadge(l.e)}${renderObtencionLink(l)}
             </div>
           </div>
         </div>`;
@@ -333,7 +344,7 @@ function renderTree(){
               <div class="node-label">Maestría</div>
               <div class="node-title">${m.n}</div>
               <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
-              ${stBadge(m.e)}
+              ${stBadge(m.e)}${renderObtencionLink(m)}
             </div>
           </div>
         </div>`;
@@ -383,7 +394,7 @@ function renderTree(){
             <div class="node-label">Especialización</div>
             <div class="node-title">${l.esp}</div>
             <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
-            ${stBadge(l.e)}
+            ${stBadge(l.e)}${renderObtencionLink(l)}
           </div>
         </div>`;
       });
@@ -398,7 +409,7 @@ function renderTree(){
             <div class="node-label">Maestría</div>
             <div class="node-title">${m.n}</div>
             <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
-            ${stBadge(m.e)}
+            ${stBadge(m.e)}${renderObtencionLink(m)}
           </div>
         </div>`;
       });
@@ -436,8 +447,8 @@ function renderTabla(){
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     const items=[
-      ...p.lineas.filter(l=>itemMatch(l,'espec')).map(l=>({nivel:'Especialización',nombre:l.esp,linea:l.l,sedes:l.sedes,e:l.e,o:l.o})),
-      ...p.mae.filter(m=>itemMatch(m,'mae')).map(m=>({nivel:'Maestría',nombre:m.n,linea:'—',sedes:m.sedes,e:m.e,o:m.o}))
+      ...p.lineas.filter(l=>itemMatch(l,'espec')).map(l=>({nivel:'Especialización',nombre:l.esp,linea:l.l,sedes:l.sedes,e:l.e,o:l.o,enlaceObtencion:l.enlaceObtencion})),
+      ...p.mae.filter(m=>itemMatch(m,'mae')).map(m=>({nivel:'Maestría',nombre:m.n,linea:'—',sedes:m.sedes,e:m.e,o:m.o,enlaceObtencion:m.enlaceObtencion}))
     ];
     items.forEach((it,i)=>{
       const st=getSt(it.e);
@@ -446,7 +457,7 @@ function renderTabla(){
         <td><span style="font-size:9px;padding:1px 5px;border-radius:5px;${os}">${it.o==='V'?'Vigente':'Proyectada'}</span></td>
         <td style="font-weight:700">${it.nivel}</td><td style="color:#555">${it.linea}</td>
         <td>${it.nombre}</td><td style="font-size:9px">${it.sedes.join(', ')}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span></td>
+        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span>${renderObtencionLink(it)}</td>
       </tr>`;
     });
   });
@@ -470,7 +481,7 @@ function renderSedeView(){
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     [...p.lineas.filter(l=>itemMatch(l,'espec')),...p.mae.filter(m=>itemMatch(m,'mae'))].forEach(item=>{
-      item.sedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o});});
+      item.sedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o,enlaceObtencion:item.enlaceObtencion});});
     });
   });
   if(f.doc&&itemMatch(f.doc,'doc')) f.doc.sedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:'Todos',nivel:f.doc.n,e:f.doc.e,o:f.doc.o});});
@@ -484,7 +495,7 @@ function renderSedeView(){
       h+=`<div class="sede-item"><div style="flex:1;font-size:10px;line-height:1.3">${it.nivel}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${it.o==='V'?'#e6f2eb':'#e8f0fb'};color:${os};border:1px solid ${os}">${it.o==='V'?'Vig.':'Proy.'}</span>
-          <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}">${it.e||'—'}</span>
+          <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}">${it.e||'—'}</span>${renderObtencionLink(it)}
         </div></div>`;
     });
     h+=`</div>`;
@@ -518,7 +529,7 @@ function renderProgForm(){
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+l.id+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
       +'<div class="field"><label>👤 Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"></div></div>'
+      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var mH=tmpMaes.map(function(m){
@@ -551,11 +562,11 @@ function renderProgForm(){
   document.getElementById('editor-content').innerHTML=h;
 }
 
-function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null});tmpLineas._progId=pid;renderProgForm();}
+function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpLineas._progId=pid;renderProgForm();}
 function delLinea(lid){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas=tmpLineas.filter(function(l){return l.id!==lid;});tmpLineas._progId=pid;renderProgForm();}
 function addMae(){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes.push({id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null});tmpMaes._progId=pid;renderProgForm();}
 function delMae(mid){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes=tmpMaes.filter(function(m){return m.id!==mid;});tmpMaes._progId=pid;renderProgForm();}
-function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(function(l){return{id:l.id,l:gv('ll'+l.id)||l.l,t:gv('lt'+l.id)||l.t,esp:gv('le'+l.id)||l.esp,e:gv('les'+l.id),o:gv('lo'+l.id)||l.o,sedes:l.sedes,resp:gv('lresp'+l.id),mes:gi('lmes'+l.id),ano:gi('lano'+l.id)};});tmpLineas._progId=pid;}
+function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(function(l){return{id:l.id,l:gv('ll'+l.id)||l.l,t:gv('lt'+l.id)||l.t,esp:gv('le'+l.id)||l.esp,e:gv('les'+l.id),o:gv('lo'+l.id)||l.o,sedes:l.sedes,resp:gv('lresp'+l.id),mes:gi('lmes'+l.id),ano:gi('lano'+l.id),enlaceObtencion:gv('lenlace'+l.id)||null};});tmpLineas._progId=pid;}
 function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id)};});tmpMaes._progId=pid;}
 function saveProg(pid,isNew){
   collectLineas();collectMaes();
