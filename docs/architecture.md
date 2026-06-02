@@ -1084,3 +1084,332 @@ Para documentos PDF formales (informes, presentaciones institucionales), se reco
 7. Márgenes → "Personalizado" (mínimo)
 8. Guardar
 ```
+
+---
+
+## 19. Análisis de accesos y mutaciones sobre DB
+
+### 19.1. Estructura de datos
+
+```
+DB: Array<Facultad>
+
+Facultad {
+  id: string,          // ej. "admin"
+  name: string,        // ej. "Facultad de Ingeniería"
+  doc: Doctorado|null, // opcional
+  progs: Array<Programa>
+}
+
+Programa {
+  id: string,          // uid()
+  n: string,           // nombre del pregrado
+  sedes: string[],     // ej. ["Fusagasugá", "Chía"]
+  lineas: Array<Linea>,
+  mae: Array<Maestria>
+}
+
+Linea {
+  id: string,          // uid()
+  l: string,           // nombre de línea
+  t: string,           // tipo: "Profundización 1" | "Profundización 2"
+  esp: string,         // nombre de especialización
+  e: string,           // estado (texto libre, ~20 variantes)
+  o: string,           // oferta: "V" | "P"
+  sedes: string[],
+  resp: string,        // responsable
+  mes: number|null,    // 1-12
+  ano: number|null     // 2024-2028
+}
+
+Maestria {
+  id: string,          // uid()
+  n: string,           // nombre maestría
+  e: string,           // estado
+  o: string,           // oferta: "V" | "P"
+  sedes: string[],
+  resp: string,
+  mes: number|null,
+  ano: number|null
+}
+
+Doctorado {
+  n: string,
+  e: string,
+  o: string,           // "V" | "P"
+  sedes: string[],
+  resp: string,
+  mes: number|null,
+  ano: number|null
+}
+```
+
+### 19.2. Mapa de consumidores por módulo
+
+```
+                           ┌───────────────────┐
+                           │   window.DB        │  ← fuente de verdad
+                           │   Array(7)         │
+                           └────────┬──────────┘
+                   ┌────────────────┼────────────────────┐
+                   ▼                ▼                     ▼
+           ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐
+           │   AppData    │ │   storage.js │ │  app.js (direct) │
+           │  (capa)      │ │  (persist)   │ │  renderers       │
+           └──────┬───────┘ └──────┬───────┘ └────────┬─────────┘
+                  │                │                   │
+       ┌──────────┼──────────┐     │          ┌────────┼────────┐
+       ▼          ▼          ▼     │          ▼        ▼        ▼
+  dashboard.js filters.js export.js│     renderTree renderTabla renderSedeView
+  indicators.js                   │     renderProgForm renderEditor
+                                  │
+                                  ▼
+                            embed.js (read)
+```
+
+### 19.3. Operaciones por tipo
+
+#### LECTURAS
+
+| # | Operación | Responsable | Frecuencia | Línea |
+|---|---|---|---|---|
+| L1 | `DB[curFac]` → facultad activa | renderTree, renderTabla, renderSedeView, renderProgForm, renderEditor | 5 call-sites en app.js | app.js:172,432,466,495,819 |
+| L2 | `DB[curFac].progs.forEach(p => ...)` | renderTree, renderTabla, renderSedeView, renderEditor | 4 call-sites en app.js | app.js:187,433,467,827 |
+| L3 | `f.progs.filter(p => pregradoMatch(p.n))` | renderTree | 1 | app.js:187 |
+| L4 | `f.progs.find(x => x.id === pid)` | renderProgForm | 1 | app.js:496 |
+| L5 | `p.lineas.filter(l => itemMatch(l,'espec'))` | renderTree, renderTabla | 3 app.js | app.js:191,214,436 |
+| L6 | `p.mae.filter(m => itemMatch(m,'mae'))` | renderTree, renderTabla | 3 app.js | app.js:193,215,437 |
+| L7 | `f.doc && itemMatch(f.doc,'doc')` | renderTree, renderTabla | 2 | app.js:193,408,450 |
+| L8 | `DB[curFac].progs.length` | renderEditor | 1 | app.js:825 |
+| L9 | `DB[curFac].progs.map(...)` | renderEditor (inline en string) | 1 | app.js:821-846 |
+| L10 | `window.DB[i]` (genérico) | AppData.getFacultad | vía delegación | app-data.js:26 |
+| L11 | `window.DB[faci].progs` | AppData.getProgramas | sin consumidores aún | app-data.js:27 |
+| L12 | `window.DB.filter/Búsqueda` | AppData.findProgramById | vía deleteProg | app-data.js:32-38 |
+| L13 | `ALL_SEDES.filter(s => s.has(x))` | populateSedes (filters.js) | 1 | filters.js:53 |
+| L14 | `JSON.stringify(window.DB)` | saveDB + downloadHTML | cada write + export | storage.js:17, embed.js:67 |
+
+#### ESCRITURAS / MUTACIONES
+
+| # | Operación | Responsable | Riesgo | Línea |
+|---|---|---|---|---|
+| W1 | `window.DB = JSON.parse(JSON.stringify(DEFAULT_DATA))` | loadDB | **ALTO** — reemplaza DB completo | storage.js:42,47 |
+| W2 | `window.DB.push({name, progs:[], doc:null})` | AppData.saveFacultad (isNew) | **ALTO** — muta array + cambia índices | app-data.js:66 |
+| W3 | `window.DB[currentIndex] = facultad` | AppData.saveFacultad (edit) | **ALTO** — reemplaza elemento completo | app-data.js:67 |
+| W4 | `window.DB.splice(facIndex, 1)` | AppData.deleteFacultad | **ALTO** — reindexa todo el array | app-data.js:79 |
+| W5 | `f.progs.push(prog)` | AppData.savePrograma (isNew) | **ALTO** — muta array interno | app-data.js:50 |
+| W6 | `f.progs[i] = prog` | AppData.savePrograma (edit) | **MEDIO** — reemplaza elemento referenciado | app-data.js:53 |
+| W7 | `f.progs = f.progs.filter(p => p.id !== pid)` | AppData.deletePrograma | **MEDIO** — reemplaza array completo | app-data.js:61 |
+| W8 | `f.doc = doc` / `f.doc = null` | AppData.saveDocumento | **BAJO** — mutación de propiedad in-place | app-data.js:86-87 |
+| W9 | `f.name = name` | AppData.updateFacultadName | **BAJO** — mutación de propiedad in-place | app-data.js:74 |
+| W10 | `localStorage.setItem('udec_rutas_db', ...)` | saveDB | **BAJO** — efecto secundario de persistencia | storage.js:17 |
+
+#### MUTACIONES OCULTAS / SIDE EFFECTS
+
+| # | Efecto | Dónde | Detalle |
+|---|---|---|---|
+| S1 | Reasignación de `curFac` tras delete/save | app.js:878 (`deleteFac`), app.js:892 (`saveFac`) | Cambia índice global después de mutar DB |
+| S2 | `curFac` accessor → AppState.navigation.curFac | app.js:71 | Sincronización automática via Object.defineProperty |
+| S3 | `saveDB()` llamado 6 veces en AppData writes | app-data.js:55,62,68,75,80,88 | Cada write persiste automáticamente a localStorage |
+| S4 | `location.reload()` en resetDB | storage.js:93 | Recarga completa de página |
+| S5 | Re-renderizado completo tras cada write | app.js:561,567,873,879,894 | `renderViews()` + `renderEditor()` + `populateSedes()` + `renderFacBar()` |
+
+### 19.4. Dependencias de renderizado (qué DB necesita cada vista)
+
+| Vista | Datos de DB requeridos | Dependencia |
+|---|---|---|
+| **renderFacBar** (dashboard.js:24) | `AppData.getFacultades()` — solo `.name` | Bajo |
+| **renderKPIs** (dashboard.js:41) | `AppData.getFacultad(curFac)` → `f.progs`, `p.lineas`, `p.mae`, `f.doc` | Alto |
+| **renderTree** (app.js:170) | `DB[curFac]` → `f.name`, `f.progs[].id/n/sedes`, `p.lineas[]`, `p.mae[]`, `f.doc` | **Crítico** |
+| **renderTabla** (app.js:431) | `DB[curFac]` → `f.progs`, `p.lineas[]`, `p.mae[]`, `f.doc` | Alto |
+| **renderSedeView** (app.js:465) | `DB[curFac]` → `f.progs`, sedes de cada item, `f.doc` | Alto |
+| **renderProgForm** (app.js:494) | `DB[curFac]` → `f.progs.find(id)`, `p.lineas`, `p.mae` | Alto |
+| **renderEditor** (app.js:818) | `DB[curFac]` → `f.name`, `f.progs`, `p.lineas/mae`, `f.doc` | Alto |
+| **renderIndicadores** (indicators.js:28) | `AppData.getFacultades()` + count → todos los datos | Alto |
+| **renderPipeline** (app.js:685) | `AppData.getFacultades()` → todos los datos | Alto |
+| **renderSNIES** (app.js:620) | `SD` (AppState.snies.SD) — independiente de DB | Bajo |
+| **populateSedes** (filters.js:47) | `AppData.getFacultad(curFac)` + `ALL_SEDES` | Medio |
+| **downloadDB** (export.js:164) | `AppData.getFacultades()` → todos los datos planos | Alto |
+| **downloadHTML** (storage.js:53) | `JSON.stringify(window.DB)` → datos serializados | Bajo |
+
+### 19.5. Patrones de acceso repetidos
+
+| Patrón | Ocurrencias | Dónde |
+|---|---|---|
+| `DB[curFac]` → `f.progs` + `forEach/map/filter` | 8 | renderTree (3), renderTabla (2), renderSedeView (1), renderEditor (2) |
+| `DB[curFac].progs.find(id)` → `p.lineas` + `p.mae` | 1 | renderProgForm |
+| `AppData.getFacultades().forEach(fac => fac.progs.forEach(p => ...))` | 3 | indicators.js, export.js, pipeline |
+| `DB[curFac].progs.filter(p => pregradoMatch(p.n))` | 1 | renderTree |
+| `p.lineas.filter(l => itemMatch(l,'espec'))` + `p.mae.filter(m => itemMatch(m,'mae'))` | 4 | renderTree (2), renderTabla (2) |
+| `f.doc && itemMatch(f.doc, 'doc')` | 2 | renderTree, renderTabla |
+| `f.progs.length` | 1 | renderEditor |
+| `JSON.parse(JSON.stringify(objeto))` (deep clone) | 3 | loadDB (DEFAULT_DATA), renderProgForm (tmpLineas/tmpMaes) |
+
+### 19.6. Riesgos por operación
+
+| Riesgo | Operaciones | Justificación |
+|---|---|---|
+| **🔴 ALTO** | `loadDB`, `saveFacultad` (push/splice), `deleteFacultad` | Mutan la estructura del array `window.DB` — cualquier referencia por índice (curFac) queda desactualizada. `splice` cambia índices de todas las facultades siguientes. |
+| **🟡 MEDIO** | `savePrograma` (replace), `deletePrograma` (filter), `savePrograma` (push) | Mutan la estructura interna de `f.progs` — referencias retenidas a programas individuales quedan huérfanas. El filter reemplaza todo el array. |
+| **🟢 BAJO** | `saveDocumento`, `updateFacultadName`, `saveDB`, `getFacultades` | Mutación in-place de propiedades sin afectar estructura de array ni índices. get retorna referencia directa (compartida) pero nadie retiene la referencia para mutación salvo AppData. |
+| **⚪ INFORMATIVO** | `getFacultad`, `findProgramById`, `getFacultadCount` | Solo lectura. No hay efecto secundario. Seguras para migración inmediata. |
+
+### 19.7. Referencias compartidas (aliasing)
+
+| Referencia | Dónde se obtiene | Riesgo |
+|---|---|---|
+| `AppData.getFacultades()` → `window.DB` | dashboard.js:25, indicators.js:77, export.js:184, app.js:697,821 | **ALERTA**: retorna el array original. Cualquier `push/splice` en el caller muta DB directamente. Actualmente ningún caller lo hace (solo AppData escribe), pero no hay protección. |
+| `AppData.getFacultad(i)` → `window.DB[i]` | dashboard.js:42, filters.js:48, app.js:876,886 | **ALERTA**: retorna la referencia del objeto. Mutar `f.name`, `f.progs`, `f.doc` desde caller afecta DB directamente. Solo AppData escribe actualmente. |
+| `DB[curFac]` en app.js renderers | app.js:172,432,466,495,819 | **LEGACY**: acceso directo a `var DB`, sin pasar por AppData. Solo lectura, pero bypass del control de acceso. |
+
+### 19.8. Operaciones candidatas para encapsulación inmediata (sin riesgo)
+
+| Operación | Reemplazo AppData | Prioridad |
+|---|---|---|
+| `DB[curFac]` en renderTree | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta (reemplaza 5 sites) |
+| `DB[curFac]` en renderTabla | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `DB[curFac]` en renderSedeView | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `DB[curFac]` en renderProgForm | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `DB[curFac]` en renderEditor | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `storage.js` references to `window.DB` | `AppData.getFacultades/getFacultad` | 🟡 Media |
+| `DEFAULT_DATA` como módulo | `assets/js/data/default-data.js` | 🟡 Media |
+| `ALL_SEDES` como módulo | `assets/js/data/sedes.js` | 🟢 Baja |
+| `SD` (SNIES) como módulo | `assets/js/data/snies-data.js` | 🟢 Baja |
+
+### 19.9. Estructura propuesta para capa de datos
+
+```
+assets/js/
+  data/
+    app-data.js       ← ya existe: queries + writes controlados sobre window.DB
+    default-data.js   ← extraer DEFAULT_DATA aquí
+    sedes.js          ← extraer ALL_SEDES aquí
+    snies-data.js     ← extraer SD aquí
+  services/
+    (reservado para lógica de negocio futura)
+  modules/
+    ... (sin cambios)
+```
+
+### 19.10. Dependencias circulares
+
+```
+NO HAY dependencias circulares.
+```
+
+Flujo actual:
+```
+app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
+                ↑                ↑
+          app-data.js        app.js
+                ↑
+          app.js (loadDB)
+```
+
+`embed.js` lee `window.DB` directamente en `buildStandalone()`, no importa de app-data.js. Esto es correcto porque embed.js se ejecuta en runtime para export, no para inicialización.
+
+### 19.11. Resumen de acoplamientos
+
+| Módulo | Acoplamiento a DB | Controlado por AppData |
+|---|---|---|
+| app-data.js | 20 referencias a `window.DB` | Es la capa misma — aceptable |
+| app.js (renderers) | 6 referencias `DB[curFac]` | ❌ Directo |
+| app.js (writes) | 0 — vía AppData | ✅ |
+| storage.js | 6 referencias `window.DB` + DEFAULT_DATA | ❌ Directo |
+| storage.js (downloadHTML) | 2 refs `window.DB` | ❌ Directo |
+| embed.js | 1 ref `window.DB` | ❌ Directo (pero aislado) |
+| filters.js | 1 ref `window.ALL_SEDES` | ❌ Directo (solo lectura) |
+| dashboard.js | 0 — vía AppData | ✅ |
+| indicators.js | 0 — vía AppData | ✅ |
+| export.js | 0 — vía AppData | ✅ |
+
+### 19.12. Operaciones encapsuladas (Fase 4)
+
+#### Nuevos getters readonly agregados (app-data.js — Fase 4):
+
+| Método | Retorno | Propósito |
+|---|---|---|
+| `getFacultadesSafe()` | `Array` (shallow copy) | Evita mutación accidental del array original |
+| `getFacultadSafe(i)` | `Object` (shallow copy) | Evita mutación accidental del objeto facultad |
+| `getProgramaCount(fi)` | `number` | Cuenta programas de pregrado |
+| `getSedesEnUso(fi)` | `string[]` | Sedes únicas usadas por los programas de una facultad |
+| `getFacultadName(fi)` | `string` | Acceso seguro al campo name |
+| `getFacultadDoc(fi)` | `Object|null` | Acceso seguro al campo doc |
+| `getFacultadIndexById(fid)` | `number` | Búsqueda de índice por id |
+| `getFacultadIndexByName(name)` | `number` | Búsqueda de índice por nombre exacto |
+| `getProgramaById(pid)` | `Object|null` | Retorna solo el programa (sin facIndex) |
+
+#### Referencias legacy migradas en Fase 4:
+
+| Antes | Después | Archivo |
+|---|---|---|
+| `window.ALL_SEDES.filter(...)` | `AppState.staticData.ALL_SEDES.filter(...)` | filters.js:53 |
+
+### 19.13. Checklist de migración (actualizado Fase 4)
+
+- [x] AppData creado (queries + writes iniciales, Fase 3)
+- [x] AppData extendido con 9 getters readonly adicionales (Fase 4)
+- [x] dashboard.js → AppData (Fase 3)
+- [x] indicators.js → AppData (Fase 3)
+- [x] export.js → AppData (Fase 3)
+- [x] app.js writes → AppData (Fase 3)
+- [x] filters.js `window.ALL_SEDES` → `AppState.staticData.ALL_SEDES` (Fase 4)
+- [ ] filters.js `window.curFac` → `AppState.navigation.curFac` (pendiente)
+- [ ] app.js renderers → AppData (6 sites: tree, tabla, sede, progForm, editor)
+- [ ] storage.js → AppData (loadDB, saveDB)
+- [ ] embed.js → AppData (buildStandalone)
+- [ ] Extraer DEFAULT_DATA a módulo separado
+- [ ] Extraer ALL_SEDES a módulo separado
+- [ ] Extraer SD (SNIES) a módulo separado
+
+### 19.14. Cobertura actual de AppData
+
+| Módulo | Accesos DB | Via AppData | Directo | Progreso |
+|---|---|---|---|---|
+| app-data.js | 20 | 20 (es la capa) | 0 | 100% |
+| dashboard.js | 2 | 2 | 0 | 100% |
+| indicators.js | 11 | 11 | 0 | 100% |
+| export.js | 5 | 5 | 0 | 100% |
+| app.js (writes) | 7 | 7 | 0 | 100% |
+| filters.js | 3 | 2 | 1 (`window.curFac`) | 67% |
+| app.js (renderers) | 30 | 0 | 30 (`DB[curFac]` + `f.*`) | 0% |
+| storage.js | 11 | 0 | 11 (`window.DB`) | 0% |
+| embed.js | 1 | 0 | 1 (`window.DB`) | 0% |
+| **Total** | **90** | **47** | **43** | **52%** |
+
+### 19.15. Accesos legacy restantes (pendientes Fase 4)
+
+| # | Referencia | Archivo | Línea | Riesgo | Dependencia |
+|---|---|---|---|---|---|
+| R1 | `DB[curFac]` → fac activa | app.js | 172,432,466,495,819 | 🔴 Alto | renderTree, renderTabla, renderSedeView, renderProgForm, renderEditor |
+| R2 | `f.progs.forEach/map/filter` | app.js | 187,433,467,827 | 🔴 Alto | renderTree, renderTabla, renderSedeView, renderEditor |
+| R3 | `p.lineas/p.mae` acceso anidado | app.js | 191,214,436,496 | 🔴 Alto | renderTree, renderTabla, renderProgForm |
+| R4 | `f.doc` acceso | app.js | 408,450,473,819 | 🟡 Medio | renderTree, renderTabla, renderSedeView, renderEditor |
+| R5 | `f.name` acceso | app.js | 819,825 | 🟡 Medio | renderEditor |
+| R6 | `window.DB` en save/load | storage.js | 17,42,61,67,77 | 🟡 Medio | persistencia (no tocar) |
+| R7 | `window.DB` en embed | embed.js | 67 | 🟢 Bajo | export (no tocar) |
+| R8 | `window.curFac` en filters | filters.js | 48 | 🟢 Bajo | acceso legacy |
+
+### 19.16. Referencias compartidas detectadas
+
+| Referencia | Dónde | Riesgo |
+|---|---|---|
+| `AppData.getFacultades()` → `window.DB` mismo array | dashboard.js:25, indicators.js:77, export.js:184, app.js:697,821 | Mutable desde afuera — `getFacultadesSafe()` existe como alternativa |
+| `AppData.getFacultad(i)` → `window.DB[i]` mismo objeto | dashboard.js:42, filters.js:48, app.js:876,886 | Mutable desde afuera — `getFacultadSafe()` existe como alternativa |
+| `AppState.staticData.ALL_SEDES` → `window.ALL_SEDES` mismo array | filters.js:53 | Misma referencia, no hay copia |
+| `DB[curFac]` en renderers | app.js:172,432,466,495,819 | Lee `var DB` directamente, no pasa por AppData |
+
+### 19.17. Riesgos pendientes para siguiente fase
+
+1. **6 referencias `DB[curFac]` en renderers**: todas son solo lectura, pero 5 renderers complejos dependen de ellas. Migración requiere refactor de template strings con acceso a propiedades anidadas (`f.doc`, `f.progs[i].lineas[j]`, etc.).
+2. **11 referencias en storage.js**: `saveDB()` serializa `window.DB`, `loadDB()` reemplaza `window.DB`. Migrar requiere que AppData gestione la persistencia.
+3. **1 referencia en embed.js**: `JSON.stringify(window.DB)` en `buildStandalone()`. Migrar requiere AppData serializable.
+4. **Mutable references**: `getFacultades()` y `getFacultad()` retornan referencias directas. Callers actualmente no mutan, pero no hay protección.
+5. **ALL_SEDES sin extraer**: datos inline en app.js, no modularizados. Filtros dependen de `AppState.staticData.ALL_SEDES` que apunta al mismo array.
+
+### 19.18. Recomendaciones para Fase 4 (siguiente iteración)
+
+1. **Migrar renderTree y renderTabla** primero: son solo lectura y tienen el patrón más claro de `DB[curFac]` → `f.progs` → `p.lineas/p.mae`.
+2. **Agregar validación en AppData writes**: antes de mutar, validar estructura del programa (campos obligatorios, tipos).
+3. **Extraer DEFAULT_DATA**: archivo separado `default-data.js` para no contaminar app.js con ~50 líneas de datos serializados.
+4. **Migrar storage.js**: que `loadDB` use `AppData.loadDB()` y que `saveDB` acceda a datos via AppData.
+5. **Evaluar inmutabilidad**: congelar (`Object.freeze`) los objetos retornados por AppData queries para prevenir mutaciones accidentales fuera de la capa.
