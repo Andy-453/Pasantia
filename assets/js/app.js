@@ -917,5 +917,5 @@ function saveFac(isNew){
   toast('Facultad guardada');renderFacBar();renderViews();renderEditor();
 }
 function openNewProg(){editingProgId='__new__';tmpLineas=[];tmpMaes=[];renderProgForm();}
-function openEditProg(pid){editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
+function openEditProg(pid){showTab('editor');editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
 
