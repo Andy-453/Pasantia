@@ -492,7 +492,7 @@ function renderSedeView(){
 
 // ===== PROG FORM =====
 function renderProgForm(){
-  var f=DB[curFac],isNew=editingProgId==='__new__';
+  var f=AppData.getFacultad(AppState.navigation.curFac),isNew=editingProgId==='__new__';
   var p=isNew?{id:uid(),n:'',sedes:[],lineas:[{id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'V',sedes:[],resp:'',mes:null,ano:null}],mae:[{id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null}]}:f.progs.find(function(x){return x.id===editingProgId;});
   if(!p) return;
   if(!tmpLineas._progId||tmpLineas._progId!==p.id){

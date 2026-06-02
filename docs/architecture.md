@@ -1346,6 +1346,7 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 | `DB[curFac]` en renderTree | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:172 |
 | `DB[curFac]` en renderTabla | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:432 |
 | `DB[curFac]` en renderSedeView | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:466 |
+| `DB[curFac]` en renderProgForm | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:495 |
 
 ### 19.13. Checklist de migración (actualizado Fase 4)
 
@@ -1360,7 +1361,7 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 - [x] renderTabla `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
 - [x] renderSedeView `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
 - [ ] filters.js `window.curFac` → `AppState.navigation.curFac` (pendiente)
-- [ ] renderProgForm `DB[curFac]` → `AppData.getFacultad()` (editor, pendiente)
+- [x] renderProgForm `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
 - [ ] renderEditor `DB[curFac]` → `AppData.getFacultad()` (editor, pendiente)
 - [ ] storage.js → AppData (loadDB, saveDB)
 - [ ] embed.js → AppData (buildStandalone)
@@ -1378,16 +1379,16 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 | export.js | 5 | 5 | 0 | 100% |
 | app.js (writes) | 7 | 7 | 0 | 100% |
 | filters.js | 3 | 2 | 1 (`window.curFac`) | 67% |
-| app.js (renderers) | 30 | 18 | 12 (`DB[curFac]` en progForm+editor) | 60% |
+| app.js (renderers) | 30 | 19 | 11 (`DB[curFac]` en renderEditor) | 63% |
 | storage.js | 11 | 0 | 11 (`window.DB`) | 0% |
 | embed.js | 1 | 0 | 1 (`window.DB`) | 0% |
-| **Total** | **90** | **65** | **25** | **72%** |
+| **Total** | **90** | **66** | **24** | **73%** |
 
 ### 19.15. Accesos legacy restantes (pendientes Fase 4)
 
 | # | Referencia | Archivo | Línea | Riesgo | Dependencia |
 |---|---|---|---|---|---|---|
-| R1 | `DB[curFac]` → fac activa | app.js | 495,819 | 🔴 Alto | renderProgForm, renderEditor |
+| R1 | `DB[curFac]` → fac activa | app.js | 819 | 🔴 Alto | renderEditor |
 | R2 | `f.progs.forEach/map/filter` | app.js | 827 | 🔴 Alto | renderEditor |
 | R3 | `p.lineas/p.mae` acceso anidado | app.js | 496 | 🔴 Alto | renderProgForm |
 | R4 | `f.doc` acceso | app.js | 819 | 🟡 Medio | renderEditor |
@@ -1403,11 +1404,11 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 | `AppData.getFacultades()` → `window.DB` mismo array | dashboard.js:25, indicators.js:77, export.js:184, app.js:697,821 | Mutable desde afuera — `getFacultadesSafe()` existe como alternativa |
 | `AppData.getFacultad(i)` → `window.DB[i]` mismo objeto | dashboard.js:42, filters.js:48, app.js:876,886 | Mutable desde afuera — `getFacultadSafe()` existe como alternativa |
 | `AppState.staticData.ALL_SEDES` → `window.ALL_SEDES` mismo array | filters.js:53 | Misma referencia, no hay copia |
-| `DB[curFac]` en renderers | app.js:495,819 | Lee `var DB` directamente, no pasa por AppData (renderTree/tabla/sede migrados) |
+| `DB[curFac]` en renderers | app.js:819 | Lee `var DB` directamente, no pasa por AppData (4/5 renderers migrados) |
 
 ### 19.17. Riesgos pendientes para siguiente fase
 
-1. **2 referencias `DB[curFac]` en editor** (renderProgForm + renderEditor): migración pendiente. Son más complejas porque usan template strings con acceso a propiedades anidadas (`f.doc`, `f.progs[i].lineas[j]`, etc.).
+1. **1 referencia `DB[curFac]` en renderEditor**: migración pendiente. Es la más compleja porque usa template strings con acceso a propiedades anidadas (`f.doc`, `f.progs[i].lineas[j]`, `f.name`).
 2. **11 referencias en storage.js**: `saveDB()` serializa `window.DB`, `loadDB()` reemplaza `window.DB`. Migrar requiere que AppData gestione la persistencia.
 3. **1 referencia en embed.js**: `JSON.stringify(window.DB)` en `buildStandalone()`. Migrar requiere AppData serializable.
 4. **Mutable references**: `getFacultades()` y `getFacultad()` retornan referencias directas. Callers actualmente no mutan, pero no hay protección.
@@ -1415,8 +1416,8 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 
 ### 19.18. Recomendaciones para Fase 4 (siguiente iteración)
 
-1. ~~Migrar renderTree y renderTabla~~ ✅ Completado. ~~Migrar renderSedeView~~ ✅ Completado.
-2. **Migrar renderProgForm** a `AppData.getFacultad()` — es el más simple del editor, usa `f.progs.find()`.
+1. ~~Migrar renderTree, renderTabla, renderSedeView~~ ✅ Completado. ~~Migrar renderProgForm~~ ✅ Completado.
+2. **Migrar renderEditor** a `AppData.getFacultad()` — único renderer pendiente: ~45 líneas, usa `f.name`, `f.progs.forEach`, `f.doc`.
 3. **Agregar validación en AppData writes**: antes de mutar, validar estructura del programa (campos obligatorios, tipos).
 4. **Extraer DEFAULT_DATA**: archivo separado `default-data.js` para no contaminar app.js con ~50 líneas de datos serializados.
 5. **Migrar storage.js**: que `loadDB` use `AppData.loadDB()` y que `saveDB` acceda a datos via AppData.
