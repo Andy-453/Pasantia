@@ -816,7 +816,7 @@ function toggleSec(id){var el=document.getElementById(id),ic=document.getElement
 // Versión ACTIVA — sombrea a renderEditor en línea 364.
 // TODO [MVC]: unificar con la implementación legacy en Fase 3.
 function renderEditor(){
-  var f=DB[curFac];
+  var f=AppData.getFacultad(AppState.navigation.curFac);
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
   var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   var h='<div style="padding:1rem">';
