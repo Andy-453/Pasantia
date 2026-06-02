@@ -169,6 +169,14 @@ document.addEventListener('change', function(e){
   if(fn) fn(b);
 });
 
+function _getObtencionUrl(e, item){
+  if(!item || !item.enlaceObtencion) return '';
+  if((e||'').toLowerCase() !== 'obtención') return '';
+  var url = item.enlaceObtencion.trim();
+  if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
+  return url;
+}
+
 // ===== TREE =====
 /**
  * Renderiza el árbol jerárquico (pregrado → línea → especialización / maestría / doctorado).
@@ -184,17 +192,14 @@ function renderTree(){
   function vline(h){
     return `<div class="vl" style="height:${h}px"></div>`;
   }
-  function stBadge(e){
+  function stBadge(e, item){
     if(!e) return '';
     const s=getSt(e);
-    return `<div class="badge" style="background:${s.bg};color:${s.tx}"><div class="bdot" style="background:${s.dot}"></div>${e}</div>`;
-  }
-  function renderObtencionLink(item){
-    if(!item || !item.enlaceObtencion) return '';
-    if((item.e||'').toLowerCase() !== 'obtención') return '';
-    var url = item.enlaceObtencion.trim();
-    if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
-    return '<button data-action="open-program-link" data-url="'+url+'" style="display:inline-flex;align-items:center;gap:2px;margin-left:4px;padding:1px 6px;border:none;border-radius:4px;background:#1D9E75;color:#fff;font-size:9px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap" title="Abrir enlace del programa">🔗</button>';
+    var url = _getObtencionUrl(e, item);
+    if(url){
+      return '<div class="badge clickable" data-action="open-program-link" data-url="'+url+'" role="button" tabindex="0" style="background:'+s.bg+';color:'+s.tx+';cursor:pointer"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
+    }
+    return '<div class="badge" style="background:'+s.bg+';color:'+s.tx+'"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
   }
 
   // Filter programs (defensive: guard against undefined lineas/mae from stale data)
@@ -297,54 +302,18 @@ function renderTree(){
               <div class="node-label">Especialización</div>
               <div class="node-title">${l.esp}</div>
               <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
-              ${stBadge(l.e)}${renderObtencionLink(l)}
+              ${stBadge(l.e, l)}
             </div>
           </div>
         </div>`;
       });
-      h+=`</div>`;
-    }
 
-    if(vM.length){
-      const colW = 210;
-      const gap = 16;
-      const n = vM.length;
-      const totalW = n * colW + (n-1) * gap;
-      const centerX = totalW / 2;
-      const svgH = 48;
 
-      let svgPaths = `<line x1="${centerX}" y1="0" x2="${centerX}" y2="20" stroke="#d4b84a" stroke-width="2"/>`;
-      if(n > 1){
-        const firstX = colW/2;
-        const lastX = totalW - colW/2;
-        svgPaths += `<line x1="${firstX}" y1="20" x2="${lastX}" y2="20" stroke="#d4b84a" stroke-width="2"/>`;
-      }
-      vM.forEach((_,i)=>{
-        const cx = i*(colW+gap) + colW/2;
-        svgPaths += `<line x1="${cx}" y1="20" x2="${cx}" y2="${svgH}" stroke="#d4b84a" stroke-width="2"/>`;
-        if(n > 1) svgPaths += `<circle cx="${cx}" cy="20" r="3" fill="#C8A43A"/>`;
-      });
 
-      h+=`
-      <div style="width:${Math.max(totalW,10)}px;display:flex;justify-content:center">
-        <svg width="${Math.max(totalW,2)}" height="${svgH}" style="display:block;overflow:visible">
-          ${svgPaths}
-          <circle cx="${centerX}" cy="0" r="3" fill="#C8A43A"/>
-        </svg>
-      </div>
-      <div style="display:flex;gap:${gap}px;align-items:flex-start;width:${Math.max(totalW,10)}px">`;
-
-      vM.forEach(m=>{
-        h+=`
-        <div style="width:${colW}px;flex-shrink:0">
-          <div class="node node-mae" style="width:100%">
-            <div class="node-stripe"></div>
-            <div class="node-body">
-              ${pll(m.o)}
               <div class="node-label">Maestría</div>
               <div class="node-title">${m.n}</div>
               <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
-              ${stBadge(m.e)}${renderObtencionLink(m)}
+              ${stBadge(m.e, m)}
             </div>
           </div>
         </div>`;
@@ -394,22 +363,17 @@ function renderTree(){
             <div class="node-label">Especialización</div>
             <div class="node-title">${l.esp}</div>
             <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
-            ${stBadge(l.e)}${renderObtencionLink(l)}
+            ${stBadge(l.e, l)}
           </div>
         </div>`;
       });
 
-      vM.forEach(m=>{
-        h+=`
-        ${vline(10)}
-        <div class="node node-mae">
-          <div class="node-stripe"></div>
-          <div class="node-body">
-            ${pll(m.o)}
+
+
             <div class="node-label">Maestría</div>
             <div class="node-title">${m.n}</div>
             <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
-            ${stBadge(m.e)}${renderObtencionLink(m)}
+            ${stBadge(m.e, m)}
           </div>
         </div>`;
       });
@@ -453,11 +417,13 @@ function renderTabla(){
     items.forEach((it,i)=>{
       const st=getSt(it.e);
       const os=it.o==='V'?'background:#e6f2eb;color:#006633;border:1px solid #006633':'background:#e8f0fb;color:#1a5cb0;border:1px solid #378ADD';
+      var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
+      if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+bUrl+'" role="button" tabindex="0" style="cursor:pointer"';}
       rows+=`<tr>${i===0?`<td rowspan="${items.length}" style="font-weight:700;vertical-align:top;color:#006633">${p.n}<div style="font-size:9px;color:#666;font-style:italic">${p.sedes.join(', ')}</div></td>`:''}
         <td><span style="font-size:9px;padding:1px 5px;border-radius:5px;${os}">${it.o==='V'?'Vigente':'Proyectada'}</span></td>
         <td style="font-weight:700">${it.nivel}</td><td style="color:#555">${it.linea}</td>
         <td>${it.nombre}</td><td style="font-size:9px">${it.sedes.join(', ')}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span>${renderObtencionLink(it)}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"${bAttrs}><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span></td>
       </tr>`;
     });
   });
@@ -492,11 +458,14 @@ function renderSedeView(){
     h+=`<div class="sede-card"><div class="sede-name">📍 ${s} <span style="font-size:9px;background:#e6f2eb;color:#006633;padding:1px 6px;border-radius:8px;margin-left:4px">${sm[s].length}</span></div>`;
     sm[s].forEach(it=>{
       const st=getSt(it.e);const os=it.o==='V'?'#006633':'#1a5cb0';
+      var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
+      if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+bUrl+'" role="button" tabindex="0" style="cursor:pointer"';}
       h+=`<div class="sede-item"><div style="flex:1;font-size:10px;line-height:1.3">${it.nivel}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${it.o==='V'?'#e6f2eb':'#e8f0fb'};color:${os};border:1px solid ${os}">${it.o==='V'?'Vig.':'Proy.'}</span>
-          <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}">${it.e||'—'}</span>${renderObtencionLink(it)}
+          <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}"${bAttrs}>${it.e||'—'}</span>
         </div></div>`;
+    });
     });
     h+=`</div>`;
   });
