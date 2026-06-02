@@ -307,9 +307,45 @@ function renderTree(){
           </div>
         </div>`;
       });
+      h+=`</div>`;
+    }
 
+    if(vM.length){
+      const colW = 210;
+      const gap = 16;
+      const n = vM.length;
+      const totalW = n * colW + (n-1) * gap;
+      const centerX = totalW / 2;
+      const svgH = 48;
 
+      let svgPaths = `<line x1="${centerX}" y1="0" x2="${centerX}" y2="20" stroke="#d4b84a" stroke-width="2"/>`;
+      if(n > 1){
+        const firstX = colW/2;
+        const lastX = totalW - colW/2;
+        svgPaths += `<line x1="${firstX}" y1="20" x2="${lastX}" y2="20" stroke="#d4b84a" stroke-width="2"/>`;
+      }
+      vM.forEach((_,i)=>{
+        const cx = i*(colW+gap) + colW/2;
+        svgPaths += `<line x1="${cx}" y1="20" x2="${cx}" y2="${svgH}" stroke="#d4b84a" stroke-width="2"/>`;
+        if(n > 1) svgPaths += `<circle cx="${cx}" cy="20" r="3" fill="#C8A43A"/>`;
+      });
 
+      h+=`
+      <div style="width:${Math.max(totalW,10)}px;display:flex;justify-content:center">
+        <svg width="${Math.max(totalW,2)}" height="${svgH}" style="display:block;overflow:visible">
+          ${svgPaths}
+          <circle cx="${centerX}" cy="0" r="3" fill="#C8A43A"/>
+        </svg>
+      </div>
+      <div style="display:flex;gap:${gap}px;align-items:flex-start;width:${Math.max(totalW,10)}px">`;
+
+      vM.forEach(m=>{
+        h+=`
+        <div style="width:${colW}px;flex-shrink:0">
+          <div class="node node-mae" style="width:100%">
+            <div class="node-stripe"></div>
+            <div class="node-body">
+              ${pll(m.o)}
               <div class="node-label">Maestría</div>
               <div class="node-title">${m.n}</div>
               <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
@@ -368,8 +404,13 @@ function renderTree(){
         </div>`;
       });
 
-
-
+      vM.forEach(m=>{
+        h+=`
+        ${vline(10)}
+        <div class="node node-mae">
+          <div class="node-stripe"></div>
+          <div class="node-body">
+            ${pll(m.o)}
             <div class="node-label">Maestría</div>
             <div class="node-title">${m.n}</div>
             <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
@@ -465,7 +506,6 @@ function renderSedeView(){
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${it.o==='V'?'#e6f2eb':'#e8f0fb'};color:${os};border:1px solid ${os}">${it.o==='V'?'Vig.':'Proy.'}</span>
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}"${bAttrs}>${it.e||'—'}</span>
         </div></div>`;
-    });
     });
     h+=`</div>`;
   });
