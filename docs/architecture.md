@@ -1,7 +1,7 @@
 # Análisis Arquitectónico — Dashboard UDEC Posgrados
 
-> **Hito**: 2026-06-01 — 0 onclick en `app.js`, 1 en HTML (`downloadDB` excluido). Todos los handlers migrados a `data-action` + dispatcher centralizado.
-> Pendiente: migrar 10 `var` globales legacy a `window.AppState` via getter/setter.
+> **Hito**: 2026-06-02 — Export HTML standalone funcional (CSS+JS+imágenes inline). Print CSS mejorado con @media print comprehensive.
+> Pendiente: migrar 6 referencias `DB` bare en renderers a `AppData`.
 
 ## 1. Resumen del sistema
 
@@ -17,19 +17,24 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 ### Archivos del proyecto
 
 | Archivo | Líneas | Rol |
-|---|---|---|
-| `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 882 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
-| `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
-| `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
+|---|---|---|---|
+| `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1176 | Shell HTML + datos embebidos serializados |
+| `assets/js/app.js` | 898 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/modules/utils.js` | 52 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
+| `assets/js/modules/embed.js` | 108 | Runtime embedding para export HTML standalone |
+| `assets/js/modules/storage.js` | 94 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
-| `assets/js/modules/dashboard.js` | 65 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
+| `assets/js/modules/dashboard.js` | 57 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
 | `assets/js/modules/indicators.js` | 435 | Panel de indicadores (renderIndicadores, helpers SVG) |
-| `assets/js/modules/export.js` | 278 | Exportaciones (downloadDB, exportSNIES, mapas SNIES) |
+| `assets/js/modules/export.js` | 276 | Exportaciones (downloadDB, exportSNIES, mapas SNIES) |
+| `assets/js/data/app-data.js` | 90 | Capa de acceso a datos (Fase 4) |
 
-**Total: ~1765 líneas JS, 6 módulos extraídos + 1 orquestador legacy**
+**Total: ~1885 líneas JS, 8 módulos + 1 orquestador + 1 data layer**
 
 ### Orden de carga
+```
+Chart.js (CDN) → utils.js → embed.js → storage.js → app-data.js
+→ filters.js → dashboard.js → indicators.js → export.js → app.js
 ```
 Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 → indicators.js → export.js → app.js
@@ -906,3 +911,176 @@ AppData.saveDocumento(facIndex, doc)          → muta + persiste
 2. Extraer `DEFAULT_DATA`, `ALL_SEDES`, `SD` a módulos separados bajo `assets/js/data/`
 3. Migrar `storage.js` a usar `AppData` en lugar de `window.DB`
 4. Evaluar eliminación de `var DB` una vez migrados todos los consumidores
+
+---
+
+## 17. Export standalone HTML — `embed.js`
+
+### 17.1. Problema
+
+`downloadHTML()` serializaba `document.documentElement.outerHTML` con `DEFAULT_DATA` actualizado, pero los `<link>`, `<script src>`, `<img src>` seguían apuntando a rutas relativas (`assets/css/main.css`, `assets/js/app.js`). Al mover el archivo .html descargado a otra ubicación, todos los recursos quedaban rotos.
+
+### 17.2. Solución
+
+`assets/js/modules/embed.js` — módulo runtime que empaqueta todos los recursos inline antes de la descarga:
+
+| Función | Qué hace | API |
+|---|---|---|
+| `collectCSS()` | Recorre `document.styleSheets` y recolecta `cssRules[].cssText` | Síncrona, retorna string |
+| `fetchJS(src)` | `fetch()` mismo origen para obtener contenido JS como texto | Async, retorna Promise<string> |
+| `imageToDataURI(img)` | Dibuja imagen en `<canvas>` y exporta como `data:image/png;base64,...` | Async, retorna Promise<string> |
+| `buildStandalone()` | Orquesta: inyecta CSS inline, reemplaza `<script src>` por inline, convierte imágenes a data URI | Retorna Promise<string> |
+
+### 17.3. Flujo de `downloadHTML()` (actualizado)
+
+```
+[Click "Guardar dashboard"]
+  → toast("⏳ Empaquetando dashboard...")
+  → __EMBED.buildStandalone()
+      ├─ collectCSS() → <style>...</style> (reemplaza <link>)
+      ├─ fetchJS() para cada <script src> → <script>code</script>
+      ├─ imageToDataURI() para cada <img> → data:image/png;base64,...
+      └─ Reemplaza DEFAULT_DATA con DB actual
+  → Blob → download
+  └─ Si __EMBED no existe o falla: fallback clásico (solo DEFAULT_DATA)
+```
+
+### 17.4. Edge cases
+
+| Caso | Comportamiento |
+|---|---|
+| CDN script (Chart.js) | fetchJS falla (cross-origin sin CORS o sin conexión) → se conserva `<script src="...">` original |
+| Imagen no cargada (0×0) | Canvas falla → se conserva src original |
+| Imagen ya data URI | Se pasa tal cual, sin reconversión |
+| `outerHTML` resuelve src a URL absoluta | Se reemplazan ambas formas (relativa y absoluta) |
+| Sin conexión a internet | JS local funciona (mismo origen), CDN no — Chart.js no disponible offline |
+
+### 17.5. Carga
+
+`embed.js` se carga entre `utils.js` y `storage.js` (antes que `downloadHTML()` lo necesite):
+
+```
+Chart.js (CDN) → utils.js → **embed.js** → storage.js → app-data.js → ...
+```
+
+### 17.6. Dependencias
+
+- `fetch()` — disponible en todos los navegadores modernos
+- `document.styleSheets` + `cssRules` — mismo origen (CSS local)
+- `<canvas>` API — para conversión de imágenes
+
+---
+
+## 18. Estrategia de impresión / PDF
+
+### 18.1. Problemas observados
+
+| Síntoma | Causa raíz | Componente |
+|---|---|---|
+| Corte horizontal | `overflow-x:auto` en `.scroll` | Tree (renderTree) |
+| Tabla truncada vertical | `max-height:480px` + `overflow:auto` en `.tbl-wrap` | Tabla (renderTabla) |
+| Corte contenedores lista | `max-height:140px;overflow-y:auto` inline | Indicadores (legends) |
+| Corte horizontal tabla | `overflow-x:auto` + `min-width:700px` inline | Indicadores (facultad table) |
+| Secciones plegadas | `display:none` en secciones toggle | Pipeline |
+| Sticky header no funcional | `position:sticky` no soportado en print browsers | Tabla |
+| Cards cortadas entre páginas | Ausencia de `break-inside` | Tree cards, KPI, Sede cards |
+| Grillas muy anchas | `repeat(5,1fr)` / `repeat(6,1fr)` | KPIs, Indicadores |
+
+### 18.2. Estrategia implementada (`@media print`)
+
+#### 18.2.1. Principios
+
+1. **Print color exact**: `*-print-color-adjust:exact` en todos los elementos para preservar colores corporativos UDEC.
+2. **Sin dependencia de JS**: todas las adaptaciones son CSS puras, sin hooks JS ni librerías.
+3. **Overflow visible**: todo `overflow:auto/hidden/scroll` → `visible`. El contenido fluye naturalmente a través de páginas.
+4. **Page-break-inside:avoid** en cards, nodos, filas de tabla, KPIs y badges.
+5. **Compactación visual**: font-size reducida (8–10px), padding/margin reducidos, header compacto.
+6. **Scaling del árbol**: `.tree` escala a 70% vía `transform:scale(.7)` con `transform-origin:top left` para que el diagrama jerárquico (que usa `inline-flex` + `min-width:max-content`) quepa en el ancho de página.
+7. **Secciones expandidas**: pipeline toggle sections con `display:block` forzado.
+
+#### 18.2.2. Componentes ocultos en print
+
+| Selector | Motivo |
+|---|---|
+| `.no-print` | Marcados manualmente (fac-bar, filters, tab-bar, botones) |
+| `.toast` | Notificación flotante, irrelevante en papel |
+| `.edit-node-btn` | Botones de edición sobre nodos del árbol |
+| `.btn-white`, `.btn-gold`, `.btn-reset`, `.btn-green`, `.btn-red` | Todos los botones de acción |
+| `#panel-editor` | Panel editor completo |
+| `#snies-content button` | Botones de filtro SNIES |
+
+#### 18.2.3. Componentes adaptados
+
+| Componente | Cambio principal |
+|---|---|
+| Header | Compacto (28px logos, 11px título), botones ocultos |
+| KPIs | 5→3 columnas, padding reducido |
+| Legend | Compacta, page-break-inside:avoid |
+| Tree | `.scroll` overflow visible, `.tree` scale(0.7), cards avoid-break |
+| Table (renderTabla) | `max-height` eliminado, `position:sticky` → `static`, font 8px |
+| Sede View | Overflow visible, grid adaptativo, cards avoid-break |
+| Indicators | Inline overrides via `[style*="..."]` selectors: overflow visible, max-height none, grid 6→3 cols, SVG limitado a 100px |
+| SNIES | Canvas limitado (320×160px), botones ocultos |
+| Pipeline | Secciones expandidas (`display:block` forzado), grid 3 cols |
+
+### 18.3. Limitaciones conocidas
+
+| Limitación | Causa | Impacto |
+|---|---|---|
+| Tree aún puede cortarse horizontalmente en landscape | `transform:scale(.7)` no garantiza ajuste para 6+ programas | Medio — ocurre con muchas especializaciones por facultad |
+| Chart.js en canvas se renderiza con baja resolución | Canvas es rasterizado por el browser print engine, sin control de DPI | Medio — gráficos SNIES se ven pixelados |
+| `@page landscape` no es estándar CSS | La especificación `@page` no soporta pseudo-clase `:landscape` | Bajo — el usuario debe seleccionar Landscape manualmente en el diálogo de print |
+| Secciones toggle del pipeline se imprimen completas aunque colapsadas en pantalla | `display:block` forzado revela contenido oculto | Bajo — es el comportamiento deseado |
+| Inline styles con `!important` no siempre sobreescribibles | `[style*="..."]` selector tiene alta especificidad pero puede fallar con atributos normalizados por el browser | Bajo — validar en cada browser target |
+| Tabla de indicadores (9 columnas) puede comprimirse demasiado | `min-width:700px` + `width:100%` + font 8px fuerza texto pequeño | Medio — legibilidad comprometida |
+| Sin librería externa, no hay control de: encabezados/pies de página, numeración, saltos de página exactos, marcas de agua | Limitaciones nativas de `window.print()` | Alto — para documentos formales se requiere html2pdf/jsPDF |
+| Paginación de árbol grande inevitable | Los SVG connectors y cards jerárquicas no se dividen limpiamente entre páginas | Alto — el árbol debería imprimirse en una sola página o no imprimirse |
+
+### 18.4. Componentes clasificados por compatibilidad print
+
+| Componente | Compatibilidad | Notas |
+|---|---|---|
+| **Header** | ✅ Correcta | Compacto, colores preservados |
+| **Fac bar** | ✅ Oculta | `no-print` |
+| **Filters** | ✅ Oculta | `no-print` |
+| **KPIs** | ✅ Correcta | 3 columnas, cards compactas |
+| **Legend** | ✅ Correcta | Compacta, colores preservados |
+| **Tree (árbol)** | ⚠️ Parcial | Scale 70%, puede cortarse en vertical para facultades grandes |
+| **Tabla** | ✅ Correcta | Overflow eliminado, sticky → static, avoid-break en tr |
+| **Sede View** | ✅ Correcta | Grid adaptativo, cards avoid-break |
+| **Indicadores** | ⚠️ Parcial | Inline styles difíciles de override; SVG charts escalan bien; tabla 9-col es pequeña |
+| **SNIES** | ⚠️ Parcial | Canvas baja resolución; botones ocultos; tabla OK |
+| **Pipeline** | ✅ Correcta | Secciones expandidas, grid 3 cols |
+| **Editor** | ✅ Oculta | `#panel-editor` oculto |
+
+### 18.5. Recomendación futura
+
+Para documentos PDF formales (informes, presentaciones institucionales), se recomienda:
+
+1. **html2pdf.js** o **jsPDF + html2canvas**: captura rasterizada del DOM con control de:
+   - Encabezados y pies de página personalizados
+   - Numeración de páginas
+   - Saltos de página explícitos
+   - Marcas de agua institucionales
+   - Resolución de gráficos SVG/Canvas mejorada
+
+2. **Cuándo migrar**: cuando se requiera:
+   - Exportación PDF con formato institucional (membrete, logos grandes, bordes)
+   - Documentos multi-página con paginación controlada
+   - Inclusión de datos SNIES en informes trimestrales
+   - Distribución externa a entes gubernamentales (MEN)
+
+3. **No migrar si**: el print CSS actual + `window.print()` + selección manual "Save as PDF" del navegador es suficiente para uso interno del equipo de posgrados.
+
+### 18.6. Uso recomendado
+
+```
+1. Abrir el dashboard en navegador (Chrome/Edge recomendado)
+2. Seleccionar pestaña a imprimir (Árbol, Tabla, Indicadores, etc.)
+3. Ctrl+P / Cmd+P
+4. Seleccionar destino: "Guardar como PDF"
+5. Opcional: Layout → Landscape (para árbol o tabla ancha)
+6. Opciones → "Gráficos de fondo" activado (preserva colores)
+7. Márgenes → "Personalizado" (mínimo)
+8. Guardar
+```
