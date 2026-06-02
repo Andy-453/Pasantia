@@ -1417,3 +1417,81 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 3. **Migrar storage.js**: que `loadDB` use `AppData.loadDB()` y que `saveDB` acceda a datos via AppData.
 4. **Evaluar inmutabilidad**: congelar (`Object.freeze`) los objetos retornados por AppData queries para prevenir mutaciones accidentales fuera de la capa.
 5. **ALL_SEDES y SD (SNIES)**: extraer a módulo separado similar a default-data.js.
+
+### 19.19. Estado consolidado Fase 4 — Baseline arquitectónico
+
+#### Capas del sistema (final Fase 4)
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    UI Layer                           │
+│  app.js (orquestador) · renderers · dashboard        │
+│  indicators · filters · export · SNIES               │
+└──────────────────────┬───────────────────────────────┘
+                       │ AppData.* (read/write)
+┌──────────────────────▼───────────────────────────────┐
+│              Data Access Layer                        │
+│  app-data.js (AppData)                               │
+│    • Queries readonly (12 métodos)                   │
+│    • Writes controladas (6 métodos)                  │
+│    • Validación ligera pre-write                     │
+│    • Persistencia automática (via storage.js)        │
+└──────┬─────────────────────────────────┬─────────────┘
+       │ window.DB                        │ storage.js/saveDB
+┌──────▼──────┐              ┌───────────▼────────────┐
+│  window.DB   │              │   localStorage        │
+│ (source of   │              │   (persistencia real) │
+│  truth)      │              │                        │
+└──────────────┘              └────────────────────────┘
+```
+
+#### Cobertura AppData por módulo (resumen Fase 4)
+
+| Categoría | Módulos | Cobertura |
+|---|---|---|
+| ✅ 100% vía AppData | dashboard.js, indicators.js, export.js, filters.js, app.js (renderers), app.js (writes) | 6/8 módulos |
+| 🔴 Persistencia (0%) | storage.js, embed.js | 2 módulos pendientes |
+| **Total** | **90 accesos DB → 78 vía AppData** | **87%** |
+
+#### Accesos DB directos restantes (12 total)
+
+| Módulo | Ref directas | Dependencia |
+|---|---|---|
+| storage.js | 11 (`window.DB`, `window.DEFAULT_DATA`) | Persistencia |
+| embed.js | 1 (`window.DB`) | Export |
+
+#### Riesgos activos documentados
+
+1. **storage.js/embed.js sin migrar** — único acoplamiento directo a `window.DB` que persiste
+2. **Referencias mutables** — `getFacultades()` y `getFacultad()` retornan referencias directas; `getFacultadesSafe/getFacultadSafe` no tienen consumidores actualmente
+3. **Regex de export frágil** — downloadHTML/buildStandalone dependen de formato exacto `var DEFAULT_DATA=[...]`
+4. **ALL_SEDES y SD (SNIES)** — datos inline en app.js sin modularizar
+5. **ESTADOS_GRUPO duplicado** — indicators.js mantiene copia de ST_MAP de utils.js
+6. **Datos de encoding mixto** — caracteres UTF-8 con doble codificación en DEFAULT_DATA
+
+#### Deuda técnica identificada
+
+| Item | Impacto | Prioridad |
+|---|---|---|
+| `gi()` bug: retorna null cuando valor es 0 | 🟡 Medio | Fase 5 |
+| `_validateDB` en storage.js muta input | 🟡 Medio | Fase 5 |
+| indicadores render es 1 función de 400+ líneas | 🟡 Medio | Refactor futuro |
+| CSV download duplicado en export.js/storage.js | 🟢 Bajo | Refactor futuro |
+| `countItems`, `bar`, `donut` eliminados (dead code) | ✅ Resuelto | — |
+| Comentarios SOMBREADA y dependencias legacy | ✅ Resuelto | — |
+
+#### Roadmap post-Fase 4
+
+1. **Fase 5**: Migrar storage.js → AppData persistence (autorizar toque de persistencia)
+2. **Fase 6**: Migrar embed.js → AppData serialization
+3. **Fase 7**: Eliminar copia inline DEFAULT_DATA, actualizar regex
+4. **Fase 8**: Inmutabilidad (`Object.freeze` en queries), getFacultadesSafe como default
+5. **Fase 9**: Extraer ALL_SEDES, SD (SNIES), ESTADOS_GRUPO a módulos separados
+6. **Fase 10**: Refactor indicadores y renderers monolíticos
+
+#### Snapshot estable — tag `v1.0.0-alpha`
+
+Este commit marca el baseline arquitectónico estable de Fase 4.
+Todos los consumidores de datos (renderers, writes, filtros) pasan
+por AppData. Persistencia (storage.js) y export (embed.js) son
+los únicos módulos con acceso directo a `window.DB`.

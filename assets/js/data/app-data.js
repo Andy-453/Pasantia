@@ -21,8 +21,8 @@
  * Operaciones documentadas en docs/architecture.md §19.
  *
  *   # Queries readonly (seguras):
- *     getFacultades(), getFacultad(i)
- *     getFacultadesSafe(), getFacultadSafe(i)
+ *     getFacultades(), getFacultad(i), getFacultadCount()
+ *     getFacultadesSafe(), getFacultadSafe(i)        ← copias superficiales
  *     getProgramas(fi), getProgramaCount(fi)
  *     getSedesEnUso(fi)
  *     getFacultadIndexById(fid), getFacultadIndexByName(name)
@@ -30,10 +30,17 @@
  *     findProgramById(pid), findFacultadIndexByProgId(pid)
  *     getProgramaById(pid)
  *
- *   # Writes controladas:
- *     savePrograma, deletePrograma
- *     saveFacultad, updateFacultadName, deleteFacultad
- *     saveDocumento
+ *   # Writes controladas (con validación ligera):
+ *     savePrograma(fi, prog, isNew)
+ *     deletePrograma(fi, pid)
+ *     saveFacultad(facultad, isNew, currentIndex)
+ *     updateFacultadName(fi, name)
+ *     deleteFacultad(fi)
+ *     saveDocumento(fi, doc)
+ *
+ *   # Validación interna:
+ *     _validFacIndex(fi)    ← guard genérico para writes
+ *     _validPrograma(prog)  ← guard para savePrograma
  */
 
 window.AppData = {

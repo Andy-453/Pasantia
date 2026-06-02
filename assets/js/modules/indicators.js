@@ -4,25 +4,22 @@
  * Responsabilidad:
  *   - renderIndicadores: dashboard completo de indicadores
  *     (KPIs globales, gráficos de torta, tabla por facultad, estado por facultad)
- *   - helpers internos de renderizado SVG (pieSlices, donut, bar)
- *   - agrupación y conteo de estados (getEstGroup, countItems)
+ *   - helpers internos de renderizado SVG (pieSlices)
+ *   - agrupación y conteo de estados (getEstGroup)
  *
  * Dependencias:
- *   - DB (global, app.js) — datos completos de facultades y programas
+ *   - AppData.getFacultades() — datos completos vía capa de datos
  *
  * Compatibilidad legacy:
  *   - window.renderIndicadores — requerido por showTab() en app.js y por HTML
  *     con datos embebidos (onclick, panel-indicadores).
  *
  * Riesgos de acoplamiento:
- *   - Dependencia directa de DB global (cambios en estructura de datos rompen el panel).
  *   - Los mapas ESTADOS_GRUPO y EST_COLORS deben mantenerse sincronizados
  *     con los estados reales usados en el editor y pipeline.
- *   - Los helpers SVG (pieSlices, donut, bar) son específicos de este módulo
- *     y no deben ser reutilizados externamente sin refactor.
  *
  * Estado:
- *   Extraído de app.js en Fase 2. Sin cambios funcionales.
+ *   Extraído de app.js en Fase 2. Acceso DB via AppData (Fase 4).
  */
 
 function renderIndicadores(){
@@ -63,17 +60,6 @@ function renderIndicadores(){
     return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
   }
 
-  function countItems(items, nivel){
-    items.forEach(item=>{
-      if(nivel==='espec') totalEsp++;
-      if(nivel==='mae') totalMae++;
-      if(nivel==='doc') totalDoc++;
-      if(item.o==='V') vigente++; else proyectada++;
-      const g=getEstGroup(item.e);
-      estadoCount[g.label]=(estadoCount[g.label]||0)+1;
-    });
-  }
-
   AppData.getFacultades().forEach(fac=>{
     const fs={name:fac.name, pre:fac.progs.length, esp:0, mae:0, doc:fac.doc?1:0, vigente:0, proyectada:0, estados:{}};
     totalPre+=fac.progs.length;
@@ -109,23 +95,6 @@ function renderIndicadores(){
     'Negado MEN':{color:'#A32D2D',bg:'#FCEBEB'},
     'Sin definir':{color:'#888',bg:'#f5f5f0'},
   };
-
-  function bar(pct, color){
-    return `<div style="width:100%;height:7px;background:#e8f0e8;border-radius:4px;overflow:hidden;margin-top:4px">
-      <div style="width:${Math.round(pct)}%;height:100%;background:${color};border-radius:4px;transition:width .4s"></div>
-    </div>`;
-  }
-
-  function donut(pct, color, size=52){
-    const r=16, c=2*Math.PI*r;
-    const dash=c*pct/100, gap=c-dash;
-    return `<svg width="${size}" height="${size}" viewBox="0 0 40 40">
-      <circle cx="20" cy="20" r="${r}" fill="none" stroke="#e8f0e8" stroke-width="4"/>
-      <circle cx="20" cy="20" r="${r}" fill="none" stroke="${color}" stroke-width="4"
-        stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-dashoffset="${c*0.25}" stroke-linecap="round"/>
-      <text x="20" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="${color}" font-family="Arial">${Math.round(pct)}%</text>
-    </svg>`;
-  }
 
   let h=`<div style="padding:1.25rem;background:#f4f6f4;min-height:400px">`;
 

@@ -2,22 +2,25 @@
  * app.js — orquestador principal
  * ---
  * Responsabilidad:
- *   - inicialización de datos (DB, DEFAULT_DATA, ALL_SEDES)
+ *   - inicialización de datos (DB, ALL_SEDES)
  *   - renderizado de árbol, tabla, vista por sede, editor, SNIES, pipeline, indicadores
  *   - orquestación de vistas (renderViews, showTab)
  *   - editor de datos (CRUD de facultades/programas)
  *
  * Dependencias:
- *   - utils.js     → getSt, pll, uid, gv, gi, toast, showConfirm
- *   - storage.js   → saveDB, loadDB, downloadHTML, resetDB
- *   - filters.js   → pregradoMatch, itemMatch, populateSedes, applyFilters
- *   - dashboard.js → renderKPIs, renderFacBar, selFac
+ *   - utils.js       → getSt, pll, uid, gv, gi, toast, showConfirm
+ *   - storage.js     → saveDB, loadDB, downloadHTML, resetDB
+ *   - filters.js     → pregradoMatch, itemMatch, populateSedes, applyFilters
+ *   - dashboard.js   → renderKPIs, renderFacBar, selFac
+ *   - app-data.js    → AppData (capa de datos)
+ *   - default-data.js → window.__DEFAULT_DATA (datos iniciales)
  *
  * Estado:
- *   Módulo monolítico en proceso de fragmentación (Fase 3).
+ *   Módulo monolítico en proceso de fragmentación (Fase 4).
  *   var globals legacy: DB, DEFAULT_DATA, ALL_SEDES (pendientes encapsulación).
+ *   DB access via AppData en todos los renderers y writes.
  *   curFac y filt* migrados a AppState via window accessors.
- *   Varias funciones tienen definiciones duplicadas (sombreado) — ver SOMBREADO.
+ *   DEFAULT_DATA inline mantenido para regex de storage/embed (export).
  *   TODO [MVC]: migrar a controladores por dominio cuando se adopte ESModules.
  */
 

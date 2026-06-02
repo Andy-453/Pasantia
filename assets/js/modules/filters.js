@@ -9,10 +9,14 @@
  *
  * Dependencias:
  *   - utils.js → getSt
- *   - window.DB, window.curFac, window.ALL_SEDES, window.filt*
+ *   - AppData.getFacultad() — acceso a datos de facultad activa
+ *   - AppState.navigation.curFac — estado de navegación
+ *   - AppState.staticData.ALL_SEDES — sedes disponibles
+ *   - window.filt* — estado de filtros (legacy, via AppState.filters.*)
  *
  * Estado:
- *   Parcialmente modular. Dependencia fuerte de variables globales.
+ *   Modular. Acceso DB via AppData (Fase 4). Filtros legacy window.filt*
+ *   pendientes de migrar a AppState.filters.* en Fase 5.
  */
 function sedeMatch(s){return window.filtSede==='ALL'||s&&s.includes(window.filtSede);}
 function ofertaMatch(o){return window.filtOferta==='ALL'||(window.filtOferta==='V'&&o==='V')||(window.filtOferta==='P'&&o==='P');}

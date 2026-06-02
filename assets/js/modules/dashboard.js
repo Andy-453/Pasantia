@@ -7,14 +7,14 @@
  *   - renderKPIs: cálculo y visualización de indicadores del dashboard
  *
  * Dependencias:
- *   - DB, curFac (globales de app.js)
+ *   - AppData.getFacultades(), AppData.getFacultad() — capa de datos
+ *   - AppState.navigation.curFac — estado de navegación
  *   - pregradoMatch, itemMatch, populateSedes (filters.js)
  *   - getSt (utils.js)
  *   - renderViews, showTab (app.js, orquestador)
  *
  * Estado:
- *   Extraído de app.js en Fase 2.
- *   Compatibilidad global mantenida vía window.* (temporal).
+ *   Extraído de app.js en Fase 2. Acceso DB via AppData (Fase 4).
  */
 
 /**
@@ -29,8 +29,7 @@ function renderFacBar(){
 
 /**
  * Cambia la facultad activa y actualiza toda la vista.
- * SOMBREADA por la misma función en línea 1 (esta es la versión activa).
- * @param {number} i - índice de facultad en DB
+ * @param {number} i - índice de facultad en DB via AppData
  */
 function selFac(i){curFac=i;populateSedes();renderFacBar();renderViews();['indicadores','snies','pipeline','editor'].forEach(function(t){var el=document.getElementById('panel-'+t);if(el&&el.classList.contains('act'))showTab(t);});}
 
