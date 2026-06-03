@@ -1,7 +1,7 @@
 # Análisis Arquitectónico — Dashboard UDEC Posgrados
 
-> **Hito**: 2026-06-01 — 0 onclick en `app.js`, 1 en HTML (`downloadDB` excluido). Todos los handlers migrados a `data-action` + dispatcher centralizado.
-> Pendiente: migrar 10 `var` globales legacy a `window.AppState` via getter/setter.
+> **Hito**: 2026-06-02 — Export HTML standalone funcional (CSS+JS+imágenes inline). Print CSS mejorado con @media print comprehensive.
+> Pendiente: migrar 6 referencias `DB` bare en renderers a `AppData`.
 
 ## 1. Resumen del sistema
 
@@ -17,19 +17,24 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 ### Archivos del proyecto
 
 | Archivo | Líneas | Rol |
-|---|---|---|
-| `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1174 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 882 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
-| `assets/js/modules/utils.js` | 60 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
-| `assets/js/modules/storage.js` | 78 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
+|---|---|---|---|
+| `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1176 | Shell HTML + datos embebidos serializados |
+| `assets/js/app.js` | 898 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
+| `assets/js/modules/utils.js` | 52 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
+| `assets/js/modules/embed.js` | 108 | Runtime embedding para export HTML standalone |
+| `assets/js/modules/storage.js` | 94 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
 | `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
-| `assets/js/modules/dashboard.js` | 65 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
+| `assets/js/modules/dashboard.js` | 57 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
 | `assets/js/modules/indicators.js` | 435 | Panel de indicadores (renderIndicadores, helpers SVG) |
-| `assets/js/modules/export.js` | 278 | Exportaciones (downloadDB, exportSNIES, mapas SNIES) |
+| `assets/js/modules/export.js` | 276 | Exportaciones (downloadDB, exportSNIES, mapas SNIES) |
+| `assets/js/data/app-data.js` | 90 | Capa de acceso a datos (Fase 4) |
 
-**Total: ~1765 líneas JS, 6 módulos extraídos + 1 orquestador legacy**
+**Total: ~1885 líneas JS, 8 módulos + 1 orquestador + 1 data layer**
 
 ### Orden de carga
+```
+Chart.js (CDN) → utils.js → embed.js → storage.js → app-data.js
+→ filters.js → dashboard.js → indicators.js → export.js → app.js
 ```
 Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 → indicators.js → export.js → app.js
@@ -702,9 +707,10 @@ Los módulos individuales usarán `export function fn(){}` estándar.
 ### 13.7. Bloqueadores para MVC real
 
 1. ✅ ~~**Event delegation**~~ — **PILOTO IMPLEMENTADO (Fase 3)**: ver sección 14.
-2. **Eliminar `var` legacy**: reemplazar `var DB`, `var curFac`, `var filt*` por referencias a `AppState`.
-3. **Data como módulo**: extraer `DEFAULT_DATA`, `SD`, `ALL_SEDES` a módulos separados.
+2. ✅ ~~**Eliminar `var` legacy (~6 vars)**~~ — **MIGRADO (Fase 3)**: `curFac` → `AppState.navigation.curFac`, `filt*` → `AppState.filters.*`. Restan `DB`, `DEFAULT_DATA`, `ALL_SEDES` + accessors SNIES.
+3. ✅ ~~**Data como módulo**~~ — **INICIADO (Fase 4)**: `AppData` creado en `assets/js/data/app-data.js` (encapsula consultas + writes simples sobre DB). Resta: `DEFAULT_DATA`, `SD`, `ALL_SEDES` como módulos separados.
 4. **ESModules**: cambiar `<script>` tags a `<script type="module">`.
+5. **Refactor renderers**: migrar `DB[curFac]` en renderTree/renderTabla/renderSedeView/renderProgForm/renderEditor a `AppData.getFacultad()`.
 
 ---
 
@@ -845,9 +851,663 @@ Estado actual de dependencias para migración a `<script type="module">`:
 
 | Requisito | Estado |
 |---|---|
-| Sin `var` globales en módulos | ❌ `var DB, curFac, filtSede, filtOferta, filtEstado, filtNivel, SD, _snFac, _snProg, ALL_SEDES, DEFAULT_DATA` persisten |
+| Sin `var` globales en módulos | ⚠️ **6 migradas** (`curFac`,`filtSede`,`filtOferta`,`filtEstado`,`filtNivel`,`filtPregrado` → `AppState.*`). Restan: `var DB`, `DEFAULT_DATA`, `ALL_SEDES` + `SD`, `_snFac`, `_snProg` (via accessor) |
 | Sin `onclick` inline en HTML | ✅ **0 onclick en JS, 1 en HTML (downloadDB excluido)** |
 | Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
 | Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |
 | `window.App` como namespace de transición | ✅ ~50 funciones exportadas |
+| Capa de acceso a datos | ✅ `AppData` (`assets/js/data/app-data.js`) encapsula queries + writes |
 | `import`/`export` en lugar de contaminación global | ❌ Pendiente — requiere eliminar `var` globales primero |
+
+---
+
+## 16. Capa de acceso a datos — `AppData`
+
+### 16.1. Ubicación
+
+`assets/js/data/app-data.js` — cargado después de `storage.js`, antes de los módulos de UI.
+
+### 16.2. API expuesta
+
+```
+AppData.getFacultades()                → Array completo de facultades
+AppData.getFacultad(index)             → Facultad por índice
+AppData.getProgramas(facIndex)         → Programas de una facultad
+AppData.getFacultadCount()             → Número de facultades
+AppData.findProgramById(pid)           → {facIndex, programa} | null
+AppData.findFacultadIndexByProgId(pid) → índice | -1
+AppData.savePrograma(facIndex, prog, isNew)   → muta + persiste
+AppData.deletePrograma(facIndex, pid)         → muta + persiste
+AppData.saveFacultad(facultad, isNew, idx)    → muta + persiste
+AppData.updateFacultadName(facIndex, name)    → muta + persiste
+AppData.deleteFacultad(facIndex)              → muta + persiste
+AppData.saveDocumento(facIndex, doc)          → muta + persiste
+```
+
+### 16.3. Módulos migrados a AppData
+
+| Módulo | Antes (DB directo) | Después (AppData) |
+|---|---|---|
+| `dashboard.js` | `DB.map()`, `DB[curFac]` | `AppData.getFacultades()`, `AppData.getFacultad()` |
+| `filters.js` | `window.DB[window.curFac]` | `AppData.getFacultad()` |
+| `indicators.js` | `DB.forEach()`, `DB.length` | `AppData.getFacultades()`, `AppData.getFacultadCount()` |
+| `export.js` | `DB.forEach()` | `AppData.getFacultades()` |
+| `app.js` (writes) | `DB[curFac].progs.push/filter/splice`, `DB[curFac].doc`, `DB[curFac].name` | `AppData.savePrograma/deletePrograma/saveFacultad/updateFacultadName/deleteFacultad/saveDocumento` |
+| `app.js` (renderers) | `DB[curFac]` en tree/tabla/sedeView/progForm/editor | ❌ Pendiente (renderers complejos) |
+
+### 16.4. DB references restantes
+
+| Ubicación | Ref | Motivo |
+|---|---|---|
+| `app-data.js` | `window.DB` (14) | Capa misma — fuente de verdad legacy |
+| `storage.js` | `window.DB` (4) | Persistencia — `loadDB`, `downloadHTML` |
+| `app.js` | `DB` bare (6) | Renderers complejos (tree, tabla, sedeView, progForm, editor) |
+
+**Total: 6 referencias bare en renderers + 4 en storage + 14 internas en AppData.**
+
+### 16.5. Próximos pasos
+
+1. Migrar renderers (tree, tabla, sedeView, progForm, editor) a `AppData.getFacultad()`
+2. Extraer `DEFAULT_DATA`, `ALL_SEDES`, `SD` a módulos separados bajo `assets/js/data/`
+3. Migrar `storage.js` a usar `AppData` en lugar de `window.DB`
+4. Evaluar eliminación de `var DB` una vez migrados todos los consumidores
+
+---
+
+## 17. Export standalone HTML — `embed.js`
+
+### 17.1. Problema
+
+`downloadHTML()` serializaba `document.documentElement.outerHTML` con `DEFAULT_DATA` actualizado, pero los `<link>`, `<script src>`, `<img src>` seguían apuntando a rutas relativas (`assets/css/main.css`, `assets/js/app.js`). Al mover el archivo .html descargado a otra ubicación, todos los recursos quedaban rotos.
+
+### 17.2. Solución
+
+`assets/js/modules/embed.js` — módulo runtime que empaqueta todos los recursos inline antes de la descarga:
+
+| Función | Qué hace | API |
+|---|---|---|
+| `collectCSS()` | Recorre `document.styleSheets` y recolecta `cssRules[].cssText` | Síncrona, retorna string |
+| `fetchJS(src)` | `fetch()` mismo origen para obtener contenido JS como texto | Async, retorna Promise<string> |
+| `imageToDataURI(img)` | Dibuja imagen en `<canvas>` y exporta como `data:image/png;base64,...` | Async, retorna Promise<string> |
+| `buildStandalone()` | Orquesta: inyecta CSS inline, reemplaza `<script src>` por inline, convierte imágenes a data URI | Retorna Promise<string> |
+
+### 17.3. Flujo de `downloadHTML()` (actualizado)
+
+```
+[Click "Guardar dashboard"]
+  → toast("⏳ Empaquetando dashboard...")
+  → __EMBED.buildStandalone()
+      ├─ collectCSS() → <style>...</style> (reemplaza <link>)
+      ├─ fetchJS() para cada <script src> → <script>code</script>
+      ├─ imageToDataURI() para cada <img> → data:image/png;base64,...
+      └─ Reemplaza DEFAULT_DATA con DB actual
+  → Blob → download
+  └─ Si __EMBED no existe o falla: fallback clásico (solo DEFAULT_DATA)
+```
+
+### 17.4. Edge cases
+
+| Caso | Comportamiento |
+|---|---|
+| CDN script (Chart.js) | fetchJS falla (cross-origin sin CORS o sin conexión) → se conserva `<script src="...">` original |
+| Imagen no cargada (0×0) | Canvas falla → se conserva src original |
+| Imagen ya data URI | Se pasa tal cual, sin reconversión |
+| `outerHTML` resuelve src a URL absoluta | Se reemplazan ambas formas (relativa y absoluta) |
+| Sin conexión a internet | JS local funciona (mismo origen), CDN no — Chart.js no disponible offline |
+
+### 17.5. Carga
+
+`embed.js` se carga entre `utils.js` y `storage.js` (antes que `downloadHTML()` lo necesite):
+
+```
+Chart.js (CDN) → utils.js → **embed.js** → storage.js → app-data.js → ...
+```
+
+### 17.6. Dependencias
+
+- `fetch()` — disponible en todos los navegadores modernos
+- `document.styleSheets` + `cssRules` — mismo origen (CSS local)
+- `<canvas>` API — para conversión de imágenes
+
+---
+
+## 18. Estrategia de impresión / PDF
+
+### 18.1. Problemas observados
+
+| Síntoma | Causa raíz | Componente |
+|---|---|---|
+| Corte horizontal | `overflow-x:auto` en `.scroll` | Tree (renderTree) |
+| Tabla truncada vertical | `max-height:480px` + `overflow:auto` en `.tbl-wrap` | Tabla (renderTabla) |
+| Corte contenedores lista | `max-height:140px;overflow-y:auto` inline | Indicadores (legends) |
+| Corte horizontal tabla | `overflow-x:auto` + `min-width:700px` inline | Indicadores (facultad table) |
+| Secciones plegadas | `display:none` en secciones toggle | Pipeline |
+| Sticky header no funcional | `position:sticky` no soportado en print browsers | Tabla |
+| Cards cortadas entre páginas | Ausencia de `break-inside` | Tree cards, KPI, Sede cards |
+| Grillas muy anchas | `repeat(5,1fr)` / `repeat(6,1fr)` | KPIs, Indicadores |
+
+### 18.2. Estrategia implementada (`@media print`)
+
+#### 18.2.1. Principios
+
+1. **Print color exact**: `*-print-color-adjust:exact` en todos los elementos para preservar colores corporativos UDEC.
+2. **Sin dependencia de JS**: todas las adaptaciones son CSS puras, sin hooks JS ni librerías.
+3. **Overflow visible**: todo `overflow:auto/hidden/scroll` → `visible`. El contenido fluye naturalmente a través de páginas.
+4. **Page-break-inside:avoid** en cards, nodos, filas de tabla, KPIs y badges.
+5. **Compactación visual**: font-size reducida (8–10px), padding/margin reducidos, header compacto.
+6. **Scaling del árbol**: `.tree` escala a 70% vía `transform:scale(.7)` con `transform-origin:top left` para que el diagrama jerárquico (que usa `inline-flex` + `min-width:max-content`) quepa en el ancho de página.
+7. **Secciones expandidas**: pipeline toggle sections con `display:block` forzado.
+
+#### 18.2.2. Componentes ocultos en print
+
+| Selector | Motivo |
+|---|---|
+| `.no-print` | Marcados manualmente (fac-bar, filters, tab-bar, botones) |
+| `.toast` | Notificación flotante, irrelevante en papel |
+| `.edit-node-btn` | Botones de edición sobre nodos del árbol |
+| `.btn-white`, `.btn-gold`, `.btn-reset`, `.btn-green`, `.btn-red` | Todos los botones de acción |
+| `#panel-editor` | Panel editor completo |
+| `#snies-content button` | Botones de filtro SNIES |
+
+#### 18.2.3. Componentes adaptados
+
+| Componente | Cambio principal |
+|---|---|
+| Header | Compacto (28px logos, 11px título), botones ocultos |
+| KPIs | 5→3 columnas, padding reducido |
+| Legend | Compacta, page-break-inside:avoid |
+| Tree | `.scroll` overflow visible, `.tree` scale(0.7), cards avoid-break |
+| Table (renderTabla) | `max-height` eliminado, `position:sticky` → `static`, font 8px |
+| Sede View | Overflow visible, grid adaptativo, cards avoid-break |
+| Indicators | Inline overrides via `[style*="..."]` selectors: overflow visible, max-height none, grid 6→3 cols, SVG limitado a 100px |
+| SNIES | Canvas limitado (320×160px), botones ocultos |
+| Pipeline | Secciones expandidas (`display:block` forzado), grid 3 cols |
+
+### 18.3. Limitaciones conocidas
+
+| Limitación | Causa | Impacto |
+|---|---|---|
+| Tree aún puede cortarse horizontalmente en landscape | `transform:scale(.7)` no garantiza ajuste para 6+ programas | Medio — ocurre con muchas especializaciones por facultad |
+| Chart.js en canvas se renderiza con baja resolución | Canvas es rasterizado por el browser print engine, sin control de DPI | Medio — gráficos SNIES se ven pixelados |
+| `@page landscape` no es estándar CSS | La especificación `@page` no soporta pseudo-clase `:landscape` | Bajo — el usuario debe seleccionar Landscape manualmente en el diálogo de print |
+| Secciones toggle del pipeline se imprimen completas aunque colapsadas en pantalla | `display:block` forzado revela contenido oculto | Bajo — es el comportamiento deseado |
+| Inline styles con `!important` no siempre sobreescribibles | `[style*="..."]` selector tiene alta especificidad pero puede fallar con atributos normalizados por el browser | Bajo — validar en cada browser target |
+| Tabla de indicadores (9 columnas) puede comprimirse demasiado | `min-width:700px` + `width:100%` + font 8px fuerza texto pequeño | Medio — legibilidad comprometida |
+| Sin librería externa, no hay control de: encabezados/pies de página, numeración, saltos de página exactos, marcas de agua | Limitaciones nativas de `window.print()` | Alto — para documentos formales se requiere html2pdf/jsPDF |
+| Paginación de árbol grande inevitable | Los SVG connectors y cards jerárquicas no se dividen limpiamente entre páginas | Alto — el árbol debería imprimirse en una sola página o no imprimirse |
+
+### 18.4. Componentes clasificados por compatibilidad print
+
+| Componente | Compatibilidad | Notas |
+|---|---|---|
+| **Header** | ✅ Correcta | Compacto, colores preservados |
+| **Fac bar** | ✅ Oculta | `no-print` |
+| **Filters** | ✅ Oculta | `no-print` |
+| **KPIs** | ✅ Correcta | 3 columnas, cards compactas |
+| **Legend** | ✅ Correcta | Compacta, colores preservados |
+| **Tree (árbol)** | ⚠️ Parcial | Scale 70%, puede cortarse en vertical para facultades grandes |
+| **Tabla** | ✅ Correcta | Overflow eliminado, sticky → static, avoid-break en tr |
+| **Sede View** | ✅ Correcta | Grid adaptativo, cards avoid-break |
+| **Indicadores** | ⚠️ Parcial | Inline styles difíciles de override; SVG charts escalan bien; tabla 9-col es pequeña |
+| **SNIES** | ⚠️ Parcial | Canvas baja resolución; botones ocultos; tabla OK |
+| **Pipeline** | ✅ Correcta | Secciones expandidas, grid 3 cols |
+| **Editor** | ✅ Oculta | `#panel-editor` oculto |
+
+### 18.5. Recomendación futura
+
+Para documentos PDF formales (informes, presentaciones institucionales), se recomienda:
+
+1. **html2pdf.js** o **jsPDF + html2canvas**: captura rasterizada del DOM con control de:
+   - Encabezados y pies de página personalizados
+   - Numeración de páginas
+   - Saltos de página explícitos
+   - Marcas de agua institucionales
+   - Resolución de gráficos SVG/Canvas mejorada
+
+2. **Cuándo migrar**: cuando se requiera:
+   - Exportación PDF con formato institucional (membrete, logos grandes, bordes)
+   - Documentos multi-página con paginación controlada
+   - Inclusión de datos SNIES en informes trimestrales
+   - Distribución externa a entes gubernamentales (MEN)
+
+3. **No migrar si**: el print CSS actual + `window.print()` + selección manual "Save as PDF" del navegador es suficiente para uso interno del equipo de posgrados.
+
+### 18.6. Uso recomendado
+
+```
+1. Abrir el dashboard en navegador (Chrome/Edge recomendado)
+2. Seleccionar pestaña a imprimir (Árbol, Tabla, Indicadores, etc.)
+3. Ctrl+P / Cmd+P
+4. Seleccionar destino: "Guardar como PDF"
+5. Opcional: Layout → Landscape (para árbol o tabla ancha)
+6. Opciones → "Gráficos de fondo" activado (preserva colores)
+7. Márgenes → "Personalizado" (mínimo)
+8. Guardar
+```
+
+---
+
+## 19. Análisis de accesos y mutaciones sobre DB
+
+### 19.1. Estructura de datos
+
+```
+DB: Array<Facultad>
+
+Facultad {
+  id: string,          // ej. "admin"
+  name: string,        // ej. "Facultad de Ingeniería"
+  doc: Doctorado|null, // opcional
+  progs: Array<Programa>
+}
+
+Programa {
+  id: string,          // uid()
+  n: string,           // nombre del pregrado
+  sedes: string[],     // ej. ["Fusagasugá", "Chía"]
+  lineas: Array<Linea>,
+  mae: Array<Maestria>
+}
+
+Linea {
+  id: string,          // uid()
+  l: string,           // nombre de línea
+  t: string,           // tipo: "Profundización 1" | "Profundización 2"
+  esp: string,         // nombre de especialización
+  e: string,           // estado (texto libre, ~20 variantes)
+  o: string,           // oferta: "V" | "P"
+  sedes: string[],
+  resp: string,        // responsable
+  mes: number|null,    // 1-12
+  ano: number|null     // 2024-2028
+}
+
+Maestria {
+  id: string,          // uid()
+  n: string,           // nombre maestría
+  e: string,           // estado
+  o: string,           // oferta: "V" | "P"
+  sedes: string[],
+  resp: string,
+  mes: number|null,
+  ano: number|null
+}
+
+Doctorado {
+  n: string,
+  e: string,
+  o: string,           // "V" | "P"
+  sedes: string[],
+  resp: string,
+  mes: number|null,
+  ano: number|null
+}
+```
+
+### 19.2. Mapa de consumidores por módulo
+
+```
+                           ┌───────────────────┐
+                           │   window.DB        │  ← fuente de verdad
+                           │   Array(7)         │
+                           └────────┬──────────┘
+                   ┌────────────────┼────────────────────┐
+                   ▼                ▼                     ▼
+           ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐
+           │   AppData    │ │   storage.js │ │  app.js (direct) │
+           │  (capa)      │ │  (persist)   │ │  renderers       │
+           └──────┬───────┘ └──────┬───────┘ └────────┬─────────┘
+                  │                │                   │
+       ┌──────────┼──────────┐     │          ┌────────┼────────┐
+       ▼          ▼          ▼     │          ▼        ▼        ▼
+  dashboard.js filters.js export.js│     renderTree renderTabla renderSedeView
+  indicators.js                   │     renderProgForm renderEditor
+                                  │
+                                  ▼
+                            embed.js (read)
+```
+
+### 19.3. Operaciones por tipo
+
+#### LECTURAS
+
+| # | Operación | Responsable | Frecuencia | Línea |
+|---|---|---|---|---|
+| L1 | `DB[curFac]` → facultad activa | renderTree, renderTabla, renderSedeView, renderProgForm, renderEditor | 5 call-sites en app.js | app.js:172,432,466,495,819 |
+| L2 | `DB[curFac].progs.forEach(p => ...)` | renderTree, renderTabla, renderSedeView, renderEditor | 4 call-sites en app.js | app.js:187,433,467,827 |
+| L3 | `f.progs.filter(p => pregradoMatch(p.n))` | renderTree | 1 | app.js:187 |
+| L4 | `f.progs.find(x => x.id === pid)` | renderProgForm | 1 | app.js:496 |
+| L5 | `p.lineas.filter(l => itemMatch(l,'espec'))` | renderTree, renderTabla | 3 app.js | app.js:191,214,436 |
+| L6 | `p.mae.filter(m => itemMatch(m,'mae'))` | renderTree, renderTabla | 3 app.js | app.js:193,215,437 |
+| L7 | `f.doc && itemMatch(f.doc,'doc')` | renderTree, renderTabla | 2 | app.js:193,408,450 |
+| L8 | `DB[curFac].progs.length` | renderEditor | 1 | app.js:825 |
+| L9 | `DB[curFac].progs.map(...)` | renderEditor (inline en string) | 1 | app.js:821-846 |
+| L10 | `window.DB[i]` (genérico) | AppData.getFacultad | vía delegación | app-data.js:26 |
+| L11 | `window.DB[faci].progs` | AppData.getProgramas | sin consumidores aún | app-data.js:27 |
+| L12 | `window.DB.filter/Búsqueda` | AppData.findProgramById | vía deleteProg | app-data.js:32-38 |
+| L13 | `ALL_SEDES.filter(s => s.has(x))` | populateSedes (filters.js) | 1 | filters.js:53 |
+| L14 | `JSON.stringify(window.DB)` | saveDB + downloadHTML | cada write + export | storage.js:17, embed.js:67 |
+
+#### ESCRITURAS / MUTACIONES
+
+| # | Operación | Responsable | Riesgo | Línea |
+|---|---|---|---|---|
+| W1 | `window.DB = JSON.parse(JSON.stringify(DEFAULT_DATA))` | loadDB | **ALTO** — reemplaza DB completo | storage.js:42,47 |
+| W2 | `window.DB.push({name, progs:[], doc:null})` | AppData.saveFacultad (isNew) | **ALTO** — muta array + cambia índices | app-data.js:66 |
+| W3 | `window.DB[currentIndex] = facultad` | AppData.saveFacultad (edit) | **ALTO** — reemplaza elemento completo | app-data.js:67 |
+| W4 | `window.DB.splice(facIndex, 1)` | AppData.deleteFacultad | **ALTO** — reindexa todo el array | app-data.js:79 |
+| W5 | `f.progs.push(prog)` | AppData.savePrograma (isNew) | **ALTO** — muta array interno | app-data.js:50 |
+| W6 | `f.progs[i] = prog` | AppData.savePrograma (edit) | **MEDIO** — reemplaza elemento referenciado | app-data.js:53 |
+| W7 | `f.progs = f.progs.filter(p => p.id !== pid)` | AppData.deletePrograma | **MEDIO** — reemplaza array completo | app-data.js:61 |
+| W8 | `f.doc = doc` / `f.doc = null` | AppData.saveDocumento | **BAJO** — mutación de propiedad in-place | app-data.js:86-87 |
+| W9 | `f.name = name` | AppData.updateFacultadName | **BAJO** — mutación de propiedad in-place | app-data.js:74 |
+| W10 | `localStorage.setItem('udec_rutas_db', ...)` | saveDB | **BAJO** — efecto secundario de persistencia | storage.js:17 |
+
+#### MUTACIONES OCULTAS / SIDE EFFECTS
+
+| # | Efecto | Dónde | Detalle |
+|---|---|---|---|
+| S1 | Reasignación de `curFac` tras delete/save | app.js:878 (`deleteFac`), app.js:892 (`saveFac`) | Cambia índice global después de mutar DB |
+| S2 | `curFac` accessor → AppState.navigation.curFac | app.js:71 | Sincronización automática via Object.defineProperty |
+| S3 | `saveDB()` llamado 6 veces en AppData writes | app-data.js:55,62,68,75,80,88 | Cada write persiste automáticamente a localStorage |
+| S4 | `location.reload()` en resetDB | storage.js:93 | Recarga completa de página |
+| S5 | Re-renderizado completo tras cada write | app.js:561,567,873,879,894 | `renderViews()` + `renderEditor()` + `populateSedes()` + `renderFacBar()` |
+
+### 19.4. Dependencias de renderizado (qué DB necesita cada vista)
+
+| Vista | Datos de DB requeridos | Dependencia |
+|---|---|---|
+| **renderFacBar** (dashboard.js:24) | `AppData.getFacultades()` — solo `.name` | Bajo |
+| **renderKPIs** (dashboard.js:41) | `AppData.getFacultad(curFac)` → `f.progs`, `p.lineas`, `p.mae`, `f.doc` | Alto |
+| **renderTree** (app.js:170) | `DB[curFac]` → `f.name`, `f.progs[].id/n/sedes`, `p.lineas[]`, `p.mae[]`, `f.doc` | **Crítico** |
+| **renderTabla** (app.js:431) | `DB[curFac]` → `f.progs`, `p.lineas[]`, `p.mae[]`, `f.doc` | Alto |
+| **renderSedeView** (app.js:465) | `DB[curFac]` → `f.progs`, sedes de cada item, `f.doc` | Alto |
+| **renderProgForm** (app.js:494) | `DB[curFac]` → `f.progs.find(id)`, `p.lineas`, `p.mae` | Alto |
+| **renderEditor** (app.js:818) | `DB[curFac]` → `f.name`, `f.progs`, `p.lineas/mae`, `f.doc` | Alto |
+| **renderIndicadores** (indicators.js:28) | `AppData.getFacultades()` + count → todos los datos | Alto |
+| **renderPipeline** (app.js:685) | `AppData.getFacultades()` → todos los datos | Alto |
+| **renderSNIES** (app.js:620) | `SD` (AppState.snies.SD) — independiente de DB | Bajo |
+| **populateSedes** (filters.js:47) | `AppData.getFacultad(curFac)` + `ALL_SEDES` | Medio |
+| **downloadDB** (export.js:164) | `AppData.getFacultades()` → todos los datos planos | Alto |
+| **downloadHTML** (storage.js:53) | `JSON.stringify(window.DB)` → datos serializados | Bajo |
+
+### 19.5. Patrones de acceso repetidos
+
+| Patrón | Ocurrencias | Dónde |
+|---|---|---|
+| `DB[curFac]` → `f.progs` + `forEach/map/filter` | 8 | renderTree (3), renderTabla (2), renderSedeView (1), renderEditor (2) |
+| `DB[curFac].progs.find(id)` → `p.lineas` + `p.mae` | 1 | renderProgForm |
+| `AppData.getFacultades().forEach(fac => fac.progs.forEach(p => ...))` | 3 | indicators.js, export.js, pipeline |
+| `DB[curFac].progs.filter(p => pregradoMatch(p.n))` | 1 | renderTree |
+| `p.lineas.filter(l => itemMatch(l,'espec'))` + `p.mae.filter(m => itemMatch(m,'mae'))` | 4 | renderTree (2), renderTabla (2) |
+| `f.doc && itemMatch(f.doc, 'doc')` | 2 | renderTree, renderTabla |
+| `f.progs.length` | 1 | renderEditor |
+| `JSON.parse(JSON.stringify(objeto))` (deep clone) | 3 | loadDB (DEFAULT_DATA), renderProgForm (tmpLineas/tmpMaes) |
+
+### 19.6. Riesgos por operación
+
+| Riesgo | Operaciones | Justificación |
+|---|---|---|
+| **🔴 ALTO** | `loadDB`, `saveFacultad` (push/splice), `deleteFacultad` | Mutan la estructura del array `window.DB` — cualquier referencia por índice (curFac) queda desactualizada. `splice` cambia índices de todas las facultades siguientes. |
+| **🟡 MEDIO** | `savePrograma` (replace), `deletePrograma` (filter), `savePrograma` (push) | Mutan la estructura interna de `f.progs` — referencias retenidas a programas individuales quedan huérfanas. El filter reemplaza todo el array. |
+| **🟢 BAJO** | `saveDocumento`, `updateFacultadName`, `saveDB`, `getFacultades` | Mutación in-place de propiedades sin afectar estructura de array ni índices. get retorna referencia directa (compartida) pero nadie retiene la referencia para mutación salvo AppData. |
+| **⚪ INFORMATIVO** | `getFacultad`, `findProgramById`, `getFacultadCount` | Solo lectura. No hay efecto secundario. Seguras para migración inmediata. |
+
+### 19.7. Referencias compartidas (aliasing)
+
+| Referencia | Dónde se obtiene | Riesgo |
+|---|---|---|
+| `AppData.getFacultades()` → `window.DB` | dashboard.js:25, indicators.js:77, export.js:184, app.js:697,821 | **ALERTA**: retorna el array original. Cualquier `push/splice` en el caller muta DB directamente. Actualmente ningún caller lo hace (solo AppData escribe), pero no hay protección. |
+| `AppData.getFacultad(i)` → `window.DB[i]` | dashboard.js:42, filters.js:48, app.js:876,886 | **ALERTA**: retorna la referencia del objeto. Mutar `f.name`, `f.progs`, `f.doc` desde caller afecta DB directamente. Solo AppData escribe actualmente. |
+| `DB[curFac]` en app.js renderers | app.js:172,432,466,495,819 | **LEGACY**: acceso directo a `var DB`, sin pasar por AppData. Solo lectura, pero bypass del control de acceso. |
+
+### 19.8. Operaciones candidatas para encapsulación inmediata (sin riesgo)
+
+| Operación | Reemplazo AppData | Prioridad |
+|---|---|---|
+| `DB[curFac]` en renderTree | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta (reemplaza 5 sites) |
+| `DB[curFac]` en renderTabla | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `DB[curFac]` en renderSedeView | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `DB[curFac]` en renderProgForm | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `DB[curFac]` en renderEditor | `AppData.getFacultad(AppState.navigation.curFac)` | 🔴 Alta |
+| `storage.js` references to `window.DB` | `AppData.getFacultades/getFacultad` | 🟡 Media |
+| `DEFAULT_DATA` como módulo | `assets/js/data/default-data.js` | 🟡 Media |
+| `ALL_SEDES` como módulo | `assets/js/data/sedes.js` | 🟢 Baja |
+| `SD` (SNIES) como módulo | `assets/js/data/snies-data.js` | 🟢 Baja |
+
+### 19.9. Estructura propuesta para capa de datos
+
+```
+assets/js/
+  data/
+    app-data.js       ← ya existe: queries + writes controlados sobre window.DB
+    default-data.js   ← extraer DEFAULT_DATA aquí
+    sedes.js          ← extraer ALL_SEDES aquí
+    snies-data.js     ← extraer SD aquí
+  services/
+    (reservado para lógica de negocio futura)
+  modules/
+    ... (sin cambios)
+```
+
+### 19.10. Dependencias circulares
+
+```
+NO HAY dependencias circulares.
+```
+
+Flujo actual:
+```
+app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
+                ↑                ↑
+          app-data.js        app.js
+                ↑
+          app.js (loadDB)
+```
+
+`embed.js` lee `window.DB` directamente en `buildStandalone()`, no importa de app-data.js. Esto es correcto porque embed.js se ejecuta en runtime para export, no para inicialización.
+
+### 19.11. Resumen de acoplamientos
+
+| Módulo | Acoplamiento a DB | Controlado por AppData |
+|---|---|---|
+| app-data.js | 20 referencias a `window.DB` | Es la capa misma — aceptable |
+| app.js (renderers) | 6 referencias `DB[curFac]` | ❌ Directo |
+| app.js (writes) | 0 — vía AppData | ✅ |
+| storage.js | 6 referencias `window.DB` + DEFAULT_DATA | ❌ Directo |
+| storage.js (downloadHTML) | 2 refs `window.DB` | ❌ Directo |
+| embed.js | 1 ref `window.DB` | ❌ Directo (pero aislado) |
+| filters.js | 1 ref `window.ALL_SEDES` | ❌ Directo (solo lectura) |
+| dashboard.js | 0 — vía AppData | ✅ |
+| indicators.js | 0 — vía AppData | ✅ |
+| export.js | 0 — vía AppData | ✅ |
+
+### 19.12. Operaciones encapsuladas (Fase 4)
+
+#### Nuevos getters readonly agregados (app-data.js — Fase 4):
+
+| Método | Retorno | Propósito |
+|---|---|---|
+| `getFacultadesSafe()` | `Array` (shallow copy) | Evita mutación accidental del array original |
+| `getFacultadSafe(i)` | `Object` (shallow copy) | Evita mutación accidental del objeto facultad |
+| `getProgramaCount(fi)` | `number` | Cuenta programas de pregrado |
+| `getSedesEnUso(fi)` | `string[]` | Sedes únicas usadas por los programas de una facultad |
+| `getFacultadName(fi)` | `string` | Acceso seguro al campo name |
+| `getFacultadDoc(fi)` | `Object|null` | Acceso seguro al campo doc |
+| `getFacultadIndexById(fid)` | `number` | Búsqueda de índice por id |
+| `getFacultadIndexByName(name)` | `number` | Búsqueda de índice por nombre exacto |
+| `getProgramaById(pid)` | `Object|null` | Retorna solo el programa (sin facIndex) |
+
+#### Referencias legacy migradas en Fase 4:
+
+| Antes | Después | Archivo |
+|---|---|---|
+| `window.ALL_SEDES.filter(...)` | `AppState.staticData.ALL_SEDES.filter(...)` | filters.js:53 |
+| `DB[curFac]` en renderTree | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:172 |
+| `DB[curFac]` en renderTabla | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:432 |
+| `DB[curFac]` en renderSedeView | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:466 |
+| `DB[curFac]` en renderProgForm | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:495 |
+| `DB[curFac]` en renderEditor | `AppData.getFacultad(AppState.navigation.curFac)` | app.js:819 |
+
+### 19.13. Checklist de migración (actualizado Fase 4)
+
+- [x] AppData creado (queries + writes iniciales, Fase 3)
+- [x] AppData extendido con 9 getters readonly adicionales (Fase 4)
+- [x] dashboard.js → AppData (Fase 3)
+- [x] indicators.js → AppData (Fase 3)
+- [x] export.js → AppData (Fase 3)
+- [x] app.js writes → AppData (Fase 3)
+- [x] filters.js `window.ALL_SEDES` → `AppState.staticData.ALL_SEDES` (Fase 4)
+- [x] renderTree `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
+- [x] renderTabla `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
+- [x] renderSedeView `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
+- [x] filters.js `window.curFac` → `AppState.navigation.curFac` (Fase 4)
+- [x] renderProgForm `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
+- [x] renderEditor `DB[curFac]` → `AppData.getFacultad()` (Fase 4)
+- [x] AppData writes: validaciones ligeras (null, arrays, tipos) (Fase 4)
+- [x] default-data.js creado con `window.__DEFAULT_DATA` (Fase 4)
+- [ ] storage.js → AppData (loadDB, saveDB)
+- [ ] embed.js → AppData (buildStandalone)
+- [ ] Eliminar copia inline DEFAULT_DATA de app.js (requiere actualizar regex en storage/embed)
+- [ ] Extraer ALL_SEDES a módulo separado
+- [ ] Extraer SD (SNIES) a módulo separado
+
+### 19.14. Cobertura actual de AppData
+
+| Módulo | Accesos DB | Via AppData | Directo | Progreso |
+|---|---|---|---|---|
+| app-data.js | 20 | 20 (es la capa) | 0 | 100% |
+| dashboard.js | 2 | 2 | 0 | 100% |
+| indicators.js | 11 | 11 | 0 | 100% |
+| export.js | 5 | 5 | 0 | 100% |
+| app.js (writes) | 7 | 7 | 0 | 100% |
+| filters.js | 3 | 3 | 0 | 100% |
+| app.js (renderers) | 30 | 30 | 0 | 100% |
+| storage.js | 11 | 0 | 11 (`window.DB`) | 0% |
+| embed.js | 1 | 0 | 1 (`window.DB`) | 0% |
+| **Total** | **90** | **78** | **12** | **87%** |
+
+### 19.15. Accesos legacy restantes (pendientes Fase 4)
+
+| # | Referencia | Archivo | Línea | Riesgo | Dependencia |
+|---|---|---|---|---|---|---|---|
+| R1 | `window.DB` en save/load | storage.js | 17,42,61,67,77 | 🟡 Medio | persistencia (no tocar) |
+| R2 | `window.DB` en embed | embed.js | 67 | 🟢 Bajo | export (no tocar) |
+
+### 19.16. Referencias compartidas detectadas
+
+| Referencia | Dónde | Riesgo |
+|---|---|---|
+| `AppData.getFacultades()` → `window.DB` mismo array | dashboard.js:25, indicators.js:77, export.js:184, app.js:697,821 | Mutable desde afuera — `getFacultadesSafe()` existe como alternativa |
+| `AppData.getFacultad(i)` → `window.DB[i]` mismo objeto | dashboard.js:42, filters.js:48, app.js:876,886 | Mutable desde afuera — `getFacultadSafe()` existe como alternativa |
+| `AppState.staticData.ALL_SEDES` → `window.ALL_SEDES` mismo array | filters.js:53 | Misma referencia, no hay copia |
+
+### 19.17. Riesgos pendientes para siguiente fase
+
+1. **11 referencias en storage.js**: `saveDB()` serializa `window.DB`, `loadDB()` reemplaza `window.DB`. Migrar requiere que AppData gestione la persistencia.
+2. **1 referencia en embed.js**: `JSON.stringify(window.DB)` en `buildStandalone()`. Migrar requiere AppData serializable.
+3. **Mutable references**: `getFacultades()` y `getFacultad()` retornan referencias directas. Callers actualmente no mutan, pero no hay protección.
+4. **ALL_SEDES sin extraer**: datos inline en app.js, no modularizados. Filtros dependen de `AppState.staticData.ALL_SEDES` que apunta al mismo array.
+5. **DEFAULT_DATA inline bloqueado por regex**: la variable `var DEFAULT_DATA=[...]` en app.js no puede eliminarse porque storage.js y embed.js usan un regex que busca ese patrón exacto para actualizar datos en exportaciones. `window.__DEFAULT_DATA` ya existe en módulo separado, pero la copia inline debe mantenerse hasta migrar storage/embed.
+
+### 19.18. Recomendaciones para Fase 4 (siguiente iteración)
+
+1. ~~Migrar renderTree, renderTabla, renderSedeView~~ ✅ ~~renderProgForm~~ ✅ ~~renderEditor~~ ✅ ~~filters.js legacy~~ ✅ ~~validaciones AppData~~ ✅ ~~default-data.js creado~~ ✅
+2. **Eliminar copia inline DEFAULT_DATA de app.js**: requiere actualizar el regex `/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/` en storage.js y embed.js para que apunte a `window.__DEFAULT_DATA`.
+3. **Migrar storage.js**: que `loadDB` use `AppData.loadDB()` y que `saveDB` acceda a datos via AppData.
+4. **Evaluar inmutabilidad**: congelar (`Object.freeze`) los objetos retornados por AppData queries para prevenir mutaciones accidentales fuera de la capa.
+5. **ALL_SEDES y SD (SNIES)**: extraer a módulo separado similar a default-data.js.
+
+### 19.19. Estado consolidado Fase 4 — Baseline arquitectónico
+
+#### Capas del sistema (final Fase 4)
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    UI Layer                           │
+│  app.js (orquestador) · renderers · dashboard        │
+│  indicators · filters · export · SNIES               │
+└──────────────────────┬───────────────────────────────┘
+                       │ AppData.* (read/write)
+┌──────────────────────▼───────────────────────────────┐
+│              Data Access Layer                        │
+│  app-data.js (AppData)                               │
+│    • Queries readonly (12 métodos)                   │
+│    • Writes controladas (6 métodos)                  │
+│    • Validación ligera pre-write                     │
+│    • Persistencia automática (via storage.js)        │
+└──────┬─────────────────────────────────┬─────────────┘
+       │ window.DB                        │ storage.js/saveDB
+┌──────▼──────┐              ┌───────────▼────────────┐
+│  window.DB   │              │   localStorage        │
+│ (source of   │              │   (persistencia real) │
+│  truth)      │              │                        │
+└──────────────┘              └────────────────────────┘
+```
+
+#### Cobertura AppData por módulo (resumen Fase 4)
+
+| Categoría | Módulos | Cobertura |
+|---|---|---|
+| ✅ 100% vía AppData | dashboard.js, indicators.js, export.js, filters.js, app.js (renderers), app.js (writes) | 6/8 módulos |
+| 🔴 Persistencia (0%) | storage.js, embed.js | 2 módulos pendientes |
+| **Total** | **90 accesos DB → 78 vía AppData** | **87%** |
+
+#### Accesos DB directos restantes (12 total)
+
+| Módulo | Ref directas | Dependencia |
+|---|---|---|
+| storage.js | 11 (`window.DB`, `window.DEFAULT_DATA`) | Persistencia |
+| embed.js | 1 (`window.DB`) | Export |
+
+#### Riesgos activos documentados
+
+1. **storage.js/embed.js sin migrar** — único acoplamiento directo a `window.DB` que persiste
+2. **Referencias mutables** — `getFacultades()` y `getFacultad()` retornan referencias directas; `getFacultadesSafe/getFacultadSafe` no tienen consumidores actualmente
+3. **Regex de export frágil** — downloadHTML/buildStandalone dependen de formato exacto `var DEFAULT_DATA=[...]`
+4. **ALL_SEDES y SD (SNIES)** — datos inline en app.js sin modularizar
+5. **ESTADOS_GRUPO duplicado** — indicators.js mantiene copia de ST_MAP de utils.js
+6. **Datos de encoding mixto** — caracteres UTF-8 con doble codificación en DEFAULT_DATA
+
+#### Deuda técnica identificada
+
+| Item | Impacto | Prioridad |
+|---|---|---|
+| `gi()` bug: retorna null cuando valor es 0 | 🟡 Medio | Fase 5 |
+| `_validateDB` en storage.js muta input | 🟡 Medio | Fase 5 |
+| indicadores render es 1 función de 400+ líneas | 🟡 Medio | Refactor futuro |
+| CSV download duplicado en export.js/storage.js | 🟢 Bajo | Refactor futuro |
+| `countItems`, `bar`, `donut` eliminados (dead code) | ✅ Resuelto | — |
+| Comentarios SOMBREADA y dependencias legacy | ✅ Resuelto | — |
+
+#### Acciones dinámicas del dispatcher
+
+El dispatcher `__ACTIONS` en app.js centraliza todas las acciones `data-action`.
+Acción añadida para enlaces de obtención:
+
+| Acción | data-* | Comportamiento |
+|---|---|---|
+| `open-program-link` | `data-url` | `window.open(url, '_blank', 'noopener,noreferrer')` |
+
+**Campo opcional `enlaceObtencion`** en items de especialización (`lineas`):
+- String URL (`https://...`), guardado como parte del objeto item
+- Renderizado solo cuando `item.e === "Obtención"` y URL válida (http/https)
+- Editado via `type="url"` en el formulario del editor
+- `renderObtencionLink(item)` helper genera `<button data-action="open-program-link" data-url="...">`
+- Compatibilidad total: datos sin el campo o con estado distinto a "Obtención" no muestran botón
+
+#### Roadmap post-Fase 4
+
+1. **Fase 5**: Migrar storage.js → AppData persistence (autorizar toque de persistencia)
+2. **Fase 6**: Migrar embed.js → AppData serialization
+3. **Fase 7**: Eliminar copia inline DEFAULT_DATA, actualizar regex
+4. **Fase 8**: Inmutabilidad (`Object.freeze` en queries), getFacultadesSafe como default
+5. **Fase 9**: Extraer ALL_SEDES, SD (SNIES), ESTADOS_GRUPO a módulos separados
+6. **Fase 10**: Refactor indicadores y renderers monolíticos
+
+#### Snapshot estable — tag `v1.0.0-alpha`
+
+Este commit marca el baseline arquitectónico estable de Fase 4.
+Todos los consumidores de datos (renderers, writes, filtros) pasan
+por AppData. Persistencia (storage.js) y export (embed.js) son
+los únicos módulos con acceso directo a `window.DB`.

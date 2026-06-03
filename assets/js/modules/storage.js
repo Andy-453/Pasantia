@@ -47,26 +47,48 @@ function loadDB(){
   window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));
 }
 /**
- * Descarga el HTML completo de la página con DB actualizada inline.
- * Reemplaza var DEFAULT_DATA en el HTML serializado con los datos actuales.
+ * Descarga HTML standalone con CSS, JS e imágenes inline.
+ * Usa __EMBED.buildStandalone() para embeber todos los recursos.
  */
 function downloadHTML(){
-  var html=document.documentElement.outerHTML;
-  html=html.replace(
-    /(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,
-    'var DEFAULT_DATA='+JSON.stringify(window.DB)
-  );
-  html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
+  var hoy=new Date();
+  var fecha=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+  var filename='Dashboard_UDEC_Posgrados_'+fecha+'.html';
+
+  if(!window.__EMBED){
+    // Fallback clásico si embed.js no cargó
+    var html=document.documentElement.outerHTML;
+    html=html.replace(/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,'var DEFAULT_DATA='+JSON.stringify(window.DB));
+    html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
+    _downloadBlob(html,filename);
+    return;
+  }
+
+  var toastEl=document.getElementById('toast');
+  if(toastEl){toastEl.textContent='⏳ Empaquetando dashboard...';toastEl.style.display='block';}
+
+  window.__EMBED.buildStandalone().then(function(html){
+    _downloadBlob(html,filename);
+    if(toastEl){toastEl.textContent='✅ Dashboard guardado con datos actualizados';setTimeout(function(){toastEl.style.display='none';},2500);}
+  }).catch(function(err){
+    console.error('embed error:',err);
+    // Fallback: método clásico
+    var html=document.documentElement.outerHTML;
+    html=html.replace(/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,'var DEFAULT_DATA='+JSON.stringify(window.DB));
+    html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
+    _downloadBlob(html,filename);
+    if(toastEl){toastEl.textContent='✅ Dashboard guardado (sin recursos embebidos)';setTimeout(function(){toastEl.style.display='none';},2500);}
+  });
+}
+
+function _downloadBlob(html,filename){
   var blob=new Blob([html],{type:'text/html;charset=utf-8;'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
   a.href=url;
-  var hoy=new Date();
-  var fecha=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
-  a.download='Dashboard_UDEC_Posgrados_'+fecha+'.html';
+  a.download=filename;
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast('✅ Dashboard guardado con datos actualizados');
 }
 function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){try{localStorage.removeItem('udec_rutas_db');}catch(e){}location.reload();}}
 

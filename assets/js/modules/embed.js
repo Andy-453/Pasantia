@@ -1,0 +1,108 @@
+/**
+ * embed.js — Runtime resource embedding for standalone HTML export
+ * ---
+ * Responsabilidad:
+ *   - recopilar CSS del documento en runtime
+ *   - fetch de JS (mismo origen) para inlinning
+ *   - convertir imágenes a data URIs via canvas
+ *   - construir HTML standalone con todo inline
+ *
+ * Dependencias:
+ *   - window.DB (lectura)
+ *   - fetch, document.styleSheets, canvas
+ *
+ * Estado:
+ *   Nuevo. Se integra con storage.js → downloadHTML().
+ */
+window.__EMBED = {
+  collectCSS: function() {
+    var parts = [];
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      var sheet = document.styleSheets[i];
+      try {
+        if (sheet.cssRules && sheet.cssRules.length) {
+          var rules = [];
+          for (var j = 0; j < sheet.cssRules.length; j++) {
+            rules.push(sheet.cssRules[j].cssText);
+          }
+          parts.push(rules.join('\n'));
+        }
+      } catch(e) { /* cross-origin sheets not accessible */ }
+    }
+    return parts.join('\n\n');
+  },
+
+  fetchJS: function(src) {
+    return fetch(src).then(function(r) {
+      if (!r.ok) throw new Error('Failed to fetch ' + src);
+      return r.text();
+    });
+  },
+
+  imageToDataURI: function(img) {
+    return new Promise(function(resolve) {
+      var src = img.getAttribute('src');
+      if (!src || src.indexOf('data:') === 0) { resolve(src || ''); return; }
+      try {
+        var c = document.createElement('canvas');
+        c.width = img.naturalWidth || img.width || 100;
+        c.height = img.naturalHeight || img.height || 100;
+        c.getContext('2d').drawImage(img, 0, 0);
+        resolve(c.toDataURL('image/png'));
+      } catch(e) { resolve(src); }
+    });
+  },
+
+  /**
+   * Construye HTML standalone: CSS, JS, imágenes inline.
+   * Retorna Promise que resuelve el string HTML.
+   */
+  buildStandalone: function() {
+    var self = this;
+    var html = document.documentElement.outerHTML;
+    var cssText = this.collectCSS();
+
+    html = html.replace(
+      /(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,
+      'var DEFAULT_DATA=' + JSON.stringify(window.DB)
+    );
+
+    html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
+    html = html.replace('</head>', '<style>' + cssText + '</style></head>');
+
+    var scriptSrcs = [];
+    html = html.replace(/<script[^>]+src="([^"]*)"[^>]*><\/script>/gi, function(m, src) {
+      scriptSrcs.push(src);
+      return '';
+    });
+
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('img'));
+
+    return Promise.all([
+      Promise.all(imgs.map(function(img) { return self.imageToDataURI(img); })),
+      Promise.all(scriptSrcs.map(function(src) { return self.fetchJS(src).then(function(c) { return c; }, function() { return ''; }); }))
+    ]).then(function(results) {
+      var dataURIs = results[0];
+      var jsCodes = results[1];
+
+      imgs.forEach(function(img, i) {
+        if (dataURIs[i]) {
+          var oldSrc = img.getAttribute('src');
+          if (oldSrc) {
+            // Replace both relative and absolute forms (outerHTML may resolve URLs)
+            html = html.split(oldSrc).join(dataURIs[i]);
+            try { html = html.split(new URL(oldSrc, location.href).href).join(dataURIs[i]); } catch(e) {}
+          }
+        }
+      });
+
+      var inlineScripts = scriptSrcs.map(function(s, i) {
+        if (jsCodes[i]) return '<script>' + jsCodes[i] + '<\/script>';
+        return '<script src="' + s + '"><\/script>';
+      }).join('\n');
+
+      html = html.replace('</body>', inlineScripts + '\n</body>');
+      return html;
+    });
+  }
+};

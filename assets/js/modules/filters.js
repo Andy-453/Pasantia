@@ -9,10 +9,14 @@
  *
  * Dependencias:
  *   - utils.js → getSt
- *   - window.DB, window.curFac, window.ALL_SEDES, window.filt*
+ *   - AppData.getFacultad() — acceso a datos de facultad activa
+ *   - AppState.navigation.curFac — estado de navegación
+ *   - AppState.staticData.ALL_SEDES — sedes disponibles
+ *   - window.filt* — estado de filtros (legacy, via AppState.filters.*)
  *
  * Estado:
- *   Parcialmente modular. Dependencia fuerte de variables globales.
+ *   Modular. Acceso DB via AppData (Fase 4). Filtros legacy window.filt*
+ *   pendientes de migrar a AppState.filters.* en Fase 5.
  */
 function sedeMatch(s){return window.filtSede==='ALL'||s&&s.includes(window.filtSede);}
 function ofertaMatch(o){return window.filtOferta==='ALL'||(window.filtOferta==='V'&&o==='V')||(window.filtOferta==='P'&&o==='P');}
@@ -36,30 +40,23 @@ function applyFilters(){
   window.filtOferta=document.getElementById('filt-oferta').value;
   window.filtEstado=document.getElementById('filt-estado').value;
   window.filtNivel=document.getElementById('filt-nivel').value;
-  window.AppState.filters.sede=window.filtSede;
-  window.AppState.filters.pregrado=window.filtPregrado;
-  window.AppState.filters.oferta=window.filtOferta;
-  window.AppState.filters.estado=window.filtEstado;
-  window.AppState.filters.nivel=window.filtNivel;
   renderViews();
 }
 function resetFilters(){
   window.filtSede=window.filtOferta=window.filtEstado=window.filtNivel=window.filtPregrado='ALL';
-  window.AppState.filters.sede=window.AppState.filters.oferta=window.AppState.filters.estado=window.AppState.filters.nivel=window.AppState.filters.pregrado='ALL';
   ['filt-sede','filt-oferta','filt-estado','filt-nivel','filt-pregrado'].forEach(function(id){document.getElementById(id).value='ALL';});
   renderViews();
 }
 
 function populateSedes(){
-  var f=window.DB[window.curFac];
+  var f=AppData.getFacultad(AppState.navigation.curFac);
   var s=new Set();
   f.progs.forEach(function(p){p.sedes.forEach(function(x){s.add(x);});});
   var sel=document.getElementById('filt-sede');
   sel.innerHTML='<option value="ALL">Todas las sedes</option>';
-  window.ALL_SEDES.filter(function(x){return s.has(x);}).forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
+  AppState.staticData.ALL_SEDES.filter(function(x){return s.has(x);}).forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
   if(window.filtSede!=='ALL'&&!s.has(window.filtSede)) window.filtSede='ALL';
   sel.value=window.filtSede;
-  window.AppState.filters.sede=window.filtSede;
 
   var pSel=document.getElementById('filt-pregrado');
   var prevPregrado=pSel.value;
@@ -73,6 +70,5 @@ function populateSedes(){
   });
   if(prevPregrado!=='ALL'&&seen.has(prevPregrado)){pSel.value=prevPregrado;window.filtPregrado=prevPregrado;}
   else{pSel.value='ALL';window.filtPregrado='ALL';}
-  window.AppState.filters.pregrado=window.filtPregrado;
 }
 

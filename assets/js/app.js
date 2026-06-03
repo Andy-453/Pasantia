@@ -2,41 +2,45 @@
  * app.js — orquestador principal
  * ---
  * Responsabilidad:
- *   - inicialización de datos (DB, DEFAULT_DATA, ALL_SEDES, curFac)
+ *   - inicialización de datos (DB, ALL_SEDES)
  *   - renderizado de árbol, tabla, vista por sede, editor, SNIES, pipeline, indicadores
  *   - orquestación de vistas (renderViews, showTab)
  *   - editor de datos (CRUD de facultades/programas)
  *
  * Dependencias:
- *   - utils.js     → getSt, pll, uid, gv, gi, toast, showConfirm
- *   - storage.js   → saveDB, loadDB, downloadHTML, resetDB
- *   - filters.js   → pregradoMatch, itemMatch, populateSedes, applyFilters
- *   - dashboard.js → renderKPIs, renderFacBar, selFac
+ *   - utils.js       → getSt, pll, uid, gv, gi, toast, showConfirm
+ *   - storage.js     → saveDB, loadDB, downloadHTML, resetDB
+ *   - filters.js     → pregradoMatch, itemMatch, populateSedes, applyFilters
+ *   - dashboard.js   → renderKPIs, renderFacBar, selFac
+ *   - app-data.js    → AppData (capa de datos)
+ *   - default-data.js → window.__DEFAULT_DATA (datos iniciales)
  *
  * Estado:
- *   Módulo monolítico en proceso de fragmentación (Fase 2).
- *   Contiene renderizados legacy que serán extraídos en fases siguientes.
- *   Varias funciones tienen definiciones duplicadas (sombreado) — ver SOMBREADO.
+ *   Módulo monolítico en proceso de fragmentación (Fase 4).
+ *   var globals legacy: DB, DEFAULT_DATA, ALL_SEDES (pendientes encapsulación).
+ *   DB access via AppData en todos los renderers y writes.
+ *   curFac y filt* migrados a AppState via window accessors.
+ *   DEFAULT_DATA inline mantenido para regex de storage/embed (export).
  *   TODO [MVC]: migrar a controladores por dominio cuando se adopte ESModules.
  */
 
-// COMPAT LEGACY: flag embed para evitar localStorage en entorno embebido
-window.__UDEC_EMBEDDED__=true;
+// Flag embed: solo se activa en HTML exportado standalone (vía inyección en storage.js).
+// En modo desarrollo (source files) se permite localStorage para persistencia local.
+window.__UDEC_EMBEDDED__=false;
 
 // ========== DEFAULT DATA ==========
 var DEFAULT_DATA=[{"id":"admin","name":"Facultad de Ciencias Admin., Económicas y Contables","doc":{"n":"Doctorado en Administración y Dirección de Empresas","e":"Por construir","o":"P","sedes":[],"resp":"Convocatoria Pública","mes":10,"ano":2026},"progs":[{"id":"id1774918209474t80","n":"Administración de Empresas","sedes":["Fusagasugá","Ubate","Chía","Facatativá","Girardot","Soacha"],"lineas":[{"id":"id1774918209474pfl","l":"Marketing digital","t":"Profundización 1","esp":"Especialización en Marketing Digital","e":"Obtención","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474rky","l":"Gestión y administración","t":"Profundización 1","esp":"Especialización en Gestión Pública","e":"Obtención","o":"V","sedes":["Ubate"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474720","l":"Transformación digital en las organizaciones","t":"Profundización 2","esp":"Esp. Gerencia para la Transformación Digital","e":"Renovación y modificación de la denominación","o":"V","sedes":["Chía","Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id17749182094742q2","l":"Analítica de inteligencia de negocios","t":"Profundización 2","esp":"Especialización en Analítica Aplicada a Negocios","e":"Obtención","o":"V","sedes":["Girardot","Soacha"],"resp":"","mes":null,"ano":null},{"id":"id17749182094741h1","l":"Gerencia financiera y diagnóstico estratégico","t":"Profundización 2","esp":"Esp. en Gerencia Financiera y Diagnóstico Estratégico","e":"Radicado MEN","o":"P","sedes":["Fusagasugá","Ubate"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474g6g","l":"Logística integral","t":"Profundización 1","esp":"Especialización en Logística y Comercio Internacional","e":"Radicado MEN","o":"P","sedes":["Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474792","l":"Emprendimiento turístico","t":"Profundización 1","esp":"Esp. en Gestión del Emprendimiento en Org. Turísticas","e":"En construcción","o":"P","sedes":["Chía","Girardot","Soacha"],"resp":"Instituto de posgrados","mes":4,"ano":2026}],"mae":[{"id":"id1774918209474vrw","n":"Maestría en Marketing Digital","e":"Radicado MEN","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474g9v","n":"Maestría en Administración de Empresas - MBA","e":"En construcción","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha"],"resp":"Instituto de posgrados","mes":4,"ano":2026},{"id":"id1774918209474twh","n":"Maestría en Gerencia Financiera, Tributaria y Sostenibilidad Empresarial","e":"Por construir","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha"],"resp":"","mes":null,"ano":null}]},{"id":"id1774918209474tn9","n":"Contaduría Pública","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"lineas":[{"id":"id1774918209474rf4","l":"Financiera y contable","t":"Profundización 2","esp":"Especialización en Gerencia Financiera y Contable","e":"Obtención","o":"V","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474077","l":"Gestión tributaria","t":"Profundización 1","esp":"Especialización en Gestión Tributaria","e":"Radicado MEN","o":"P","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id1774918209474bl9","n":"Maestría en Gerencia Financiera, Tributaria y Sostenibilidad Empresarial","e":"Por construir","o":"P","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"resp":"Convocatoria Pública","mes":10,"ano":2026}]}]},{"id":"ing","name":"Facultad de Ingeniería","doc":{"n":"Doctorado en Ingeniería","e":"En construcción","o":"P","sedes":[],"resp":"Luis Alberto Tafur","mes":8,"ano":2026},"progs":[{"id":"id1774918209474rf6","n":"Ingeniería de Software","sedes":["Soacha","Girardot"],"lineas":[{"id":"id1774918209474zw7","l":"Desarrollo del software con estándares de calidad","t":"Profundización 2","esp":"Esp. en Metodologías de Calidad para el Desarrollo del Software","e":"Obtención","o":"V","sedes":["Soacha","Girardot"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474zo6","l":"Ciencia de datos","t":"Profundización 1","esp":"Especialización en Analítica y Ciencia de Datos","e":"Obtención","o":"V","sedes":["Soacha","Girardot"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id1774918209474sv4","n":"Maestría en TIC para Territorios Inteligentes","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Blanca Judith Cristacho Pabon","mes":4,"ano":2026}]},{"id":"id1774918209474l2g","n":"Ingeniería de Sistemas y Computación","sedes":["Chía","Ubate","Facatativá","Fusagasugá"],"lineas":[{"id":"id177491820947468q","l":"Software seguro y de calidad","t":"Profundización 1","esp":"Esp. en Metodologías de Calidad para el Desarrollo del Software","e":"Obtención","o":"V","sedes":["Chía","Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474vrm","l":"Inteligencia artificial","t":"Profundización 2","esp":"Especialización en Inteligencia Artificial","e":"Obtención","o":"V","sedes":["Chía","Ubate","Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474eru","l":"Ciencia de datos / Bigdata","t":"Profundización 2","esp":"Especialización en Analítica y Ciencia de Datos","e":"Obtención","o":"V","sedes":["Chía","Facatativá","Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474afo","l":"Redes y seguridad","t":"Profundización 2","esp":"Especialización en Infraestructura y Seguridad de Redes","e":"Obtención","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474pi7","l":"Desarrollo de software","t":"Profundización 1","esp":"Especialización en Seguridad de la Información","e":"Radicado MEN","o":"P","sedes":["Ubate"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id17749182094746wy","n":"Maestría en Ingeniería de Sistemas y Computación","e":"En construcción","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha","Girardot"],"resp":"Convocatoria publica","mes":8,"ano":2026}]},{"id":"id1774918209474kb4","n":"Ingeniería Electrónica","sedes":["Fusagasugá"],"lineas":[{"id":"id177491820947445x","l":"Telemática y telecomunicaciones","t":"Profundización 2","esp":"Especialización en Infraestructura y Seguridad de Redes","e":"Obtención","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474po7","l":"Energías renovables y sostenibilidad energética","t":"Profundización 2","esp":"Esp. en Solución Energéticas Sostenibles","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Carlos Alberto Cusquen Gómez","mes":5,"ano":2026}],"mae":[{"id":"id17749182094747vt","n":"Maestría en Automatización Industrial","e":"Por construir","o":"P","sedes":["Fusagasugá","Soacha","Chía"],"resp":"Leidy  Yolanda Lopez Osorio","mes":5,"ano":2026}]},{"id":"id17749182094745d9","n":"Ingeniería Industrial","sedes":["Soacha","Chía"],"lineas":[{"id":"id1774918209474mir","l":"Ciencia de datos","t":"Profundización 2","esp":"Especialización en Analítica Aplicada a Negocios","e":"Obtención","o":"V","sedes":["Soacha","Chía"]},{"id":"id1774918209474um9","l":"Logística y cadena de abastecimiento","t":"Profundización 1","esp":"Especialización en Logística y Operaciones","e":"Radicado MEN","o":"P","sedes":["Soacha","Chía"]}],"mae":[]},{"id":"id177491820947426j","n":"Ingeniería Mecatrónica","sedes":["Chía"],"lineas":[{"id":"id1774918209474jz6","l":"Automatización y telemática aplicada","t":"Profundización 1","esp":"Especialización en Automatización Industrial","e":"Negado MEN","o":"P","sedes":["Chía"],"resp":"","mes":null,"ano":null}],"mae":[]}]},{"id":"agro","name":"Facultad de Ciencias Agropecuarias","doc":{"n":"Doctorado en Agricultura Inteligente y Sostenible","e":"En construcción","o":"P","sedes":[],"resp":"","mes":7,"ano":2026},"progs":[{"id":"id1774918209474rvk","n":"Zootecnia","sedes":["Fusagasugá","Ubate"],"lineas":[{"id":"id17749182094747we","l":"Recursos zoogenéticos para la producción pecuaria","t":"Profundización 2","esp":"Especialización en Recursos Zoogenéticos","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474cat","l":"Alimentación no convencional","t":"Profundización 1","esp":"Esp. Nutrición y Alimentación Animal Esp. No Convencionales","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474krm","l":"Ciencia, tecnología e innovación en producción","t":"Profundización 1","esp":"Esp. Transformación e Innovación de Productos Lácteos y Cárnicos","e":"En radicación","o":"P","sedes":["Ubate"]},{"id":"id177491820947460y","l":"Reproducción y mejoramiento genético","t":"Profundización 2","esp":"Esp. Herramientas Biotecnológicas para la Producción Animal","e":"En construcción","o":"P","sedes":["Ubate"]}],"mae":[{"id":"id1774918209474jlj","n":"Maestría en Gestión Estratégica en Nutrición y Alimentación Animal","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474064","n":"Maestría en Producción Pecuaria e Innovación Agroindustrial","e":"Por construir","o":"P","sedes":["Fusagasugá"]}]},{"id":"id1774918209474io6","n":"Ingeniería Agronómica","sedes":["Fusagasugá","Facatativá"],"lineas":[{"id":"id1774918209474vuu","l":"Emprendimiento, desarrollo rural y territorio","t":"Profundización 2","esp":"Especialización en Agronegocios Sostenibles","e":"Obtención","o":"V","sedes":["Fusagasugá","Facatativá"]},{"id":"id17749182094742u1","l":"Sistemas de producción agrícola sostenible","t":"Profundización 1","esp":"Esp. en Agroecología y Desarrollo Agroecoturístico","e":"Obtención","o":"V","sedes":["Fusagasugá","Facatativá"]}],"mae":[{"id":"id1774918209474u3z","n":"Maestría en Ciencias Agrarias con énfasis en Hortifruticultura","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474jpq","n":"Maestría en Agricultura Familiar y Sistemas Agroalimentarios Sostenibles","e":"Entregado para radicar","o":"P","sedes":["Fusagasugá"]}]},{"id":"id1774918209474ea0","n":"Ingeniería Ambiental","sedes":["Girardot","Facatativá"],"lineas":[{"id":"id1774918209474gsp","l":"Recurso hídrico","t":"Profundización 1","esp":"Especialización en Gestión del Recurso Hídrico","e":"Por construir","o":"P","sedes":["Girardot","Facatativá"]},{"id":"id17749182094740xz","l":"Gestión ambiental territorial","t":"Profundización 2","esp":"Esp. en Gestión del Riesgo de Desastres y Planificación Ambiental del Territorio","e":"En reclamación MEN","o":"P","sedes":["Girardot"]},{"id":"id1774918209474fvw","l":"Calidad del recurso aire","t":"Profundización 2","esp":"Especialización en Gestión de la Calidad del Recurso Aire","e":"En reclamación MEN","o":"P","sedes":["Facatativá"]}],"mae":[{"id":"id17749182094747ul","n":"Maestría en Gestión Ambiental para el Desarrollo Sostenible","e":"Obtención","o":"V","sedes":["Fusagasugá"]}]},{"id":"id17749182094746xl","n":"Medicina Veterinaria y Zootecnia","sedes":["Ubate"],"lineas":[{"id":"id1774918209474rnm","l":"Fauna silvestre susceptible de producción","t":"Profundización 1","esp":"Especialización en Sanidad de Animales Silvestres","e":"Por construir","o":"P","sedes":["Ubate"]},{"id":"id1774918209474i1s","l":"Especies con intervención reproductiva","t":"Profundización 2","esp":"Esp. en Técnicas de Reproducción Animal Asistida","e":"Por construir","o":"P","sedes":["Ubate"]}],"mae":[{"id":"id1774918209474vbs","n":"Maestría en Ciencias Veterinarias de Especies No Convencionales","e":"Por construir","o":"P","sedes":["Fusagasugá"]}]},{"id":"id1774918209474vyv","n":"Ingeniería Topográfica y Geomática","sedes":["Soacha"],"lineas":[{"id":"id17749182094743a5","l":"Cartografía y representación del Espacio Geográfico","t":"Profundización 1","esp":"Especialización en Ciencia de Geo-Datos","e":"Por construir","o":"P","sedes":["Soacha"]},{"id":"id1774918209474ai2","l":"Redes planimétricas y altimétricas","t":"Profundización 2","esp":"Esp. en Topografía Avanzada con fines Catastrales","e":"Por construir","o":"P","sedes":["Soacha"]}],"mae":[{"id":"id17749182094748xq","n":"Maestría en Geo-datos Aplicados al Ordenamiento Territorial","e":"Por construir","o":"P","sedes":["Soacha"]}]}]},{"id":"salud","name":"Facultad de Ciencias de la Salud","doc":{"n":"Doctorado en Salud Mental y Cuidado Integral","e":"Por construir","o":"P","sedes":[],"resp":"Convocatoria Pública","mes":11,"ano":2026},"progs":[{"id":"id1774918209474mlr","n":"Enfermería","sedes":["Girardot"],"lineas":[{"id":"id1774918209474rlh","l":"Cuidado integral en Salud Mental en el ámbito comunitario","t":"Profundización 1","esp":"Especialización en Salud Mental Comunitaria","e":"Radicado MEN","o":"P","sedes":["Girardot"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474ja8","l":"Gestión del Cuidado de Enfermería, calidad e innovación","t":"Profundización 2","esp":"Esp. Gerencia de la calidad e innovación en salud","e":"En construcción","o":"P","sedes":["Girardot"],"resp":"Hernan Camilo Castillo Romero ","mes":5,"ano":2026}],"mae":[{"id":"id1774918209474tx0","n":"Maestría en Salud Pública","e":"Radicado MEN","o":"P","sedes":["Girardot"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474rs0","n":"Maestría en Gestión de la Calidad en Servicios de Salud","e":"Por construir","o":"P","sedes":["Girardot"],"resp":"Convocatoria Pública","mes":10,"ano":2026}]},{"id":"id1774918209474ktb","n":"Psicología","sedes":["Facatativá"],"lineas":[{"id":"id17749182094749y0","l":"Intervención psicosocial","t":"Profundización 1","esp":"Especialización en Intervención Psicosocial","e":"Radicado MEN","o":"V","sedes":["Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474m1a","l":"Medición y evaluación psicológica","t":"Profundización 2","esp":"Especialización en Psicometría y Medición Psicológica","e":"Por construir","o":"P","sedes":["Facatativá"],"resp":"Convocatoria Pública","mes":10,"ano":2026}],"mae":[{"id":"id1774918209474ab6","n":"Maestría en Intervención Psicosocial en Contextos de Cuidado","e":"En construcción","o":"P","sedes":["Facatativá"],"resp":"Sindy Johana Acevedo Velandia ","mes":5,"ano":2026},{"id":"id1774918209474kd9","n":"Maestría en Diseño y Análisis de Instrumentos Psicométricos","e":"Por construir","o":"P","sedes":["Facatativá"],"resp":"Convocatoria Pública","mes":10,"ano":2026}]}]},{"id":"dep","name":"Facultad de Ciencias del Deporte y Ed. Física","doc":{"n":"Doctorado de Ciencias del Movimiento y el Bienestar","e":"En proyección","o":"P","sedes":[],"resp":"Convocatoria Púbica","mes":11,"ano":2026},"progs":[{"id":"id17749182094743d5","n":"Lic. en Educación Física, Recreación y Deportes","sedes":["Fusagasugá"],"lineas":[{"id":"id177491820947414p","l":"Deporte escolar","t":"Profundización 1","esp":"Especialización en Deporte Escolar","e":"En oferta","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474wr6","l":"Educación física y discapacidad","t":"Profundización 2","esp":"Especialización en Actividad Física y Discapacidad","e":"Radicado MEN","o":"P","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id1774918209474fm2","n":"Maestría en Ciencias del Deporte y la Educación Física","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Andres Sepulveda","mes":6,"ano":2026}]},{"id":"id17749182094747l6","n":"Profesional en Ciencias del Deporte","sedes":["Soacha"],"lineas":[{"id":"id17749182094746eg","l":"Administración deportiva","t":"Profundización 2","esp":"Esp. en Gestión y Desarrollo de la Actividad Física y el Deporte","e":"Con registro Calificado","o":"V","sedes":["Soacha"]},{"id":"id1774918209474mqf","l":"Entrenamiento deportivo","t":"Profundización 1","esp":"Especialización en Entrenamiento Deportivo","e":"Nueva Propuesta de la Facultad","o":"P","sedes":["Soacha"]}],"mae":[]}]},{"id":"edu","name":"Facultad de Educación","doc":{"n":"Doctorado en Ciencias de la Educación","e":"Obtención-resignificación","o":"P","sedes":[],"resp":"Monica Mantilla","mes":5,"ano":2026},"progs":[{"id":"id1774918209474rmb","n":"Lic. en Ciencias Sociales","sedes":["Fusagasugá"],"lineas":[{"id":"id17755015357177xb","l":"Educación, Ruralidades y Derechos Humanos.","t":"Profundización 1","esp":"Especialización en Educación, Ruralidades y Derechos Humanos","e":"Por construir","o":"P","sedes":[],"resp":"","mes":10,"ano":2026},{"id":"id1775501577009amm","l":"Región y Territorio.","t":"Profundización 2","esp":"Especialización  en ciencias sociales, región y territorio","e":"Por construir","o":"P","sedes":[],"resp":"","mes":10,"ano":2026}],"mae":[{"id":"id1774918209474n41","n":"Maestría en Educación y Gestión del Conocimiento","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Aura Alvarez","mes":7,"ano":2026}]}]},{"id":"hum","name":"Facultad de Ciencias Sociales, Humanidades y Políticas","doc":null,"progs":[{"id":"id17749182094745sv","n":"Música","sedes":["Zipaquirá"],"lineas":[{"id":"id17749182094749zh","l":"Composición y arreglos","t":"Profundización 1","esp":"Esp. para Línea de Profundización en Dirección Musical","e":"Por construir","o":"P","sedes":["Zipaquirá"],"resp":"Convocatoria Pública","mes":10,"ano":2026},{"id":"id17749182094748c1","l":"Producción y gestión musical","t":"Profundización 2","esp":"Esp. para Línea de Profundización en Producción Musical","e":"Por construir","o":"P","sedes":["Zipaquirá"],"resp":"Convocatoria Pública","mes":10,"ano":2026}],"mae":[]}]}]
 
 var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
 var DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
-var curFac=0,filtSede='ALL',filtOferta='ALL',filtEstado='ALL',filtNivel='ALL',filtPregrado='ALL';
-var editingFacIdx=null;
+// Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors a continuación
 // Legacy aliases: AppState.editor es fuente única (Fase 3)
 Object.defineProperty(window,'editingProgId',{get:function(){return window.AppState.editor.editingProgId;},set:function(v){window.AppState.editor.editingProgId=v;},configurable:true});
 Object.defineProperty(window,'tmpLineas',{get:function(){return window.AppState.editor.tmpLineas;},set:function(v){window.AppState.editor.tmpLineas=v;},configurable:true});
 Object.defineProperty(window,'tmpMaes',{get:function(){return window.AppState.editor.tmpMaes;},set:function(v){window.AppState.editor.tmpMaes=v;},configurable:true});
 
 // Estado centralizado — Fase 3 (migración gradual)
-// Compatibilidad legacy: mantener var* globales hasta migración completa
+// Acceso legacy via window accessors (curFac, filtSede, etc.)
 window.AppState = {
   navigation: {
     curFac: 0,
@@ -59,8 +63,24 @@ window.AppState = {
     SD: null,
     fac: 'TODAS',
     prog: null
+  },
+  staticData: {
+    ALL_SEDES: null,
+    DEFAULT_DATA: null
   }
 };
+
+// ===== GLOBAL ACCESSORS — Fase 3 =====
+// Aliases transparentes: window.curFac / window.filt* → AppState.*
+Object.defineProperty(window,'curFac',{get:function(){return window.AppState.navigation.curFac;},set:function(v){window.AppState.navigation.curFac=v;},configurable:true});
+Object.defineProperty(window,'filtSede',{get:function(){return window.AppState.filters.sede;},set:function(v){window.AppState.filters.sede=v;},configurable:true});
+Object.defineProperty(window,'filtOferta',{get:function(){return window.AppState.filters.oferta;},set:function(v){window.AppState.filters.oferta=v;},configurable:true});
+Object.defineProperty(window,'filtEstado',{get:function(){return window.AppState.filters.estado;},set:function(v){window.AppState.filters.estado=v;},configurable:true});
+Object.defineProperty(window,'filtNivel',{get:function(){return window.AppState.filters.nivel;},set:function(v){window.AppState.filters.nivel=v;},configurable:true});
+Object.defineProperty(window,'filtPregrado',{get:function(){return window.AppState.filters.pregrado;},set:function(v){window.AppState.filters.pregrado=v;},configurable:true});
+// Inicializar staticData (readonly)
+window.AppState.staticData.ALL_SEDES=ALL_SEDES;
+window.AppState.staticData.DEFAULT_DATA=DEFAULT_DATA;
 
 // ===== EXPORT MANIFEST — Fase 3 =====
 // Namespace global para migración futura a ESModules.
@@ -129,6 +149,17 @@ var __ACTIONS = {
   'open-new-fac': function(){ openNewFac(); },
   'save-fac': function(b){ saveFac(b.dataset.isNew === 'true'); },
   'delete-fac': function(){ deleteFac(); },
+  'open-program-link': function(b){
+    var url = b.getAttribute('data-url');
+    if(url) window.open(url, '_blank', 'noopener,noreferrer');
+  },
+  'show-learning-route': function(b){
+    openLearningRouteModal(b.dataset.espId);
+  },
+  'close-lr-modal': function(){
+    var o = document.getElementById('lr-modal-overlay');
+    if(o) document.body.removeChild(o);
+  },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -146,6 +177,125 @@ document.addEventListener('change', function(e){
   if(fn) fn(b);
 });
 
+function _getObtencionUrl(e, item){
+  if(!item || !item.enlaceObtencion) return '';
+  if((e||'').toLowerCase() !== 'obtención') return '';
+  var url = item.enlaceObtencion.trim();
+  if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
+  return url;
+}
+function _hasLR(id){
+  return !!(window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id]);
+}
+
+function renderLearningRouteHTML(route){
+  var sems = route.semesters || [];
+  var n = sems.length;
+  if(!n) return '<div class="modal" style="max-width:400px"><div class="modal-actions" style="border:none"><button data-action="close-lr-modal">Cerrar</button></div></div>';
+
+  // --- Specialization card (top) ---
+  var semCount = n;
+  var espCard = '<div class="node node-espec" style="min-width:260px;max-width:380px;width:100%">'
+    + '<div class="node-stripe"></div>'
+    + '<div class="node-body">'
+    + '<div class="node-label">Especializaci\u00f3n</div>'
+    + '<div class="node-title" style="font-size:11px">'+route.espName+'</div>'
+    + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
+    + route.credits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
+    + '</div></div></div>';
+
+  // --- SVG connector: specialization → semesters ---
+  var colW = 220;
+  var gap = 20;
+  var totalW = n * colW + (n-1) * gap;
+  var centerX = totalW / 2;
+  var svgH = 40;
+
+  var svgPaths = '<line x1="'+centerX+'" y1="0" x2="'+centerX+'" y2="16" stroke="#c0d8c8" stroke-width="2"/>';
+  if(n > 1){
+    var firstX = colW/2;
+    var lastX = totalW - colW/2;
+    svgPaths += '<line x1="'+firstX+'" y1="16" x2="'+lastX+'" y2="16" stroke="#c0d8c8" stroke-width="2"/>';
+  }
+  sems.forEach(function(_,i){
+    var cx = i*(colW+gap) + colW/2;
+    svgPaths += '<line x1="'+cx+'" y1="16" x2="'+cx+'" y2="'+svgH+'" stroke="#c0d8c8" stroke-width="2"/>';
+    if(n > 1) svgPaths += '<circle cx="'+cx+'" cy="16" r="3" fill="#006633"/>';
+  });
+  svgPaths += '<circle cx="'+centerX+'" cy="0" r="3" fill="#006633"/>';
+
+  var connectorSvg = '<svg width="'+Math.max(totalW,2)+'" height="'+svgH+'" style="display:block;overflow:visible">'+svgPaths+'</svg>';
+
+  // --- Semester columns ---
+  var semCols = sems.map(function(sem){
+    // Semester card
+    var semCard = '<div class="node" style="width:100%;background:#fffdf0;box-shadow:0 2px 8px rgba(200,164,58,0.10);border-radius:8px;overflow:hidden;cursor:default">'
+      + '<div class="node-stripe" style="background:var(--udec-gold);height:3px"></div>'
+      + '<div class="node-body" style="padding:8px 10px 9px">'
+      + '<div class="node-label" style="color:var(--udec-gold);margin-bottom:2px">'+sem.title+'</div>'
+      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+sem.type+' &middot; '+sem.credits+' cr\u00e9dito'+(sem.credits>1?'s':'')+'</div>'
+      + '</div></div>';
+
+    // Subject cards
+    var subjectCards = sem.subjects.map(function(subj){
+      var pillColor = subj.credits <= 1
+        ? 'background:#f0f7f2;color:#006633;border:1px solid #b0d4be'
+        : 'background:#e8f0fb;color:#1a5cb0;border:1px solid #b0c8e8';
+      var homoBadge = subj.homologa
+        ? '<span class="badge" style="background:#e6f2eb;color:#006633;border:1px solid #b0d4be;padding:1px 5px;font-size:7px;margin-top:0">\u2713 Homologa</span>'
+        : '';
+      return '<div class="subj-card">'
+        + '<div class="subj-stripe"></div>'
+        + '<div class="subj-body">'
+        + '<div class="subj-name">'+subj.title+'</div>'
+        + '<div class="subj-meta">'
+        + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
+        + homoBadge
+        + '</div></div></div>';
+    }).join('<div style="width:2px;height:6px;background:#e0ece4;flex-shrink:0;align-self:center"></div>');
+
+    return '<div style="width:'+colW+'px;display:flex;flex-direction:column;align-items:center;flex-shrink:0">'
+      + '<div style="width:2px;height:10px;background:#e0ece4;flex-shrink:0"></div>'
+      + semCard
+      + '<div style="width:2px;height:10px;background:#e0ece4;flex-shrink:0"></div>'
+      + subjectCards
+      + '</div>';
+  }).join('');
+
+  // --- Full modal ---
+  return '<div class="modal" style="max-width:680px">'
+    + '<div class="modal-title"><span>\uD83D\uDCCB</span>Ruta de Aprendizaje</div>'
+    + '<div class="route-tree-wrap" style="overflow-x:auto;padding:4px 0">'
+    + '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:max-content">'
+    + espCard
+    + connectorSvg
+    + '<div style="display:flex;gap:'+gap+'px;align-items:flex-start">'
+    + semCols
+    + '</div></div></div>'
+    + '<div class="modal-actions"><button data-action="close-lr-modal">Cerrar</button></div>'
+    + '</div>';
+}
+function openLearningRouteModal(espId){
+  var route = window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[espId];
+  if(!route){ toast('Ruta no disponible'); return; }
+  var overlay = document.createElement('div');
+  overlay.id = 'lr-modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto';
+  overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:680px">' + renderLearningRouteHTML(route) + '</div>';
+  document.body.appendChild(overlay);
+  function _closeLR(){
+    if(overlay.parentNode) document.body.removeChild(overlay);
+  }
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay || e.target.classList.contains('modal-overlay')) _closeLR();
+  });
+  function _onKey(e){
+    if(e.key === 'Escape'){ _closeLR(); document.removeEventListener('keydown', _onKey); }
+  }
+  document.addEventListener('keydown', _onKey);
+  overlay.addEventListener('DOMNodeRemoved', function(){ document.removeEventListener('keydown', _onKey); });
+}
+
 // ===== TREE =====
 /**
  * Renderiza el árbol jerárquico (pregrado → línea → especialización / maestría / doctorado).
@@ -153,7 +303,7 @@ document.addEventListener('change', function(e){
  */
 function renderTree(){
   try{
-  const f=DB[curFac];
+  const f=AppData.getFacultad(AppState.navigation.curFac);
   // Ensure data integrity before rendering
   if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
   const singlePregrado = filtPregrado !== 'ALL';
@@ -161,10 +311,14 @@ function renderTree(){
   function vline(h){
     return `<div class="vl" style="height:${h}px"></div>`;
   }
-  function stBadge(e){
+  function stBadge(e, item){
     if(!e) return '';
     const s=getSt(e);
-    return `<div class="badge" style="background:${s.bg};color:${s.tx}"><div class="bdot" style="background:${s.dot}"></div>${e}</div>`;
+    var url = _getObtencionUrl(e, item);
+    if(url){
+      return '<div class="badge clickable" data-action="open-program-link" data-url="'+url+'" role="button" tabindex="0" style="background:'+s.bg+';color:'+s.tx+';cursor:pointer"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
+    }
+    return '<div class="badge" style="background:'+s.bg+';color:'+s.tx+'"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
   }
 
   // Filter programs (defensive: guard against undefined lineas/mae from stale data)
@@ -265,9 +419,9 @@ function renderTree(){
             <div class="node-body">
               ${pll(l.o)}
               <div class="node-label">Especialización</div>
-              <div class="node-title">${l.esp}</div>
+              <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
               <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
-              ${stBadge(l.e)}
+              ${stBadge(l.e, l)}
             </div>
           </div>
         </div>`;
@@ -314,7 +468,7 @@ function renderTree(){
               <div class="node-label">Maestría</div>
               <div class="node-title">${m.n}</div>
               <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
-              ${stBadge(m.e)}
+              ${stBadge(m.e, m)}
             </div>
           </div>
         </div>`;
@@ -362,9 +516,9 @@ function renderTree(){
           <div class="node-body">
             ${pll(l.o)}
             <div class="node-label">Especialización</div>
-            <div class="node-title">${l.esp}</div>
+            <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
             <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
-            ${stBadge(l.e)}
+            ${stBadge(l.e, l)}
           </div>
         </div>`;
       });
@@ -379,7 +533,7 @@ function renderTree(){
             <div class="node-label">Maestría</div>
             <div class="node-title">${m.n}</div>
             <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
-            ${stBadge(m.e)}
+            ${stBadge(m.e, m)}
           </div>
         </div>`;
       });
@@ -413,21 +567,23 @@ function renderTree(){
 
 // ===== TABLE =====
 function renderTabla(){
-  const f=DB[curFac];let rows='';
+  const f=AppData.getFacultad(AppState.navigation.curFac);let rows='';
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     const items=[
-      ...p.lineas.filter(l=>itemMatch(l,'espec')).map(l=>({nivel:'Especialización',nombre:l.esp,linea:l.l,sedes:l.sedes,e:l.e,o:l.o})),
-      ...p.mae.filter(m=>itemMatch(m,'mae')).map(m=>({nivel:'Maestría',nombre:m.n,linea:'—',sedes:m.sedes,e:m.e,o:m.o}))
+      ...p.lineas.filter(l=>itemMatch(l,'espec')).map(l=>({nivel:'Especialización',nombre:l.esp,linea:l.l,sedes:l.sedes,e:l.e,o:l.o,enlaceObtencion:l.enlaceObtencion})),
+      ...p.mae.filter(m=>itemMatch(m,'mae')).map(m=>({nivel:'Maestría',nombre:m.n,linea:'—',sedes:m.sedes,e:m.e,o:m.o,enlaceObtencion:m.enlaceObtencion}))
     ];
     items.forEach((it,i)=>{
       const st=getSt(it.e);
       const os=it.o==='V'?'background:#e6f2eb;color:#006633;border:1px solid #006633':'background:#e8f0fb;color:#1a5cb0;border:1px solid #378ADD';
+      var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
+      if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+bUrl+'" role="button" tabindex="0" style="cursor:pointer"';}
       rows+=`<tr>${i===0?`<td rowspan="${items.length}" style="font-weight:700;vertical-align:top;color:#006633">${p.n}<div style="font-size:9px;color:#666;font-style:italic">${p.sedes.join(', ')}</div></td>`:''}
         <td><span style="font-size:9px;padding:1px 5px;border-radius:5px;${os}">${it.o==='V'?'Vigente':'Proyectada'}</span></td>
         <td style="font-weight:700">${it.nivel}</td><td style="color:#555">${it.linea}</td>
         <td>${it.nombre}</td><td style="font-size:9px">${it.sedes.join(', ')}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span></td>
+        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"${bAttrs}><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span></td>
       </tr>`;
     });
   });
@@ -447,11 +603,11 @@ function renderTabla(){
 
 // ===== SEDE VIEW =====
 function renderSedeView(){
-  const f=DB[curFac];const sm={};
+  const f=AppData.getFacultad(AppState.navigation.curFac);const sm={};
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     [...p.lineas.filter(l=>itemMatch(l,'espec')),...p.mae.filter(m=>itemMatch(m,'mae'))].forEach(item=>{
-      item.sedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o});});
+      item.sedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o,enlaceObtencion:item.enlaceObtencion});});
     });
   });
   if(f.doc&&itemMatch(f.doc,'doc')) f.doc.sedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:'Todos',nivel:f.doc.n,e:f.doc.e,o:f.doc.o});});
@@ -462,10 +618,12 @@ function renderSedeView(){
     h+=`<div class="sede-card"><div class="sede-name">📍 ${s} <span style="font-size:9px;background:#e6f2eb;color:#006633;padding:1px 6px;border-radius:8px;margin-left:4px">${sm[s].length}</span></div>`;
     sm[s].forEach(it=>{
       const st=getSt(it.e);const os=it.o==='V'?'#006633':'#1a5cb0';
+      var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
+      if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+bUrl+'" role="button" tabindex="0" style="cursor:pointer"';}
       h+=`<div class="sede-item"><div style="flex:1;font-size:10px;line-height:1.3">${it.nivel}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${it.o==='V'?'#e6f2eb':'#e8f0fb'};color:${os};border:1px solid ${os}">${it.o==='V'?'Vig.':'Proy.'}</span>
-          <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}">${it.e||'—'}</span>
+          <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}"${bAttrs}>${it.e||'—'}</span>
         </div></div>`;
     });
     h+=`</div>`;
@@ -476,7 +634,7 @@ function renderSedeView(){
 
 // ===== PROG FORM =====
 function renderProgForm(){
-  var f=DB[curFac],isNew=editingProgId==='__new__';
+  var f=AppData.getFacultad(AppState.navigation.curFac),isNew=editingProgId==='__new__';
   var p=isNew?{id:uid(),n:'',sedes:[],lineas:[{id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'V',sedes:[],resp:'',mes:null,ano:null}],mae:[{id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null}]}:f.progs.find(function(x){return x.id===editingProgId;});
   if(!p) return;
   if(!tmpLineas._progId||tmpLineas._progId!==p.id){
@@ -499,7 +657,7 @@ function renderProgForm(){
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+l.id+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
       +'<div class="field"><label>👤 Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"></div></div>'
+      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var mH=tmpMaes.map(function(m){
@@ -532,23 +690,23 @@ function renderProgForm(){
   document.getElementById('editor-content').innerHTML=h;
 }
 
-function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null});tmpLineas._progId=pid;renderProgForm();}
+function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpLineas._progId=pid;renderProgForm();}
 function delLinea(lid){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas=tmpLineas.filter(function(l){return l.id!==lid;});tmpLineas._progId=pid;renderProgForm();}
 function addMae(){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes.push({id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null});tmpMaes._progId=pid;renderProgForm();}
 function delMae(mid){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes=tmpMaes.filter(function(m){return m.id!==mid;});tmpMaes._progId=pid;renderProgForm();}
-function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(function(l){return{id:l.id,l:gv('ll'+l.id)||l.l,t:gv('lt'+l.id)||l.t,esp:gv('le'+l.id)||l.esp,e:gv('les'+l.id),o:gv('lo'+l.id)||l.o,sedes:l.sedes,resp:gv('lresp'+l.id),mes:gi('lmes'+l.id),ano:gi('lano'+l.id)};});tmpLineas._progId=pid;}
+function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(function(l){return{id:l.id,l:gv('ll'+l.id)||l.l,t:gv('lt'+l.id)||l.t,esp:gv('le'+l.id)||l.esp,e:gv('les'+l.id),o:gv('lo'+l.id)||l.o,sedes:l.sedes,resp:gv('lresp'+l.id),mes:gi('lmes'+l.id),ano:gi('lano'+l.id),enlaceObtencion:gv('lenlace'+l.id)||null};});tmpLineas._progId=pid;}
 function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id)};});tmpMaes._progId=pid;}
 function saveProg(pid,isNew){
   collectLineas();collectMaes();
-  var f=DB[curFac],prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
-  if(isNew){f.progs.push(prog);}else{var i=f.progs.findIndex(function(x){return x.id===pid;});if(i>=0)f.progs[i]=prog;}
-  editingProgId=null;tmpLineas=[];tmpMaes=[];saveDB();toast('Programa guardado');populateSedes();renderFacBar();renderViews();renderEditor();
+  var prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
+  AppData.savePrograma(curFac,prog,isNew);
+  editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Programa guardado');populateSedes();renderFacBar();renderViews();renderEditor();
 }
 function deleteProg(pid){
-  var p=DB[curFac].progs.find(function(x){return x.id===pid;});
-  showConfirm('¿Eliminar?','Se eliminará <strong>'+(p?p.n:'este programa')+'</strong>.',function(){
-    DB[curFac].progs=DB[curFac].progs.filter(function(x){return x.id!==pid;});
-    editingProgId=null;tmpLineas=[];tmpMaes=[];saveDB();toast('Eliminado');renderViews();renderEditor();
+  var r=AppData.findProgramById(pid);
+  showConfirm('¿Eliminar?','Se eliminará <strong>'+(r?r.programa.n:'este programa')+'</strong>.',function(){
+    if(r) AppData.deletePrograma(r.facIndex,pid);
+    editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Eliminado');renderViews();renderEditor();
   });
 }
 function cancelEdit(){editingProgId=null;tmpLineas=[];tmpMaes=[];renderEditor();}
@@ -593,8 +751,7 @@ loadDB();
 renderFacBar();
 populateSedes();
 renderViews();
-// Sync AppState with legacy var after bootstrap
-window.AppState.navigation.curFac=curFac;
+// curFac sync legacy → AppState: manejado por window accessors
 
 // ===== SNIES DATA =====
 Object.defineProperty(window,'SD',{get:function(){return window.AppState.snies.SD;},set:function(v){window.AppState.snies.SD=v;},configurable:true});
@@ -679,7 +836,7 @@ function renderPipeline(){
   function fsn(name){return name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim();}
   function estCol(e){var k=(e||'').toLowerCase();if(k.includes('obtención')||k.includes('registro'))return G;if(k.includes('radicado')||k.includes('radicación'))return BL;if(k.includes('en construcción'))return AM;if(k.includes('por construir')||k.includes('proyección'))return OR;if(k.includes('negado'))return RD;return '#888';}
   var all=[];
-  DB.forEach(function(fac){
+  AppData.getFacultades().forEach(function(fac){
     fac.progs.forEach(function(p){
       p.lineas.forEach(function(l){all.push({fac:fsn(fac.name),nivel:'Especialización',nombre:l.esp,estado:l.e||'',oferta:l.o,resp:l.resp||'',mes:l.mes||null,ano:l.ano||null});});
       p.mae.forEach(function(m){all.push({fac:fsn(fac.name),nivel:'Maestría',nombre:m.n,estado:m.e||'',oferta:m.o,resp:m.resp||'',mes:m.mes||null,ano:m.ano||null});});
@@ -801,9 +958,9 @@ function toggleSec(id){var el=document.getElementById(id),ic=document.getElement
 // Versión ACTIVA — sombrea a renderEditor en línea 364.
 // TODO [MVC]: unificar con la implementación legacy en Fase 3.
 function renderEditor(){
-  var f=DB[curFac];
+  var f=AppData.getFacultad(AppState.navigation.curFac);
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
-  var facBtns=DB.map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
+  var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   var h='<div style="padding:1rem">';
   h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button></div></div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Selecciona la facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
@@ -848,35 +1005,36 @@ function renderEditor(){
 }
 function toggleDocForm(){var b=document.getElementById('doc-form-body'),ic=document.getElementById('doc-toggle-icon');if(!b)return;var o=b.style.display!=='none';b.style.display=o?'none':'block';if(ic)ic.textContent=o?'▼':'▲';}
 function saveDoc(){
-  var f=DB[curFac],n=document.getElementById('doc-name').value.trim();
-  if(!n){f.doc=null;}
+  var n=document.getElementById('doc-name').value.trim();
+  if(!n){AppData.saveDocumento(curFac,null);}
   else{
     var mes=parseInt(document.getElementById('doc-mes').value)||null;
     var ano=parseInt(document.getElementById('doc-ano').value)||null;
-    f.doc={n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano};
+    AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano});
   }
-  saveDB();toast('Doctorado guardado');renderViews();renderEditor();
+  toast('Doctorado guardado');renderViews();renderEditor();
 }
 function deleteFac(){
-  showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+DB[curFac].name+'</strong> y todos sus programas.',function(){
-    DB.splice(curFac,1);curFac=Math.max(0,curFac-1);
-    saveDB();toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
+  var f=AppData.getFacultad(curFac);
+  showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+(f?f.name:'')+'</strong> y todos sus programas.',function(){
+    AppData.deleteFacultad(curFac);curFac=Math.max(0,curFac-1);
+    toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
   });
 }
 function openNewFac(){
   document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">💾 Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
 }
 function openEditFac(){
-  var f=DB[curFac];
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+f.name+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
+  var f=AppData.getFacultad(curFac);
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+(f?f.name:'')+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
 }
 function saveFac(isNew){
   var n=document.getElementById('fac-name').value.trim();
   if(!n){toast('Escribe el nombre de la facultad');return;}
-  if(isNew){DB.push({name:n,progs:[],doc:null});curFac=DB.length-1;}
-  else{DB[curFac].name=n;}
-  saveDB();toast('Facultad guardada');renderFacBar();renderViews();renderEditor();
+  if(isNew){AppData.saveFacultad({name:n,progs:[],doc:null},true);curFac=AppData.getFacultadCount()-1;}
+  else{AppData.updateFacultadName(curFac,n);}
+  toast('Facultad guardada');renderFacBar();renderViews();renderEditor();
 }
 function openNewProg(){editingProgId='__new__';tmpLineas=[];tmpMaes=[];renderProgForm();}
-function openEditProg(pid){editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
+function openEditProg(pid){showTab('editor');editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
 

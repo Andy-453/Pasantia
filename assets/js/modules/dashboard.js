@@ -7,40 +7,38 @@
  *   - renderKPIs: cálculo y visualización de indicadores del dashboard
  *
  * Dependencias:
- *   - DB, curFac (globales de app.js)
+ *   - AppData.getFacultades(), AppData.getFacultad() — capa de datos
+ *   - AppState.navigation.curFac — estado de navegación
  *   - pregradoMatch, itemMatch, populateSedes (filters.js)
  *   - getSt (utils.js)
  *   - renderViews, showTab (app.js, orquestador)
  *
  * Estado:
- *   Extraído de app.js en Fase 2.
- *   Compatibilidad global mantenida vía window.* (temporal).
+ *   Extraído de app.js en Fase 2. Acceso DB via AppData (Fase 4).
  */
 
 /**
  * Renderiza la barra de selección de facultad.
- * @global {Array} DB - datos completos
  * @global {number} curFac - índice de facultad activa
  */
 function renderFacBar(){
-  document.getElementById('facbar').innerHTML=DB.map(function(f,i){
+  document.getElementById('facbar').innerHTML=AppData.getFacultades().map(function(f,i){
     return '<button class="fac-btn'+(i===curFac?' act':'')+'" data-action="sel-fac" data-fac="'+i+'">'+f.name.replace('Facultad de ','').replace('Facultad ','')+'</button>';
   }).join('');
 }
 
 /**
  * Cambia la facultad activa y actualiza toda la vista.
- * SOMBREADA por la misma función en línea 1 (esta es la versión activa).
- * @param {number} i - índice de facultad en DB
+ * @param {number} i - índice de facultad en DB via AppData
  */
-function selFac(i){curFac=i;AppState.navigation.curFac=i;populateSedes();renderFacBar();renderViews();['indicadores','snies','pipeline','editor'].forEach(function(t){var el=document.getElementById('panel-'+t);if(el&&el.classList.contains('act'))showTab(t);});}
+function selFac(i){curFac=i;populateSedes();renderFacBar();renderViews();['indicadores','snies','pipeline','editor'].forEach(function(t){var el=document.getElementById('panel-'+t);if(el&&el.classList.contains('act'))showTab(t);});}
 
 /**
  * Calcula y renderiza las tarjetas KPI (vigente, proyectada, especializaciones, maestrías, negados).
  * Aplica filtros activos vía pregradoMatch / itemMatch.
  */
 function renderKPIs(){
-  const f=DB[AppState.navigation.curFac];let vig=0,proy=0,esps=0,maes=0,neg=0;
+  const f=AppData.getFacultad(AppState.navigation.curFac);let vig=0,proy=0,esps=0,maes=0,neg=0;
   if(!f||!Array.isArray(f.progs)){document.getElementById('kpis').innerHTML='';return;}
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;

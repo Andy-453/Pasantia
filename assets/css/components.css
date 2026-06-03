@@ -1,1 +1,20 @@
 /* Fase 1: reservado para componentes */
+
+/* ===== RUTAS DE APRENDIZAJE ===== */
+.route-link{cursor:pointer}
+.route-link:hover{color:var(--udec-green);text-decoration:underline}
+
+/* Subject card — compact mini-card for each subject inside a semester */
+.subj-card{background:#fff;border:1px solid var(--udec-border);border-radius:5px;display:flex;align-items:stretch;width:100%;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:box-shadow .12s}
+.subj-card:hover{box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.subj-stripe{width:3px;flex-shrink:0;background:var(--udec-green);border-radius:5px 0 0 5px}
+.subj-body{padding:5px 8px;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.subj-name{font-size:9px;font-weight:600;color:var(--udec-dark);line-height:1.35}
+.subj-meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+
+/* Print */
+@media print{
+  .subj-card{page-break-inside:avoid;break-inside:avoid}
+  .route-link{text-decoration:none!important}
+  .route-link:hover{color:inherit!important;text-decoration:none!important}
+}
