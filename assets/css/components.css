@@ -12,6 +12,22 @@
 .subj-name{font-size:9px;font-weight:600;color:var(--udec-dark);line-height:1.35}
 .subj-meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 
+/* ===== LEARNING ROUTE EDITOR ===== */
+.lr-semester{border:1px solid #e0ece4;border-radius:10px;padding:12px 16px;margin-bottom:10px;background:#fff}
+.lr-semester .field label{display:block;font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:3px}
+.lr-subject{border:1px solid #e8f0ec;border-radius:6px;padding:6px 8px;margin-bottom:4px;background:#f9fbfa}
+.lr-subj-name{flex:1;min-width:0}
+
+/* ===== SEMESTER GRID (responsive tree) ===== */
+.route-tree-wrap{padding:4px 0}
+.route-tree-container{display:flex;flex-direction:column;align-items:center;width:100%}
+.route-connector{display:flex;flex-direction:column;align-items:center;height:36px;flex-shrink:0;position:relative;width:100%}
+.connector-line{width:2.5px;flex:1;background:linear-gradient(to bottom,#c0d8c8,#8fb8a0);min-height:12px;border-radius:1px}
+.connector-dot{width:8px;height:8px;border-radius:50%;background:#006633;flex-shrink:0;position:relative;z-index:1;box-shadow:0 0 0 3px rgba(0,102,51,.12)}
+.connector-bar{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:1.5px;background:linear-gradient(to right,transparent,#c0d8c8,transparent);border-radius:1px}
+.semesters-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;width:100%;max-width:680px;margin:0 auto}
+.semester-col{display:flex;flex-direction:column;align-items:stretch;flex:1 1 210px;min-width:0;max-width:320px}
+
 /* Print */
 @media print{
   .subj-card{page-break-inside:avoid;break-inside:avoid}
