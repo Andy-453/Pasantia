@@ -4,25 +4,17 @@
 .route-link{cursor:pointer}
 .route-link:hover{color:var(--udec-green);text-decoration:underline}
 
-.route-summary{background:var(--udec-green-pale);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap}
-.route-summary-item{font-size:11px;color:var(--udec-dark)}
-.route-summary-item strong{font-size:15px;color:var(--udec-green)}
-
-.route-steps{padding-right:4px}
-
-.route-card{background:#fff;border:1px solid var(--udec-border);border-radius:8px;padding:12px 14px;margin-bottom:0;border-left:4px solid var(--udec-green);display:flex;align-items:flex-start;gap:10px}
-.route-card .step-num{width:24px;height:24px;border-radius:50%;background:var(--udec-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
-.route-card .step-body{flex:1;min-width:0}
-.route-card .step-type{font-size:8px;font-weight:700;text-transform:uppercase;color:var(--udec-green);letter-spacing:.06em}
-.route-card .step-title{font-size:12px;font-weight:700;color:var(--udec-dark);margin-top:1px}
-.route-card .step-meta{font-size:10px;color:#888;margin-top:2px}
-.route-card .step-desc{font-size:10px;color:#555;margin-top:5px;line-height:1.4}
-
-.route-arrow{text-align:center;padding:1px 0;font-size:12px;color:#bbb;line-height:1}
+/* Subject card — compact mini-card for each subject inside a semester */
+.subj-card{background:#fff;border:1px solid var(--udec-border);border-radius:5px;display:flex;align-items:stretch;width:100%;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:box-shadow .12s}
+.subj-card:hover{box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.subj-stripe{width:3px;flex-shrink:0;background:var(--udec-green);border-radius:5px 0 0 5px}
+.subj-body{padding:5px 8px;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.subj-name{font-size:9px;font-weight:600;color:var(--udec-dark);line-height:1.35}
+.subj-meta{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 
 /* Print */
 @media print{
-  .route-card{page-break-inside:avoid;break-inside:avoid}
+  .subj-card{page-break-inside:avoid;break-inside:avoid}
   .route-link{text-decoration:none!important}
   .route-link:hover{color:inherit!important;text-decoration:none!important}
 }

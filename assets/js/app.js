@@ -189,25 +189,89 @@ function _hasLR(id){
 }
 
 function renderLearningRouteHTML(route){
-  var stepCards = route.steps.map(function(s){
-    return '<div class="route-card">'
-      + '<div class="step-num">'+s.step+'</div>'
-      + '<div class="step-body">'
-      + '<div class="step-type">'+s.type+'</div>'
-      + '<div class="step-title">'+s.title+'</div>'
-      + '<div class="step-meta">'+s.hours+'h &middot; '+s.credits+' cr&eacute;dito'+(s.credits>1?'s':'')+'</div>'
-      + (s.description ? '<div class="step-desc">'+s.description+'</div>' : '')
-      + '</div></div>';
-  }).join('<div class="route-arrow">&darr;</div>');
+  var sems = route.semesters || [];
+  var n = sems.length;
+  if(!n) return '<div class="modal" style="max-width:400px"><div class="modal-actions" style="border:none"><button data-action="close-lr-modal">Cerrar</button></div></div>';
 
-  return '<div class="modal" style="max-width:600px">'
-    + '<div class="modal-title"><span>📋</span>Ruta de Aprendizaje</div>'
-    + '<div class="route-summary">'
-      + '<div class="route-summary-item"><strong>'+route.credits+'</strong> cr&eacute;ditos</div>'
-      + '<div class="route-summary-item"><strong>'+route.hours+'</strong> horas</div>'
-      + '<div class="route-summary-item"><strong>'+route.steps.length+'</strong> campos</div>'
-    + '</div>'
-    + '<div class="route-steps">'+stepCards+'</div>'
+  // --- Specialization card (top) ---
+  var semCount = n;
+  var espCard = '<div class="node node-espec" style="min-width:260px;max-width:380px;width:100%">'
+    + '<div class="node-stripe"></div>'
+    + '<div class="node-body">'
+    + '<div class="node-label">Especializaci\u00f3n</div>'
+    + '<div class="node-title" style="font-size:11px">'+route.espName+'</div>'
+    + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
+    + route.credits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
+    + '</div></div></div>';
+
+  // --- SVG connector: specialization → semesters ---
+  var colW = 220;
+  var gap = 20;
+  var totalW = n * colW + (n-1) * gap;
+  var centerX = totalW / 2;
+  var svgH = 40;
+
+  var svgPaths = '<line x1="'+centerX+'" y1="0" x2="'+centerX+'" y2="16" stroke="#c0d8c8" stroke-width="2"/>';
+  if(n > 1){
+    var firstX = colW/2;
+    var lastX = totalW - colW/2;
+    svgPaths += '<line x1="'+firstX+'" y1="16" x2="'+lastX+'" y2="16" stroke="#c0d8c8" stroke-width="2"/>';
+  }
+  sems.forEach(function(_,i){
+    var cx = i*(colW+gap) + colW/2;
+    svgPaths += '<line x1="'+cx+'" y1="16" x2="'+cx+'" y2="'+svgH+'" stroke="#c0d8c8" stroke-width="2"/>';
+    if(n > 1) svgPaths += '<circle cx="'+cx+'" cy="16" r="3" fill="#006633"/>';
+  });
+  svgPaths += '<circle cx="'+centerX+'" cy="0" r="3" fill="#006633"/>';
+
+  var connectorSvg = '<svg width="'+Math.max(totalW,2)+'" height="'+svgH+'" style="display:block;overflow:visible">'+svgPaths+'</svg>';
+
+  // --- Semester columns ---
+  var semCols = sems.map(function(sem){
+    // Semester card
+    var semCard = '<div class="node" style="width:100%;background:#fffdf0;box-shadow:0 2px 8px rgba(200,164,58,0.10);border-radius:8px;overflow:hidden;cursor:default">'
+      + '<div class="node-stripe" style="background:var(--udec-gold);height:3px"></div>'
+      + '<div class="node-body" style="padding:8px 10px 9px">'
+      + '<div class="node-label" style="color:var(--udec-gold);margin-bottom:2px">'+sem.title+'</div>'
+      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+sem.type+' &middot; '+sem.credits+' cr\u00e9dito'+(sem.credits>1?'s':'')+'</div>'
+      + '</div></div>';
+
+    // Subject cards
+    var subjectCards = sem.subjects.map(function(subj){
+      var pillColor = subj.credits <= 1
+        ? 'background:#f0f7f2;color:#006633;border:1px solid #b0d4be'
+        : 'background:#e8f0fb;color:#1a5cb0;border:1px solid #b0c8e8';
+      var homoBadge = subj.homologa
+        ? '<span class="badge" style="background:#e6f2eb;color:#006633;border:1px solid #b0d4be;padding:1px 5px;font-size:7px;margin-top:0">\u2713 Homologa</span>'
+        : '';
+      return '<div class="subj-card">'
+        + '<div class="subj-stripe"></div>'
+        + '<div class="subj-body">'
+        + '<div class="subj-name">'+subj.title+'</div>'
+        + '<div class="subj-meta">'
+        + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
+        + homoBadge
+        + '</div></div></div>';
+    }).join('<div style="width:2px;height:6px;background:#e0ece4;flex-shrink:0;align-self:center"></div>');
+
+    return '<div style="width:'+colW+'px;display:flex;flex-direction:column;align-items:center;flex-shrink:0">'
+      + '<div style="width:2px;height:10px;background:#e0ece4;flex-shrink:0"></div>'
+      + semCard
+      + '<div style="width:2px;height:10px;background:#e0ece4;flex-shrink:0"></div>'
+      + subjectCards
+      + '</div>';
+  }).join('');
+
+  // --- Full modal ---
+  return '<div class="modal" style="max-width:680px">'
+    + '<div class="modal-title"><span>\uD83D\uDCCB</span>Ruta de Aprendizaje</div>'
+    + '<div class="route-tree-wrap" style="overflow-x:auto;padding:4px 0">'
+    + '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:max-content">'
+    + espCard
+    + connectorSvg
+    + '<div style="display:flex;gap:'+gap+'px;align-items:flex-start">'
+    + semCols
+    + '</div></div></div>'
     + '<div class="modal-actions"><button data-action="close-lr-modal">Cerrar</button></div>'
     + '</div>';
 }
