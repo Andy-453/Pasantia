@@ -414,5 +414,39 @@ window.__LEARNING_ROUTES = {
         ]
       }
     ]
+  },
+  "id17749182094747we": {
+    id: "lr-recursos-zoogeneticos",
+    espId: "id17749182094747we",
+    espName: "Especializaci\u00f3n en Recursos Zoogen\u00e9ticos",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "rzsubj1", title: "Etnozootecnia y manejo de recursos zoogen\u00e9ticos",                        credits: 2, homologa: true  },
+          { id: "rzsubj2", title: "Biolog\u00eda de la conservaci\u00f3n de especies susceptibles de producci\u00f3n", credits: 3, homologa: true  },
+          { id: "rzsubj3", title: "Gesti\u00f3n de proyectos en fauna silvestre",                                credits: 2, homologa: true  },
+          { id: "rzsubj4", title: "Legislaci\u00f3n ambiental enfocada al manejo de la fauna silvestre",        credits: 2, homologa: false },
+          { id: "rzsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",                                       credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "rzsubj6", title: "Manejo y conservaci\u00f3n de fauna silvestre",                              credits: 2, homologa: false },
+          { id: "rzsubj7", title: "Criterios de nutrici\u00f3n y alimentaci\u00f3n en fauna silvestre",          credits: 2, homologa: false },
+          { id: "rzsubj8", title: "Etolog\u00eda y bienestar animal enfocados a la fauna silvestre",            credits: 2, homologa: true  },
+          { id: "rzsubj9", title: "Lengua extranjera en el nivel MCRE B2.1",                                   credits: 2, homologa: false },
+          { id: "rzsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                credits: 2, homologa: false },
+        ]
+      }
+    ]
   }
 };
