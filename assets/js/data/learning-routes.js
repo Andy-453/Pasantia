@@ -74,5 +74,345 @@ window.__LEARNING_ROUTES = {
         ]
       }
     ]
+  },
+  "id1774918209474rky": {
+    id: "lr-gestion-publica",
+    espId: "id1774918209474rky",
+    espName: "Especializaci\u00f3n en Gesti\u00f3n P\u00fablica",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "gsubj1", title: "Econom\u00eda de lo P\u00fablico",                                                          credits: 2, homologa: true  },
+          { id: "gsubj2", title: "Modelo Integral de Planeaci\u00f3n y Gesti\u00f3n (MIPG)",                                  credits: 3, homologa: false },
+          { id: "gsubj3", title: "Estructura del Estado Colombiano y Gobernanza de las Pol\u00edticas P\u00fablicas",         credits: 2, homologa: true  },
+          { id: "gsubj4", title: "Lengua Extranjera B2",                                                                      credits: 2, homologa: false },
+          { id: "gsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo XXI",                                                    credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "gsubj6", title: "Presupuesto y Finanzas P\u00fablicas",                                                      credits: 2, homologa: true  },
+          { id: "gsubj7", title: "An\u00e1lisis y gesti\u00f3n de las organizaciones p\u00fablicas",                          credits: 2, homologa: true  },
+          { id: "gsubj8", title: "Contrataci\u00f3n Estatal",                                                                 credits: 2, homologa: true  },
+          { id: "gsubj9", title: "Desarrollo y Gesti\u00f3n Territorial",                                                     credits: 2, homologa: false },
+          { id: "gsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                               credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474720": {
+    id: "lr-transformacion-digital",
+    espId: "id1774918209474720",
+    espName: "Esp. Gerencia para la Transformaci\u00f3n Digital",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 9,
+        subjects: [
+          { id: "tsubj1", title: "Pensamiento Estrat\u00e9gico",                                                                    credits: 2, homologa: true  },
+          { id: "tsubj2", title: "Gesti\u00f3n del cambio y cultura digital",                                                       credits: 2, homologa: true  },
+          { id: "tsubj3", title: "Gesti\u00f3n de tecnolog\u00edas de informaci\u00f3n y comunicaci\u00f3n TIC",                   credits: 2, homologa: true  },
+          { id: "tsubj4", title: "Lengua Extranjera B2",                                                                           credits: 2, homologa: false },
+          { id: "tsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo XXI",                                                         credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 11,
+        subjects: [
+          { id: "tsubj6", title: "Dise\u00f1o de productos servicios y modelos de negocio",                                        credits: 2, homologa: false },
+          { id: "tsubj7", title: "Plan de Marketing Digital",                                                                       credits: 2, homologa: false },
+          { id: "tsubj8", title: "Anal\u00edtica de negocios",                                                                      credits: 2, homologa: true  },
+          { id: "tsubj9", title: "Plan para la transformaci\u00f3n digital",                                                        credits: 3, homologa: false },
+          { id: "tsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                                     credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474pfl": {
+    id: "lr-marketing-digital",
+    espId: "id1774918209474pfl",
+    espName: "Especializaci\u00f3n en Marketing Digital",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 9,
+        subjects: [
+          { id: "msubj1", title: "Redes sociales en el marketing digital",                   credits: 2, homologa: true  },
+          { id: "msubj2", title: "Psicolog\u00eda del consumidor digital",                     credits: 2, homologa: true  },
+          { id: "msubj3", title: "Investigaci\u00f3n de mercados digital",                    credits: 2, homologa: true  },
+          { id: "msubj4", title: "Lengua Extranjera B2",                                       credits: 2, homologa: false },
+          { id: "msubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo XXI",                     credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 11,
+        subjects: [
+          { id: "msubj6", title: "Marketing de contenidos",                                    credits: 2, homologa: true  },
+          { id: "msubj7", title: "Comercio y venta de productos y servicios online",           credits: 2, homologa: true  },
+          { id: "msubj8", title: "Anal\u00edtica digital",                                      credits: 2, homologa: false },
+          { id: "msubj9", title: "Plan de marketing estrat\u00e9gico digital",                 credits: 3, homologa: false },
+          { id: "msubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                 credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474vuu": {
+    id: "lr-agronegocios",
+    espId: "id1774918209474vuu",
+    espName: "Especializaci\u00f3n en Agronegocios Sostenibles",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "asubj1", title: "Comercio Nacional e Internacional",                                                          credits: 2, homologa: true  },
+          { id: "asubj2", title: "Cadenas de Abastecimiento",                                                                   credits: 2, homologa: true  },
+          { id: "asubj3", title: "Dise\u00f1o, Evaluaci\u00f3n y Gesti\u00f3n de Proyectos de Desarrollo Sostenible",         credits: 3, homologa: false },
+          { id: "asubj4", title: "Lengua extranjera en el nivel MCRE B2",                                                       credits: 2, homologa: false },
+          { id: "asubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo XXI",                                                     credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "asubj6", title: "Pensamiento Estrat\u00e9gico y Liderazgo",                                                   credits: 2, homologa: true  },
+          { id: "asubj7", title: "Gesti\u00f3n Financiera",                                                                     credits: 2, homologa: false },
+          { id: "asubj8", title: "Mercadeo y Comercializaci\u00f3n en agronegocios Sostenibles",                                credits: 2, homologa: true  },
+          { id: "asubj9", title: "TIC aplicadas a la industria de productos agr\u00edcolas",                                    credits: 2, homologa: true  },
+          { id: "asubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n - CTI",                                           credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id17749182094742q2": {
+    id: "lr-analitica-negocios",
+    espId: "id17749182094742q2",
+    espName: "Especializaci\u00f3n en Anal\u00edtica Aplicada a Negocios",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "bsubj1", title: "Fundamentos en Big Data",                                                                     credits: 2, homologa: true  },
+          { id: "bsubj2", title: "Anal\u00edtica Predictiva",                                                                   credits: 2, homologa: true  },
+          { id: "bsubj3", title: "Innovaci\u00f3n y Aplicaciones Digitales",                                                    credits: 3, homologa: false },
+          { id: "bsubj4", title: "Lengua extranjera en el nivel MCRE B2",                                                       credits: 2, homologa: false },
+          { id: "bsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo XXI",                                                     credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "bsubj6", title: "An\u00e1lisis de Big Data",                                                                   credits: 2, homologa: false },
+          { id: "bsubj7", title: "Modelos de Negocios",                                                                          credits: 2, homologa: true  },
+          { id: "bsubj8", title: "Gesti\u00f3n de Datos para Toma de Decisiones",                                               credits: 2, homologa: true  },
+          { id: "bsubj9", title: "Arquitectura de negocios",                                                                     credits: 2, homologa: false },
+          { id: "bsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                                  credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id177491820947414p": {
+    id: "lr-deporte-escolar",
+    espId: "id177491820947414p",
+    espName: "Especializaci\u00f3n en Deporte Escolar",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "dsubj1", title: "Aprendizaje y desarrollo motor en el contexto deportivo",     credits: 2, homologa: true  },
+          { id: "dsubj2", title: "Fisiolog\u00eda del ejercicio en ni\u00f1os y adolescentes",  credits: 3, homologa: true  },
+          { id: "dsubj3", title: "Bases Te\u00f3ricas",                                           credits: 2, homologa: true  },
+          { id: "dsubj4", title: "Evaluaci\u00f3n y Control",                                    credits: 2, homologa: true  },
+          { id: "dsubj5", title: "Generaci\u00f3n Siglo 21",                                    credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "dsubj6", title: "Deporte en etapas de iniciaci\u00f3n y formaci\u00f3n",       credits: 2, homologa: true  },
+          { id: "dsubj7", title: "Entrenamiento Deporte Adaptado",                               credits: 2, homologa: true  },
+          { id: "dsubj8", title: "Pedagog\u00eda en el deporte Escolar",                         credits: 2, homologa: true  },
+          { id: "dsubj9", title: "Lengua Extranjera B2.1",                                       credits: 2, homologa: false },
+          { id: "dsubj10", title: "Ciencia Tecnolog\u00eda e Innovaci\u00f3n",                   credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474eru": {
+    id: "lr-analitica-datos",
+    espId: "id1774918209474eru",
+    espName: "Especializaci\u00f3n en Anal\u00edtica y Ciencia de Datos",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "esubj1", title: "Big Data",                                                                                    credits: 2, homologa: true  },
+          { id: "esubj2", title: "Introducci\u00f3n a Machine Learning",                                                        credits: 2, homologa: true  },
+          { id: "esubj3", title: "Dise\u00f1o estad\u00edstico para datos estructurados y no estructurados",                   credits: 3, homologa: false },
+          { id: "esubj4", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",                                                       credits: 1, homologa: false },
+          { id: "esubj5", title: "Lengua extranjera en el nivel MCRE B2",                                                       credits: 2, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "esubj6", title: "Gesti\u00f3n de proyectos centrada en datos",                                                 credits: 2, homologa: true  },
+          { id: "esubj7", title: "Business Analytics (BA)",                                                                      credits: 2, homologa: true  },
+          { id: "esubj8", title: "Miner\u00eda de Datos",                                                                        credits: 2, homologa: true  },
+          { id: "esubj9", title: "Aplicaci\u00f3n Machine Learning",                                                             credits: 2, homologa: false },
+          { id: "esubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                                  credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474zo6": {
+    id: "lr-analitica-datos-sw",
+    espId: "id1774918209474zo6",
+    espName: "Especializaci\u00f3n en Anal\u00edtica y Ciencia de Datos",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "esubj1", title: "Big Data",                                                                                    credits: 2, homologa: true  },
+          { id: "esubj2", title: "Introducci\u00f3n a Machine Learning",                                                        credits: 2, homologa: true  },
+          { id: "esubj3", title: "Dise\u00f1o estad\u00edstico para datos estructurados y no estructurados",                   credits: 3, homologa: false },
+          { id: "esubj4", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",                                                       credits: 1, homologa: false },
+          { id: "esubj5", title: "Lengua extranjera en el nivel MCRE B2",                                                       credits: 2, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "esubj6", title: "Gesti\u00f3n de proyectos centrada en datos",                                                 credits: 2, homologa: true  },
+          { id: "esubj7", title: "Business Analytics (BA)",                                                                      credits: 2, homologa: true  },
+          { id: "esubj8", title: "Miner\u00eda de Datos",                                                                        credits: 2, homologa: true  },
+          { id: "esubj9", title: "Aplicaci\u00f3n Machine Learning",                                                             credits: 2, homologa: false },
+          { id: "esubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                                  credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474afo": {
+    id: "lr-infraestructura-redes-sistemas",
+    espId: "id1774918209474afo",
+    espName: "Especializaci\u00f3n en Infraestructura y Seguridad de Redes",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "irsubj1", title: "Gesti\u00f3n de Infraestructuras de TI",       credits: 2, homologa: true  },
+          { id: "irsubj2", title: "Redes Convergentes",                            credits: 2, homologa: true  },
+          { id: "irsubj3", title: "Seguridad de Arquitectura de Redes",            credits: 3, homologa: false },
+          { id: "irsubj4", title: "Infraestructuras Inal\u00e1mbricas",            credits: 2, homologa: true  },
+          { id: "irsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",         credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "irsubj6", title: "Gesti\u00f3n de Proyectos de TI",               credits: 2, homologa: false },
+          { id: "irsubj7", title: "Seguridad Perimetral",                          credits: 2, homologa: true  },
+          { id: "irsubj8", title: "Redes WAN definidas por software",              credits: 2, homologa: true  },
+          { id: "irsubj9", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",    credits: 2, homologa: false },
+          { id: "irsubj10", title: "Lengua Extranjera Nivel B2.1",                 credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id177491820947445x": {
+    id: "lr-infraestructura-redes-electronica",
+    espId: "id177491820947445x",
+    espName: "Especializaci\u00f3n en Infraestructura y Seguridad de Redes",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "irsubj1", title: "Gesti\u00f3n de Infraestructuras de TI",       credits: 2, homologa: true  },
+          { id: "irsubj2", title: "Redes Convergentes",                            credits: 2, homologa: true  },
+          { id: "irsubj3", title: "Seguridad de Arquitectura de Redes",            credits: 3, homologa: false },
+          { id: "irsubj4", title: "Infraestructuras Inal\u00e1mbricas",            credits: 2, homologa: true  },
+          { id: "irsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",         credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "irsubj6", title: "Gesti\u00f3n de Proyectos de TI",               credits: 2, homologa: false },
+          { id: "irsubj7", title: "Seguridad Perimetral",                          credits: 2, homologa: true  },
+          { id: "irsubj8", title: "Redes WAN definidas por software",              credits: 2, homologa: true  },
+          { id: "irsubj9", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",    credits: 2, homologa: false },
+          { id: "irsubj10", title: "Lengua Extranjera Nivel B2.1",                 credits: 2, homologa: false },
+        ]
+      }
+    ]
   }
 };
