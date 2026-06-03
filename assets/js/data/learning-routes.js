@@ -448,5 +448,73 @@ window.__LEARNING_ROUTES = {
         ]
       }
     ]
+  },
+  "id1774918209474zw7": {
+    id: "lr-metodologias-calidad-sw",
+    espId: "id1774918209474zw7",
+    espName: "Esp. en Metodolog\u00edas de Calidad para el Desarrollo del Software",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "mqsubj1", title: "Metodolog\u00edas de desarrollo tradicionales",             credits: 2, homologa: true  },
+          { id: "mqsubj2", title: "Gesti\u00f3n de Proyectos de software",                      credits: 2, homologa: true  },
+          { id: "mqsubj3", title: "Procesos de desarrollo de software",                         credits: 3, homologa: false },
+          { id: "mqsubj4", title: "Estructura y arquitectura de software",                      credits: 1, homologa: true  },
+          { id: "mqsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",                       credits: 2, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "mqsubj6", title: "Metodolog\u00edas de desarrollo \u00e1giles",                 credits: 2, homologa: false },
+          { id: "mqsubj7", title: "Mejoramiento de procesos de desarrollo",                     credits: 2, homologa: true  },
+          { id: "mqsubj8", title: "Procesos de gesti\u00f3n de calidad de software",            credits: 2, homologa: true  },
+          { id: "mqsubj9", title: "Lengua Extranjera Nivel B2.1",                               credits: 2, homologa: false },
+          { id: "mqsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                 credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id177491820947468q": {
+    id: "lr-metodologias-calidad-sistemas",
+    espId: "id177491820947468q",
+    espName: "Esp. en Metodolog\u00edas de Calidad para el Desarrollo del Software",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "mqsubj1", title: "Metodolog\u00edas de desarrollo tradicionales",             credits: 2, homologa: true  },
+          { id: "mqsubj2", title: "Gesti\u00f3n de Proyectos de software",                      credits: 2, homologa: true  },
+          { id: "mqsubj3", title: "Procesos de desarrollo de software",                         credits: 3, homologa: false },
+          { id: "mqsubj4", title: "Estructura y arquitectura de software",                      credits: 1, homologa: true  },
+          { id: "mqsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",                       credits: 2, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "mqsubj6", title: "Metodolog\u00edas de desarrollo \u00e1giles",                 credits: 2, homologa: false },
+          { id: "mqsubj7", title: "Mejoramiento de procesos de desarrollo",                     credits: 2, homologa: true  },
+          { id: "mqsubj8", title: "Procesos de gesti\u00f3n de calidad de software",            credits: 2, homologa: true  },
+          { id: "mqsubj9", title: "Lengua Extranjera Nivel B2.1",                               credits: 2, homologa: false },
+          { id: "mqsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                 credits: 2, homologa: false },
+        ]
+      }
+    ]
   }
 };
