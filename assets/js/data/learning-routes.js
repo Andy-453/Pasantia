@@ -550,5 +550,38 @@ window.__LEARNING_ROUTES = {
         ]
       }
     ]
+  },
+  "id1774918209474rf4": {
+    id: "lr-gerencia-financiera-contable",
+    espId: "id1774918209474rf4",
+    espName: "Especializaci\u00f3n en Gerencia Financiera y Contable",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 9,
+        subjects: [
+          { id: "gfsubj1", title: "CADI Legislaci\u00f3n Financiera",                                    credits: 2, homologa: false },
+          { id: "gfsubj2", title: "CADI Contabilidad Avanzada",                                           credits: 2, homologa: true  },
+          { id: "gfsubj3", title: "CADI Diagn\u00f3stico estrat\u00e9gico y Financiero",                  credits: 2, homologa: true  },
+          { id: "gfsubj4", title: "CADI An\u00e1lisis y Administraci\u00f3n Financiera",                  credits: 2, homologa: true  },
+          { id: "gfsubj5", title: "CAI Generaci\u00f3n Siglo XXI",                                       credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 11,
+        subjects: [
+          { id: "gfsubj6", title: "CADI Contexto Financiero Internacional",                               credits: 4, homologa: false },
+          { id: "gfsubj7", title: "CADI Econometr\u00eda y Herramientas",                                 credits: 3, homologa: true  },
+          { id: "gfsubj8", title: "CAI Lengua Extranjera B2.1",                                          credits: 2, homologa: false },
+          { id: "gfsubj9", title: "CAI Ciencia Tecnolog\u00eda e Innovaci\u00f3n",                        credits: 2, homologa: false },
+        ]
+      }
+    ]
   }
 };
