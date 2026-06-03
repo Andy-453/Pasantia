@@ -239,7 +239,41 @@ window.__LEARNING_ROUTES = {
           { id: "bsubj6", title: "An\u00e1lisis de Big Data",                                                                   credits: 2, homologa: false },
           { id: "bsubj7", title: "Modelos de Negocios",                                                                          credits: 2, homologa: true  },
           { id: "bsubj8", title: "Gesti\u00f3n de Datos para Toma de Decisiones",                                               credits: 2, homologa: true  },
-          { id: "bsubj9", title: "Arquitectura de negocios",                                                                     credits: 2, homologa: false },
+          { id: "bsubj9", title: "Arquitectura de negocios",                                                                     credits: 2, homologa: true  },
+          { id: "bsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                                  credits: 2, homologa: false },
+        ]
+      }
+    ]
+  },
+  "id1774918209474mir": {
+    id: "lr-analitica-negocios-industrial",
+    espId: "id1774918209474mir",
+    espName: "Especializaci\u00f3n en Anal\u00edtica Aplicada a Negocios",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "bsubj1", title: "Fundamentos en Big Data",                                                                     credits: 2, homologa: true  },
+          { id: "bsubj2", title: "Anal\u00edtica Predictiva",                                                                   credits: 2, homologa: true  },
+          { id: "bsubj3", title: "Innovaci\u00f3n y Aplicaciones Digitales",                                                    credits: 3, homologa: false },
+          { id: "bsubj4", title: "Lengua extranjera en el nivel MCRE B2",                                                       credits: 2, homologa: false },
+          { id: "bsubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo XXI",                                                     credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "bsubj6", title: "An\u00e1lisis de Big Data",                                                                   credits: 2, homologa: false },
+          { id: "bsubj7", title: "Modelos de Negocios",                                                                          credits: 2, homologa: true  },
+          { id: "bsubj8", title: "Gesti\u00f3n de Datos para Toma de Decisiones",                                               credits: 2, homologa: true  },
+          { id: "bsubj9", title: "Arquitectura de negocios",                                                                     credits: 2, homologa: true  },
           { id: "bsubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",                                                  credits: 2, homologa: false },
         ]
       }
