@@ -20,9 +20,9 @@ window.__LEARNING_ROUTES = {
         type: "Fundamentaci\u00f3n",
         credits: 10,
         subjects: [
-          { id: "subj1", title: "Econom\u00eda rural y pol\u00edtica p\u00fablica",             credits: 2, homologa: false },
-          { id: "subj2", title: "Modelos de producci\u00f3n agropecuarios",                  credits: 2, homologa: false },
-          { id: "subj3", title: "Gesti\u00f3n ambiental y territorio",                        credits: 3, homologa: true  },
+          { id: "subj1", title: "Econom\u00eda rural y pol\u00edtica p\u00fablica",             credits: 2, homologa: true  },
+          { id: "subj2", title: "Modelos de producci\u00f3n agropecuarios",                  credits: 2, homologa: true  },
+          { id: "subj3", title: "Gesti\u00f3n ambiental y territorio",                        credits: 3, homologa: false },
           { id: "subj4", title: "C\u00e1tedra Generaci\u00f3n siglo 21",                     credits: 1, homologa: false },
           { id: "subj5", title: "Lengua Extranjera MCRE B2",                                  credits: 2, homologa: false },
         ]
@@ -33,9 +33,9 @@ window.__LEARNING_ROUTES = {
         type: "Profundizaci\u00f3n",
         credits: 10,
         subjects: [
-          { id: "subj6", title: "Seguridad alimentaria y cultivos andinos",                   credits: 3, homologa: false },
-          { id: "subj7", title: "Sistemas de producci\u00f3n ecol\u00f3gicos",                credits: 2, homologa: false },
-          { id: "subj8", title: "Ciencia Tecnolog\u00eda e Innovaci\u00f3n",                  credits: 2, homologa: true  },
+          { id: "subj6", title: "Seguridad alimentaria y cultivos andinos",                   credits: 3, homologa: true  },
+          { id: "subj7", title: "Sistemas de producci\u00f3n ecol\u00f3gicos",                credits: 2, homologa: true  },
+          { id: "subj8", title: "Ciencia Tecnolog\u00eda e Innovaci\u00f3n",                  credits: 2, homologa: false },
           { id: "subj9", title: "Agroecoturismo",                                             credits: 3, homologa: false },
         ]
       }
