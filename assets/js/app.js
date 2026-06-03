@@ -153,6 +153,13 @@ var __ACTIONS = {
     var url = b.getAttribute('data-url');
     if(url) window.open(url, '_blank', 'noopener,noreferrer');
   },
+  'show-learning-route': function(b){
+    openLearningRouteModal(b.dataset.espId);
+  },
+  'close-lr-modal': function(){
+    var o = document.getElementById('lr-modal-overlay');
+    if(o) document.body.removeChild(o);
+  },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -176,6 +183,53 @@ function _getObtencionUrl(e, item){
   var url = item.enlaceObtencion.trim();
   if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
   return url;
+}
+function _hasLR(id){
+  return !!(window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id]);
+}
+
+function renderLearningRouteHTML(route){
+  var stepCards = route.steps.map(function(s){
+    return '<div class="route-card">'
+      + '<div class="step-num">'+s.step+'</div>'
+      + '<div class="step-body">'
+      + '<div class="step-type">'+s.type+'</div>'
+      + '<div class="step-title">'+s.title+'</div>'
+      + '<div class="step-meta">'+s.hours+'h &middot; '+s.credits+' cr&eacute;dito'+(s.credits>1?'s':'')+'</div>'
+      + (s.description ? '<div class="step-desc">'+s.description+'</div>' : '')
+      + '</div></div>';
+  }).join('<div class="route-arrow">&darr;</div>');
+
+  return '<div class="modal" style="max-width:600px">'
+    + '<div class="modal-title"><span>📋</span>Ruta de Aprendizaje</div>'
+    + '<div class="route-summary">'
+      + '<div class="route-summary-item"><strong>'+route.credits+'</strong> cr&eacute;ditos</div>'
+      + '<div class="route-summary-item"><strong>'+route.hours+'</strong> horas</div>'
+      + '<div class="route-summary-item"><strong>'+route.steps.length+'</strong> campos</div>'
+    + '</div>'
+    + '<div class="route-steps">'+stepCards+'</div>'
+    + '<div class="modal-actions"><button data-action="close-lr-modal">Cerrar</button></div>'
+    + '</div>';
+}
+function openLearningRouteModal(espId){
+  var route = window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[espId];
+  if(!route){ toast('Ruta no disponible'); return; }
+  var overlay = document.createElement('div');
+  overlay.id = 'lr-modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto';
+  overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:680px">' + renderLearningRouteHTML(route) + '</div>';
+  document.body.appendChild(overlay);
+  function _closeLR(){
+    if(overlay.parentNode) document.body.removeChild(overlay);
+  }
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay || e.target.classList.contains('modal-overlay')) _closeLR();
+  });
+  function _onKey(e){
+    if(e.key === 'Escape'){ _closeLR(); document.removeEventListener('keydown', _onKey); }
+  }
+  document.addEventListener('keydown', _onKey);
+  overlay.addEventListener('DOMNodeRemoved', function(){ document.removeEventListener('keydown', _onKey); });
 }
 
 // ===== TREE =====
@@ -301,7 +355,7 @@ function renderTree(){
             <div class="node-body">
               ${pll(l.o)}
               <div class="node-label">Especialización</div>
-              <div class="node-title">${l.esp}</div>
+              <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
               <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
               ${stBadge(l.e, l)}
             </div>
@@ -398,7 +452,7 @@ function renderTree(){
           <div class="node-body">
             ${pll(l.o)}
             <div class="node-label">Especialización</div>
-            <div class="node-title">${l.esp}</div>
+            <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
             <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
             ${stBadge(l.e, l)}
           </div>
