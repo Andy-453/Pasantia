@@ -516,5 +516,39 @@ window.__LEARNING_ROUTES = {
         ]
       }
     ]
+  },
+  "id1774918209474vrm": {
+    id: "lr-inteligencia-artificial",
+    espId: "id1774918209474vrm",
+    espName: "Especializaci\u00f3n en Inteligencia Artificial",
+    credits: 20,
+    semesters: [
+      {
+        id: "sem1",
+        title: "Semestre 1",
+        type: "Fundamentaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "iasubj1", title: "Inteligencia Artificial - Fundamentos", credits: 2, homologa: true  },
+          { id: "iasubj2", title: "Percepci\u00f3n Computacional",           credits: 2, homologa: false },
+          { id: "iasubj3", title: "Introducci\u00f3n a Machine Learning",    credits: 3, homologa: false },
+          { id: "iasubj4", title: "Deep Learning - Fundamentos",             credits: 2, homologa: true  },
+          { id: "iasubj5", title: "C\u00e1tedra Generaci\u00f3n Siglo 21",   credits: 1, homologa: false },
+        ]
+      },
+      {
+        id: "sem2",
+        title: "Semestre 2",
+        type: "Profundizaci\u00f3n",
+        credits: 10,
+        subjects: [
+          { id: "iasubj6", title: "Machine Learning y algoritmos gen\u00e9ticos",       credits: 2, homologa: true  },
+          { id: "iasubj7", title: "Procesamiento de lenguaje natural",                  credits: 2, homologa: true  },
+          { id: "iasubj8", title: "Aplicaciones en Deep Learning",                      credits: 2, homologa: true  },
+          { id: "iasubj9", title: "Lengua extranjera en el nivel MCRE B2",              credits: 2, homologa: false },
+          { id: "iasubj10", title: "Ciencia, Tecnolog\u00eda e Innovaci\u00f3n",        credits: 2, homologa: false },
+        ]
+      }
+    ]
   }
 };
