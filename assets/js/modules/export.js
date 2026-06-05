@@ -34,7 +34,7 @@
  *   Extraído de app.js en Fase 2. Sin cambios funcionales.
  */
 
-// ===== SNIES LOOKUP MAPS =====
+// ===== MAPAS SNIES =====
 const SNIES_PRE_MAP = {
   'INGENIERÍA DE SOFTWARE|SOACHA': '110946',
   'INGENIERÍA DE SOFTWARE|GIRARDOT': '116101',
@@ -160,7 +160,7 @@ function getSniesEsp(esp){
   return SNIES_ESP_MAP[k]||'';
 }
 
-// ===== DOWNLOAD DATABASE =====
+// ===== DESCARGA DE BD =====
 function downloadDB(){
   const headers = [
     'Facultad',
@@ -265,7 +265,7 @@ function downloadDB(){
   toast('Base de datos descargada con códigos SNIES');
 }
 
-// ===== EXPORT SNIES =====
+// ===== EXPORTAR SNIES =====
 function exportSNIES(){
   var rows=[['Programa','Nivel','Año','Inscritos','Admitidos','Matriculados','Graduados','T.Absorcion','T.Selectividad','T.Graduacion','%H','%M']];
   SD.programs.forEach(function(p){[2020,2021,2022,2023,2024].forEach(function(y){var d=p.years[String(y)];rows.push([p.name,p.nivel,y,d.ins,d.adm,d.mat,d.grad,d.tabs,d.tsel,d.tgrad,d.pctH,d.pctM]);});});

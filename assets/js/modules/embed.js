@@ -27,7 +27,7 @@ window.__EMBED = {
           }
           parts.push(rules.join('\n'));
         }
-      } catch(e) { /* cross-origin sheets not accessible */ }
+      } catch(e) {}
     }
     return parts.join('\n\n');
   },
@@ -89,7 +89,7 @@ window.__EMBED = {
         if (dataURIs[i]) {
           var oldSrc = img.getAttribute('src');
           if (oldSrc) {
-            // Replace both relative and absolute forms (outerHTML may resolve URLs)
+            // Reemplazar formas relativas y absolutas (outerHTML puede resolver URLs)
             html = html.split(oldSrc).join(dataURIs[i]);
             try { html = html.split(new URL(oldSrc, location.href).href).join(dataURIs[i]); } catch(e) {}
           }

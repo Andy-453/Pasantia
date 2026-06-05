@@ -28,18 +28,19 @@
 // En modo desarrollo (source files) se permite localStorage para persistencia local.
 window.__UDEC_EMBEDDED__=false;
 
-// ========== DEFAULT DATA ==========
+// ===== DATOS POR DEFECTO =====
 var DEFAULT_DATA=[{"id":"admin","name":"Facultad de Ciencias Admin., Económicas y Contables","doc":{"n":"Doctorado en Administración y Dirección de Empresas","e":"Por construir","o":"P","sedes":[],"resp":"Convocatoria Pública","mes":10,"ano":2026},"progs":[{"id":"id1774918209474t80","n":"Administración de Empresas","sedes":["Fusagasugá","Ubate","Chía","Facatativá","Girardot","Soacha"],"lineas":[{"id":"id1774918209474pfl","l":"Marketing digital","t":"Profundización 1","esp":"Especialización en Marketing Digital","e":"Obtención","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474rky","l":"Gestión y administración","t":"Profundización 1","esp":"Especialización en Gestión Pública","e":"Obtención","o":"V","sedes":["Ubate"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474720","l":"Transformación digital en las organizaciones","t":"Profundización 2","esp":"Esp. Gerencia para la Transformación Digital","e":"Renovación y modificación de la denominación","o":"V","sedes":["Chía","Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id17749182094742q2","l":"Analítica de inteligencia de negocios","t":"Profundización 2","esp":"Especialización en Analítica Aplicada a Negocios","e":"Obtención","o":"V","sedes":["Girardot","Soacha"],"resp":"","mes":null,"ano":null},{"id":"id17749182094741h1","l":"Gerencia financiera y diagnóstico estratégico","t":"Profundización 2","esp":"Esp. en Gerencia Financiera y Diagnóstico Estratégico","e":"Radicado MEN","o":"P","sedes":["Fusagasugá","Ubate"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474g6g","l":"Logística integral","t":"Profundización 1","esp":"Especialización en Logística y Comercio Internacional","e":"Radicado MEN","o":"P","sedes":["Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474792","l":"Emprendimiento turístico","t":"Profundización 1","esp":"Esp. en Gestión del Emprendimiento en Org. Turísticas","e":"En construcción","o":"P","sedes":["Chía","Girardot","Soacha"],"resp":"Instituto de posgrados","mes":4,"ano":2026}],"mae":[{"id":"id1774918209474vrw","n":"Maestría en Marketing Digital","e":"Radicado MEN","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474g9v","n":"Maestría en Administración de Empresas - MBA","e":"En construcción","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha"],"resp":"Instituto de posgrados","mes":4,"ano":2026},{"id":"id1774918209474twh","n":"Maestría en Gerencia Financiera, Tributaria y Sostenibilidad Empresarial","e":"Por construir","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha"],"resp":"","mes":null,"ano":null}]},{"id":"id1774918209474tn9","n":"Contaduría Pública","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"lineas":[{"id":"id1774918209474rf4","l":"Financiera y contable","t":"Profundización 2","esp":"Especialización en Gerencia Financiera y Contable","e":"Obtención","o":"V","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474077","l":"Gestión tributaria","t":"Profundización 1","esp":"Especialización en Gestión Tributaria","e":"Radicado MEN","o":"P","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id1774918209474bl9","n":"Maestría en Gerencia Financiera, Tributaria y Sostenibilidad Empresarial","e":"Por construir","o":"P","sedes":["Fusagasugá","Soacha","Facatativá","Chía","Ubate"],"resp":"Convocatoria Pública","mes":10,"ano":2026}]}]},{"id":"ing","name":"Facultad de Ingeniería","doc":{"n":"Doctorado en Ingeniería","e":"En construcción","o":"P","sedes":[],"resp":"Luis Alberto Tafur","mes":8,"ano":2026},"progs":[{"id":"id1774918209474rf6","n":"Ingeniería de Software","sedes":["Soacha","Girardot"],"lineas":[{"id":"id1774918209474zw7","l":"Desarrollo del software con estándares de calidad","t":"Profundización 2","esp":"Esp. en Metodologías de Calidad para el Desarrollo del Software","e":"Obtención","o":"V","sedes":["Soacha","Girardot"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474zo6","l":"Ciencia de datos","t":"Profundización 1","esp":"Especialización en Analítica y Ciencia de Datos","e":"Obtención","o":"V","sedes":["Soacha","Girardot"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id1774918209474sv4","n":"Maestría en TIC para Territorios Inteligentes","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Blanca Judith Cristacho Pabon","mes":4,"ano":2026}]},{"id":"id1774918209474l2g","n":"Ingeniería de Sistemas y Computación","sedes":["Chía","Ubate","Facatativá","Fusagasugá"],"lineas":[{"id":"id177491820947468q","l":"Software seguro y de calidad","t":"Profundización 1","esp":"Esp. en Metodologías de Calidad para el Desarrollo del Software","e":"Obtención","o":"V","sedes":["Chía","Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474vrm","l":"Inteligencia artificial","t":"Profundización 2","esp":"Especialización en Inteligencia Artificial","e":"Obtención","o":"V","sedes":["Chía","Ubate","Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474eru","l":"Ciencia de datos / Bigdata","t":"Profundización 2","esp":"Especialización en Analítica y Ciencia de Datos","e":"Obtención","o":"V","sedes":["Chía","Facatativá","Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474afo","l":"Redes y seguridad","t":"Profundización 2","esp":"Especialización en Infraestructura y Seguridad de Redes","e":"Obtención","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474pi7","l":"Desarrollo de software","t":"Profundización 1","esp":"Especialización en Seguridad de la Información","e":"Radicado MEN","o":"P","sedes":["Ubate"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id17749182094746wy","n":"Maestría en Ingeniería de Sistemas y Computación","e":"En construcción","o":"P","sedes":["Chía","Facatativá","Fusagasugá","Ubate","Soacha","Girardot"],"resp":"Convocatoria publica","mes":8,"ano":2026}]},{"id":"id1774918209474kb4","n":"Ingeniería Electrónica","sedes":["Fusagasugá"],"lineas":[{"id":"id177491820947445x","l":"Telemática y telecomunicaciones","t":"Profundización 2","esp":"Especialización en Infraestructura y Seguridad de Redes","e":"Obtención","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474po7","l":"Energías renovables y sostenibilidad energética","t":"Profundización 2","esp":"Esp. en Solución Energéticas Sostenibles","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Carlos Alberto Cusquen Gómez","mes":5,"ano":2026}],"mae":[{"id":"id17749182094747vt","n":"Maestría en Automatización Industrial","e":"Por construir","o":"P","sedes":["Fusagasugá","Soacha","Chía"],"resp":"Leidy  Yolanda Lopez Osorio","mes":5,"ano":2026}]},{"id":"id17749182094745d9","n":"Ingeniería Industrial","sedes":["Soacha","Chía"],"lineas":[{"id":"id1774918209474mir","l":"Ciencia de datos","t":"Profundización 2","esp":"Especialización en Analítica Aplicada a Negocios","e":"Obtención","o":"V","sedes":["Soacha","Chía"]},{"id":"id1774918209474um9","l":"Logística y cadena de abastecimiento","t":"Profundización 1","esp":"Especialización en Logística y Operaciones","e":"Radicado MEN","o":"P","sedes":["Soacha","Chía"]}],"mae":[]},{"id":"id177491820947426j","n":"Ingeniería Mecatrónica","sedes":["Chía"],"lineas":[{"id":"id1774918209474jz6","l":"Automatización y telemática aplicada","t":"Profundización 1","esp":"Especialización en Automatización Industrial","e":"Negado MEN","o":"P","sedes":["Chía"],"resp":"","mes":null,"ano":null}],"mae":[]}]},{"id":"agro","name":"Facultad de Ciencias Agropecuarias","doc":{"n":"Doctorado en Agricultura Inteligente y Sostenible","e":"En construcción","o":"P","sedes":[],"resp":"","mes":7,"ano":2026},"progs":[{"id":"id1774918209474rvk","n":"Zootecnia","sedes":["Fusagasugá","Ubate"],"lineas":[{"id":"id17749182094747we","l":"Recursos zoogenéticos para la producción pecuaria","t":"Profundización 2","esp":"Especialización en Recursos Zoogenéticos","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474cat","l":"Alimentación no convencional","t":"Profundización 1","esp":"Esp. Nutrición y Alimentación Animal Esp. No Convencionales","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474krm","l":"Ciencia, tecnología e innovación en producción","t":"Profundización 1","esp":"Esp. Transformación e Innovación de Productos Lácteos y Cárnicos","e":"En radicación","o":"P","sedes":["Ubate"]},{"id":"id177491820947460y","l":"Reproducción y mejoramiento genético","t":"Profundización 2","esp":"Esp. Herramientas Biotecnológicas para la Producción Animal","e":"En construcción","o":"P","sedes":["Ubate"]}],"mae":[{"id":"id1774918209474jlj","n":"Maestría en Gestión Estratégica en Nutrición y Alimentación Animal","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474064","n":"Maestría en Producción Pecuaria e Innovación Agroindustrial","e":"Por construir","o":"P","sedes":["Fusagasugá"]}]},{"id":"id1774918209474io6","n":"Ingeniería Agronómica","sedes":["Fusagasugá","Facatativá"],"lineas":[{"id":"id1774918209474vuu","l":"Emprendimiento, desarrollo rural y territorio","t":"Profundización 2","esp":"Especialización en Agronegocios Sostenibles","e":"Obtención","o":"V","sedes":["Fusagasugá","Facatativá"]},{"id":"id17749182094742u1","l":"Sistemas de producción agrícola sostenible","t":"Profundización 1","esp":"Esp. en Agroecología y Desarrollo Agroecoturístico","e":"Obtención","o":"V","sedes":["Fusagasugá","Facatativá"]}],"mae":[{"id":"id1774918209474u3z","n":"Maestría en Ciencias Agrarias con énfasis en Hortifruticultura","e":"Obtención","o":"V","sedes":["Fusagasugá"]},{"id":"id1774918209474jpq","n":"Maestría en Agricultura Familiar y Sistemas Agroalimentarios Sostenibles","e":"Entregado para radicar","o":"P","sedes":["Fusagasugá"]}]},{"id":"id1774918209474ea0","n":"Ingeniería Ambiental","sedes":["Girardot","Facatativá"],"lineas":[{"id":"id1774918209474gsp","l":"Recurso hídrico","t":"Profundización 1","esp":"Especialización en Gestión del Recurso Hídrico","e":"Por construir","o":"P","sedes":["Girardot","Facatativá"]},{"id":"id17749182094740xz","l":"Gestión ambiental territorial","t":"Profundización 2","esp":"Esp. en Gestión del Riesgo de Desastres y Planificación Ambiental del Territorio","e":"En reclamación MEN","o":"P","sedes":["Girardot"]},{"id":"id1774918209474fvw","l":"Calidad del recurso aire","t":"Profundización 2","esp":"Especialización en Gestión de la Calidad del Recurso Aire","e":"En reclamación MEN","o":"P","sedes":["Facatativá"]}],"mae":[{"id":"id17749182094747ul","n":"Maestría en Gestión Ambiental para el Desarrollo Sostenible","e":"Obtención","o":"V","sedes":["Fusagasugá"]}]},{"id":"id17749182094746xl","n":"Medicina Veterinaria y Zootecnia","sedes":["Ubate"],"lineas":[{"id":"id1774918209474rnm","l":"Fauna silvestre susceptible de producción","t":"Profundización 1","esp":"Especialización en Sanidad de Animales Silvestres","e":"Por construir","o":"P","sedes":["Ubate"]},{"id":"id1774918209474i1s","l":"Especies con intervención reproductiva","t":"Profundización 2","esp":"Esp. en Técnicas de Reproducción Animal Asistida","e":"Por construir","o":"P","sedes":["Ubate"]}],"mae":[{"id":"id1774918209474vbs","n":"Maestría en Ciencias Veterinarias de Especies No Convencionales","e":"Por construir","o":"P","sedes":["Fusagasugá"]}]},{"id":"id1774918209474vyv","n":"Ingeniería Topográfica y Geomática","sedes":["Soacha"],"lineas":[{"id":"id17749182094743a5","l":"Cartografía y representación del Espacio Geográfico","t":"Profundización 1","esp":"Especialización en Ciencia de Geo-Datos","e":"Por construir","o":"P","sedes":["Soacha"]},{"id":"id1774918209474ai2","l":"Redes planimétricas y altimétricas","t":"Profundización 2","esp":"Esp. en Topografía Avanzada con fines Catastrales","e":"Por construir","o":"P","sedes":["Soacha"]}],"mae":[{"id":"id17749182094748xq","n":"Maestría en Geo-datos Aplicados al Ordenamiento Territorial","e":"Por construir","o":"P","sedes":["Soacha"]}]}]},{"id":"salud","name":"Facultad de Ciencias de la Salud","doc":{"n":"Doctorado en Salud Mental y Cuidado Integral","e":"Por construir","o":"P","sedes":[],"resp":"Convocatoria Pública","mes":11,"ano":2026},"progs":[{"id":"id1774918209474mlr","n":"Enfermería","sedes":["Girardot"],"lineas":[{"id":"id1774918209474rlh","l":"Cuidado integral en Salud Mental en el ámbito comunitario","t":"Profundización 1","esp":"Especialización en Salud Mental Comunitaria","e":"Radicado MEN","o":"P","sedes":["Girardot"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474ja8","l":"Gestión del Cuidado de Enfermería, calidad e innovación","t":"Profundización 2","esp":"Esp. Gerencia de la calidad e innovación en salud","e":"En construcción","o":"P","sedes":["Girardot"],"resp":"Hernan Camilo Castillo Romero ","mes":5,"ano":2026}],"mae":[{"id":"id1774918209474tx0","n":"Maestría en Salud Pública","e":"Radicado MEN","o":"P","sedes":["Girardot"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474rs0","n":"Maestría en Gestión de la Calidad en Servicios de Salud","e":"Por construir","o":"P","sedes":["Girardot"],"resp":"Convocatoria Pública","mes":10,"ano":2026}]},{"id":"id1774918209474ktb","n":"Psicología","sedes":["Facatativá"],"lineas":[{"id":"id17749182094749y0","l":"Intervención psicosocial","t":"Profundización 1","esp":"Especialización en Intervención Psicosocial","e":"Radicado MEN","o":"V","sedes":["Facatativá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474m1a","l":"Medición y evaluación psicológica","t":"Profundización 2","esp":"Especialización en Psicometría y Medición Psicológica","e":"Por construir","o":"P","sedes":["Facatativá"],"resp":"Convocatoria Pública","mes":10,"ano":2026}],"mae":[{"id":"id1774918209474ab6","n":"Maestría en Intervención Psicosocial en Contextos de Cuidado","e":"En construcción","o":"P","sedes":["Facatativá"],"resp":"Sindy Johana Acevedo Velandia ","mes":5,"ano":2026},{"id":"id1774918209474kd9","n":"Maestría en Diseño y Análisis de Instrumentos Psicométricos","e":"Por construir","o":"P","sedes":["Facatativá"],"resp":"Convocatoria Pública","mes":10,"ano":2026}]}]},{"id":"dep","name":"Facultad de Ciencias del Deporte y Ed. Física","doc":{"n":"Doctorado de Ciencias del Movimiento y el Bienestar","e":"En proyección","o":"P","sedes":[],"resp":"Convocatoria Púbica","mes":11,"ano":2026},"progs":[{"id":"id17749182094743d5","n":"Lic. en Educación Física, Recreación y Deportes","sedes":["Fusagasugá"],"lineas":[{"id":"id177491820947414p","l":"Deporte escolar","t":"Profundización 1","esp":"Especialización en Deporte Escolar","e":"En oferta","o":"V","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null},{"id":"id1774918209474wr6","l":"Educación física y discapacidad","t":"Profundización 2","esp":"Especialización en Actividad Física y Discapacidad","e":"Radicado MEN","o":"P","sedes":["Fusagasugá"],"resp":"","mes":null,"ano":null}],"mae":[{"id":"id1774918209474fm2","n":"Maestría en Ciencias del Deporte y la Educación Física","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Andres Sepulveda","mes":6,"ano":2026}]},{"id":"id17749182094747l6","n":"Profesional en Ciencias del Deporte","sedes":["Soacha"],"lineas":[{"id":"id17749182094746eg","l":"Administración deportiva","t":"Profundización 2","esp":"Esp. en Gestión y Desarrollo de la Actividad Física y el Deporte","e":"Con registro Calificado","o":"V","sedes":["Soacha"]},{"id":"id1774918209474mqf","l":"Entrenamiento deportivo","t":"Profundización 1","esp":"Especialización en Entrenamiento Deportivo","e":"Nueva Propuesta de la Facultad","o":"P","sedes":["Soacha"]}],"mae":[]}]},{"id":"edu","name":"Facultad de Educación","doc":{"n":"Doctorado en Ciencias de la Educación","e":"Obtención-resignificación","o":"P","sedes":[],"resp":"Monica Mantilla","mes":5,"ano":2026},"progs":[{"id":"id1774918209474rmb","n":"Lic. en Ciencias Sociales","sedes":["Fusagasugá"],"lineas":[{"id":"id17755015357177xb","l":"Educación, Ruralidades y Derechos Humanos.","t":"Profundización 1","esp":"Especialización en Educación, Ruralidades y Derechos Humanos","e":"Por construir","o":"P","sedes":[],"resp":"","mes":10,"ano":2026},{"id":"id1775501577009amm","l":"Región y Territorio.","t":"Profundización 2","esp":"Especialización  en ciencias sociales, región y territorio","e":"Por construir","o":"P","sedes":[],"resp":"","mes":10,"ano":2026}],"mae":[{"id":"id1774918209474n41","n":"Maestría en Educación y Gestión del Conocimiento","e":"En construcción","o":"P","sedes":["Fusagasugá"],"resp":"Aura Alvarez","mes":7,"ano":2026}]}]},{"id":"hum","name":"Facultad de Ciencias Sociales, Humanidades y Políticas","doc":null,"progs":[{"id":"id17749182094745sv","n":"Música","sedes":["Zipaquirá"],"lineas":[{"id":"id17749182094749zh","l":"Composición y arreglos","t":"Profundización 1","esp":"Esp. para Línea de Profundización en Dirección Musical","e":"Por construir","o":"P","sedes":["Zipaquirá"],"resp":"Convocatoria Pública","mes":10,"ano":2026},{"id":"id17749182094748c1","l":"Producción y gestión musical","t":"Profundización 2","esp":"Esp. para Línea de Profundización en Producción Musical","e":"Por construir","o":"P","sedes":["Zipaquirá"],"resp":"Convocatoria Pública","mes":10,"ano":2026}],"mae":[]}]}]
 
 var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
 var DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
+var _lrEditingId;
 // Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors a continuación
-// Legacy aliases: AppState.editor es fuente única (Fase 3)
+// Aliases legacy: AppState.editor es fuente única
 Object.defineProperty(window,'editingProgId',{get:function(){return window.AppState.editor.editingProgId;},set:function(v){window.AppState.editor.editingProgId=v;},configurable:true});
 Object.defineProperty(window,'tmpLineas',{get:function(){return window.AppState.editor.tmpLineas;},set:function(v){window.AppState.editor.tmpLineas=v;},configurable:true});
 Object.defineProperty(window,'tmpMaes',{get:function(){return window.AppState.editor.tmpMaes;},set:function(v){window.AppState.editor.tmpMaes=v;},configurable:true});
 
-// Estado centralizado — Fase 3 (migración gradual)
+// Estado centralizado (migración gradual)
 // Acceso legacy via window accessors (curFac, filtSede, etc.)
 window.AppState = {
   navigation: {
@@ -65,12 +66,11 @@ window.AppState = {
     prog: null
   },
   staticData: {
-    ALL_SEDES: null,
-    DEFAULT_DATA: null
+    ALL_SEDES: null
   }
 };
 
-// ===== GLOBAL ACCESSORS — Fase 3 =====
+// ===== ACCESSORS GLOBALES =====
 // Aliases transparentes: window.curFac / window.filt* → AppState.*
 Object.defineProperty(window,'curFac',{get:function(){return window.AppState.navigation.curFac;},set:function(v){window.AppState.navigation.curFac=v;},configurable:true});
 Object.defineProperty(window,'filtSede',{get:function(){return window.AppState.filters.sede;},set:function(v){window.AppState.filters.sede=v;},configurable:true});
@@ -78,27 +78,26 @@ Object.defineProperty(window,'filtOferta',{get:function(){return window.AppState
 Object.defineProperty(window,'filtEstado',{get:function(){return window.AppState.filters.estado;},set:function(v){window.AppState.filters.estado=v;},configurable:true});
 Object.defineProperty(window,'filtNivel',{get:function(){return window.AppState.filters.nivel;},set:function(v){window.AppState.filters.nivel=v;},configurable:true});
 Object.defineProperty(window,'filtPregrado',{get:function(){return window.AppState.filters.pregrado;},set:function(v){window.AppState.filters.pregrado=v;},configurable:true});
-// Inicializar staticData (readonly)
+// Inicializar staticData (solo lectura)
 window.AppState.staticData.ALL_SEDES=ALL_SEDES;
-window.AppState.staticData.DEFAULT_DATA=DEFAULT_DATA;
 
-// ===== EXPORT MANIFEST — Fase 3 =====
+// ===== EXPORTACIÓN =====
 // Namespace global para migración futura a ESModules.
 // Compatibilidad legacy: todas las funciones están también en window
 // vía declaraciones `function` (implícito). Inline onclick sigue funcionando.
 // TODO [MVC]: cuando se migre a ESModules, reemplazar por import/export.
 window.App = {
-  // State
+  // Estado
   AppState: window.AppState,
-  // Navigation
+  // Navegación
   showTab: showTab, renderViews: renderViews, selFac: selFac,
-  // Dashboard
+  // Panel
   renderKPIs: renderKPIs, renderFacBar: renderFacBar,
-  // Filters
+  // Filtros
   applyFilters: applyFilters, resetFilters: resetFilters, populateSedes: populateSedes,
   sedeMatch: sedeMatch, ofertaMatch: ofertaMatch, estadoMatch: estadoMatch,
   nivelMatch: nivelMatch, pregradoMatch: pregradoMatch, itemMatch: itemMatch,
-  // Tree, Table, SedeView
+  // Árbol, Tabla, VistaSede
   renderTree: renderTree, renderTabla: renderTabla, renderSedeView: renderSedeView,
   // Editor
   renderEditor: renderEditor, openNewProg: openNewProg, openEditProg: openEditProg,
@@ -109,18 +108,20 @@ window.App = {
   collectLineas: collectLineas, collectMaes: collectMaes, toggleDocForm: toggleDocForm,
   // SNIES
   renderSNIES: renderSNIES, snSetFac: snSetFac, snSetProg: snSetProg, exportSNIES: exportSNIES,
-  // Pipeline
+  // Desarrollo
   renderPipeline: renderPipeline, toggleSec: toggleSec,
-  // Indicators
+  // Indicadores
   renderIndicadores: renderIndicadores,
-  // Storage
+  // Almacenamiento
   loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
-  // Utils
+  // Utilidades
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
+  // Rutas de Aprendizaje
+  loadLearningRoutes: loadLearningRoutes, saveLearningRoutes: saveLearningRoutes, restoreDefaultRoutes: restoreDefaultRoutes,
 };
 
-// ===== EVENT DELEGATION — Fase 3 =====
-// Dispatcher centralizado: click + change.
+// ===== DELEGACIÓN DE EVENTOS =====
+// Centralizador de eventos: click y change
 // onclick/onchange removido de elementos con data-action.
 // onclick se conserva solo en editor (renderProgForm, renderEditor, openNewFac, openEditFac).
 // TODO [MVC]: migrar editor a data-action.
@@ -160,6 +161,31 @@ var __ACTIONS = {
     var o = document.getElementById('lr-modal-overlay');
     if(o) document.body.removeChild(o);
   },
+  'edit-lr-from-modal': function(){
+    var overlay = document.getElementById('lr-modal-overlay');
+    if(!overlay) return;
+    var espId = overlay.dataset.espId;
+    if(!espId || !window.__LEARNING_ROUTES[espId]){ toast('Ruta no disponible para edición'); return; }
+    document.body.removeChild(overlay);
+    showTab('editor');
+    _lrSetTab('rutas');
+    _lrEditRoute(espId);
+  },
+  // ===== Editor de rutas =====
+  'lr-set-tab': function(b){ _lrSetTab(b.dataset.tab); },
+  'lr-edit-route': function(b){ _lrEditRoute(b.dataset.espId); },
+  'lr-delete-route': function(b){ _lrDeleteRoute(b.dataset.espId); },
+  'create-route-for-prog': function(b){
+    _lrEditRoute(b.dataset.progId, {name:b.dataset.progName, type:b.dataset.progType});
+  },
+  'lr-back-to-list': function(){ _lrEditingId=null;renderEditor(); },
+  'lr-add-semester': function(){ _lrAddSemester(); },
+  'lr-delete-semester': function(b){ _lrDeleteSemester(parseInt(b.dataset.si,10)); },
+  'lr-add-subject': function(b){ _lrAddSubject(parseInt(b.dataset.si,10)); },
+  'lr-delete-subject': function(b){ _lrDeleteSubject(parseInt(b.dataset.si,10),parseInt(b.dataset.ji,10)); },
+  'lr-save-route': function(b){ _lrSaveRoute(b.dataset.espId); },
+  'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId); },
+  'restore-default-routes': function(){ restoreDefaultRoutes(); },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
@@ -169,6 +195,15 @@ document.addEventListener('click', function(e){
 });
 var __CHANGE = {
   'apply-filters': function(){ applyFilters(); },
+  'lr-update-sem-credits': function(b){
+    var sem = b.closest('.lr-semester');
+    if(!sem) return;
+    var total = 0;
+    sem.querySelectorAll('.lr-subj-credits').forEach(function(i){ total += parseInt(i.value)||0; });
+    var display = sem.querySelector('.lr-sem-credits-display');
+    if(display) display.textContent = total;
+    _lrRecalcCredits();
+  },
 };
 document.addEventListener('change', function(e){
   var b = e.target.closest('[data-action]');
@@ -179,7 +214,7 @@ document.addEventListener('change', function(e){
 
 function _getObtencionUrl(e, item){
   if(!item || !item.enlaceObtencion) return '';
-  if((e||'').toLowerCase() !== 'obtención') return '';
+  if(!(e||'').toLowerCase().includes('obtención')) return '';
   var url = item.enlaceObtencion.trim();
   if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
   return url;
@@ -188,55 +223,69 @@ function _hasLR(id){
   return !!(window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id]);
 }
 
+function _getTypeLabel(type){
+  var map={especializacion:'Especialización',maestria:'Maestría',doctorado:'Doctorado'};
+  return map[type]||'Programa';
+}
+function _getTypeBadge(type){
+  var labels={especializacion:{label:'Esp.',color:'#3aaa72',bg:'#e8f5ee'},
+              maestria:{label:'Mae.',color:'#C8A43A',bg:'#faf3e0'},
+              doctorado:{label:'Doc.',color:'#0d3d22',bg:'#d4e8da'}};
+  var l=labels[type]||labels.especializacion;
+  return '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700;background:'+l.bg+';color:'+l.color+'">'+l.label+'</span>';
+}
+function _getAllAcademicPrograms(){
+  var list=[];
+  AppData.getFacultades().forEach(function(f){
+    if(f.doc){
+      list.push({id:'doc-'+f.id,type:'doctorado',name:f.doc.n, facName:f.name, sedes:f.doc.sedes||[], enlaceObtencion:f.doc.enlaceObtencion||null});
+    }
+    f.progs.forEach(function(p){
+      (p.mae||[]).forEach(function(m){
+        list.push({id:m.id,type:'maestria',name:m.n, facName:f.name, progName:p.n, sedes:m.sedes});
+      });
+      (p.lineas||[]).forEach(function(l){
+        list.push({id:l.id,type:'especializacion',name:l.esp, facName:f.name, progName:p.n, lineaName:l.l, sedes:l.sedes});
+      });
+    });
+  });
+  return list;
+}
+
 function renderLearningRouteHTML(route){
   var sems = route.semesters || [];
   var n = sems.length;
   if(!n) return '<div class="modal" style="max-width:400px"><div class="modal-actions" style="border:none"><button data-action="close-lr-modal">Cerrar</button></div></div>';
 
-  // --- Specialization card (top) ---
+  // --- Card de especialización (arriba) ---
+  var totalCredits = sems.reduce(function(t,s){
+    return t + (s.subjects||[]).reduce(function(tt,sj){ return tt + (sj.credits||0); }, 0);
+  }, 0);
   var semCount = n;
+  var typeLabel=_getTypeLabel(route.type||'especializacion');
   var espCard = '<div class="node node-espec" style="min-width:260px;max-width:380px;width:100%">'
     + '<div class="node-stripe"></div>'
     + '<div class="node-body">'
-    + '<div class="node-label">Especializaci\u00f3n</div>'
+    + '<div class="node-label">'+typeLabel+'</div>'
     + '<div class="node-title" style="font-size:11px">'+route.espName+'</div>'
     + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
-    + route.credits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
+    + totalCredits+' créditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
     + '</div></div></div>';
 
-  // --- SVG connector: specialization → semesters ---
-  var colW = 220;
-  var gap = 20;
-  var totalW = n * colW + (n-1) * gap;
-  var centerX = totalW / 2;
-  var svgH = 40;
+  // --- Conector: especialización → semestres (solo CSS) ---
+  var connectorHtml = '<div class="route-connector"><div class="connector-line"></div><div class="connector-dot"></div><div class="connector-bar"></div></div>';
 
-  var svgPaths = '<line x1="'+centerX+'" y1="0" x2="'+centerX+'" y2="16" stroke="#c0d8c8" stroke-width="2"/>';
-  if(n > 1){
-    var firstX = colW/2;
-    var lastX = totalW - colW/2;
-    svgPaths += '<line x1="'+firstX+'" y1="16" x2="'+lastX+'" y2="16" stroke="#c0d8c8" stroke-width="2"/>';
-  }
-  sems.forEach(function(_,i){
-    var cx = i*(colW+gap) + colW/2;
-    svgPaths += '<line x1="'+cx+'" y1="16" x2="'+cx+'" y2="'+svgH+'" stroke="#c0d8c8" stroke-width="2"/>';
-    if(n > 1) svgPaths += '<circle cx="'+cx+'" cy="16" r="3" fill="#006633"/>';
-  });
-  svgPaths += '<circle cx="'+centerX+'" cy="0" r="3" fill="#006633"/>';
-
-  var connectorSvg = '<svg width="'+Math.max(totalW,2)+'" height="'+svgH+'" style="display:block;overflow:visible">'+svgPaths+'</svg>';
-
-  // --- Semester columns ---
+  // --- Columnas de semestres ---
   var semCols = sems.map(function(sem){
-    // Semester card
+    // Card de semestre — créditos desde materias (fuente única)
+    var semCredits = (sem.subjects||[]).reduce(function(t,sj){ return t + (sj.credits||0); }, 0);
     var semCard = '<div class="node" style="width:100%;background:#fffdf0;box-shadow:0 2px 8px rgba(200,164,58,0.10);border-radius:8px;overflow:hidden;cursor:default">'
       + '<div class="node-stripe" style="background:var(--udec-gold);height:3px"></div>'
       + '<div class="node-body" style="padding:8px 10px 9px">'
       + '<div class="node-label" style="color:var(--udec-gold);margin-bottom:2px">'+sem.title+'</div>'
-      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+sem.type+' &middot; '+sem.credits+' cr\u00e9dito'+(sem.credits>1?'s':'')+'</div>'
+      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+sem.type+' &middot; '+semCredits+' crédito'+(semCredits>1?'s':'')+'</div>'
       + '</div></div>';
 
-    // Subject cards
     var subjectCards = sem.subjects.map(function(subj){
       var pillColor = subj.credits <= 1
         ? 'background:#f0f7f2;color:#006633;border:1px solid #b0d4be'
@@ -254,34 +303,43 @@ function renderLearningRouteHTML(route){
         + '</div></div></div>';
     }).join('<div style="width:2px;height:6px;background:#e0ece4;flex-shrink:0;align-self:center"></div>');
 
-    return '<div style="width:'+colW+'px;display:flex;flex-direction:column;align-items:center;flex-shrink:0">'
-      + '<div style="width:2px;height:10px;background:#e0ece4;flex-shrink:0"></div>'
+    return '<div class="semester-col">'
+      + '<div style="width:2.5px;height:12px;background:#8fb8a0;flex-shrink:0;margin:0 auto;border-radius:1px"></div>'
       + semCard
-      + '<div style="width:2px;height:10px;background:#e0ece4;flex-shrink:0"></div>'
+      + '<div style="width:2px;height:8px;background:#e0ece4;flex-shrink:0;margin:0 auto"></div>'
       + subjectCards
       + '</div>';
   }).join('');
 
-  // --- Full modal ---
-  return '<div class="modal" style="max-width:680px">'
-    + '<div class="modal-title"><span>\uD83D\uDCCB</span>Ruta de Aprendizaje</div>'
-    + '<div class="route-tree-wrap" style="overflow-x:auto;padding:4px 0">'
-    + '<div style="display:inline-flex;flex-direction:column;align-items:center;min-width:max-content">'
+  // --- Botón editar (solo rutas reales, no previews) ---
+  var _lr = window.__LEARNING_ROUTES;
+  var editBtn = (_lr && _lr[route.espId])
+    ? '<button data-action="edit-lr-from-modal" style="background:none;border:1px solid #d0e4d8;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;color:#006633;display:flex;align-items:center;gap:4px;white-space:nowrap;margin-left:auto" title="Editar esta ruta">\u270f\ufe0f Editar</button>'
+    : '';
+
+  return '<div class="modal" style="max-width:960px">'
+    + '<div class="modal-title" style="display:flex;align-items:center">'
+    + '<span>\uD83D\uDCCB</span><span style="flex:1">Ruta de Aprendizaje</span>'
+    + editBtn
+    + '</div>'
+    + '<div class="route-tree-wrap">'
+    + '<div class="route-tree-container">'
     + espCard
-    + connectorSvg
-    + '<div style="display:flex;gap:'+gap+'px;align-items:flex-start">'
+    + connectorHtml
+    + '<div class="semesters-grid">'
     + semCols
     + '</div></div></div>'
     + '<div class="modal-actions"><button data-action="close-lr-modal">Cerrar</button></div>'
     + '</div>';
 }
 function openLearningRouteModal(espId){
-  var route = window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[espId];
+  var route = (typeof espId === 'object' && espId) ? espId : (window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[espId]);
   if(!route){ toast('Ruta no disponible'); return; }
   var overlay = document.createElement('div');
   overlay.id = 'lr-modal-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto';
-  overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:680px">' + renderLearningRouteHTML(route) + '</div>';
+  overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:960px">' + renderLearningRouteHTML(route) + '</div>';
+  overlay.dataset.espId = typeof espId === 'string' ? espId : (espId.espId || '');
   document.body.appendChild(overlay);
   function _closeLR(){
     if(overlay.parentNode) document.body.removeChild(overlay);
@@ -296,15 +354,14 @@ function openLearningRouteModal(espId){
   overlay.addEventListener('DOMNodeRemoved', function(){ document.removeEventListener('keydown', _onKey); });
 }
 
-// ===== TREE =====
+// ===== ÁRBOL =====
 /**
- * Renderiza el árbol jerárquico (pregrado → línea → especialización / maestría / doctorado).
+ * Renderiza el árbol jerárquico (pregrado ? línea ? especialización / maestría / doctorado).
  * Soporta modo single-pregrado y multi-pregrado.
  */
 function renderTree(){
   try{
   const f=AppData.getFacultad(AppState.navigation.curFac);
-  // Ensure data integrity before rendering
   if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
   const singlePregrado = filtPregrado !== 'ALL';
 
@@ -321,7 +378,7 @@ function renderTree(){
     return '<div class="badge" style="background:'+s.bg+';color:'+s.tx+'"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
   }
 
-  // Filter programs (defensive: guard against undefined lineas/mae from stale data)
+  // Filtrar programas (defensivo: evitar lineas/mae undefined de datos obsoletos)
   const visProgs = f.progs.filter(p=>{
     if(!pregradoMatch(p.n)) return false;
     const lineas = Array.isArray(p.lineas) ? p.lineas : [];
@@ -336,7 +393,7 @@ function renderTree(){
     return;
   }
 
-  // ROOT
+  // RAÍZ — Facultad
   let h=`
   <div class="node node-root">
     <div class="node-body">
@@ -347,15 +404,14 @@ function renderTree(){
   ${vline(24)}`;
 
   if(singlePregrado){
-    // ── SINGLE PREGRADO MODE: vertical flow with horizontal line columns ──
+    // -- MODO PREGRADO ÚNICO: flujo vertical con columnas horizontales --
     const p = visProgs[0];
     const vL = (Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec'));
     const vM = (Array.isArray(p.mae)?p.mae:[]).filter(m=>itemMatch(m,'mae'));
 
-    // Pregrado card centered
     h+=`
     <div class="node node-pregrado" style="min-width:260px;max-width:340px">
-      <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✎</button>
+      <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">?</button>
       <div class="node-stripe"></div>
       <div class="node-body">
         <div class="node-label">Programa de pregrado</div>
@@ -363,11 +419,11 @@ function renderTree(){
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e8f2ec">
           <div style="font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:4px">Sede(s)</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center">
-            ${p.sedes.map(s=>`<span class="sede-chip">📍 ${s}</span>`).join('')}
+            ${p.sedes.map(s=>`<span class="sede-chip">?? ${s}</span>`).join('')}
           </div>
         </div>
       </div>
-    </div>`; // close pregrado node
+    </div>`; 
 
     if(vL.length){
       const colW = 200;
@@ -376,20 +432,17 @@ function renderTree(){
       const totalW = n * colW + (n-1) * gap;
       const centerX = totalW / 2;
 
-      // SVG connector: vertical down + horizontal bar + vertical drops to each column
+      // Conector SVG: bajada vertical + barra horizontal + gotas a cada columna
       const svgH = 48;
       let svgPaths = `<line x1="${centerX}" y1="0" x2="${centerX}" y2="20" stroke="#c0d8c8" stroke-width="2"/>`;
-      // horizontal bar
       if(n > 1){
         const firstX = colW/2;
         const lastX = totalW - colW/2;
         svgPaths += `<line x1="${firstX}" y1="20" x2="${lastX}" y2="20" stroke="#c0d8c8" stroke-width="2"/>`;
       }
-      // drops down to each card
       vL.forEach((_,i)=>{
         const cx = i*(colW+gap) + colW/2;
         svgPaths += `<line x1="${cx}" y1="20" x2="${cx}" y2="${svgH}" stroke="#c0d8c8" stroke-width="2"/>`;
-        // circle at junction
         if(n > 1) svgPaths += `<circle cx="${cx}" cy="20" r="3" fill="#006633"/>`;
       });
 
@@ -420,7 +473,7 @@ function renderTree(){
               ${pll(l.o)}
               <div class="node-label">Especialización</div>
               <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
-              <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
+              <div class="sede-chip">?? ${l.sedes.join(' · ')}</div>
               ${stBadge(l.e, l)}
             </div>
           </div>
@@ -466,8 +519,8 @@ function renderTree(){
             <div class="node-body">
               ${pll(m.o)}
               <div class="node-label">Maestría</div>
-              <div class="node-title">${m.n}</div>
-              <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
+              <div class="node-title${_hasLR(m.id)?' route-link" data-action="show-learning-route" data-esp-id="'+m.id:''}">${m.n}</div>
+              <div class="sede-chip">?? ${m.sedes.join(' · ')}</div>
               ${stBadge(m.e, m)}
             </div>
           </div>
@@ -477,7 +530,7 @@ function renderTree(){
     }
 
   } else {
-    // ── ALL PREGRADOS MODE: side-by-side columns ──
+    // -- MODO TODOS PREGRADOS: columnas lado a lado --
     h+=`<div class="progs-row">`;
     visProgs.forEach(p=>{
       const vL=(Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec'));
@@ -485,7 +538,7 @@ function renderTree(){
       h+=`<div class="pcol">
         ${vline(14)}
         <div class="node node-pregrado">
-          <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✎</button>
+          <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">?</button>
           <div class="node-stripe"></div>
           <div class="node-body">
             <div class="node-label">Programa de pregrado</div>
@@ -493,7 +546,7 @@ function renderTree(){
             <div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec">
               <div style="font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:4px">Sede(s)</div>
               <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center">
-                ${p.sedes.map(s=>`<span class="sede-chip">📍 ${s}</span>`).join('')}
+                ${p.sedes.map(s=>`<span class="sede-chip">?? ${s}</span>`).join('')}
               </div>
             </div>
           </div>
@@ -517,7 +570,7 @@ function renderTree(){
             ${pll(l.o)}
             <div class="node-label">Especialización</div>
             <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
-            <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
+            <div class="sede-chip">?? ${l.sedes.join(' · ')}</div>
             ${stBadge(l.e, l)}
           </div>
         </div>`;
@@ -531,8 +584,8 @@ function renderTree(){
           <div class="node-body">
             ${pll(m.o)}
             <div class="node-label">Maestría</div>
-            <div class="node-title">${m.n}</div>
-            <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
+            <div class="node-title${_hasLR(m.id)?' route-link" data-action="show-learning-route" data-esp-id="'+m.id:''}">${m.n}</div>
+            <div class="sede-chip">\ud83d\udccd ${m.sedes.join(' · ')}</div>
             ${stBadge(m.e, m)}
           </div>
         </div>`;
@@ -542,30 +595,29 @@ function renderTree(){
     h+=`</div>`;
   }
 
-  // DOCTORADO
   if(f.doc&&itemMatch(f.doc,'doc')){
-    const st=getSt(f.doc.e);
+    var docId='doc-'+f.id;
     h+=`
     ${vline(24)}
     <div class="node node-doc">
       <div class="node-body">
         <div style="margin-bottom:5px">${pll(f.doc.o)}</div>
         <div class="node-label">Doctorado</div>
-        <div class="node-title">${f.doc.n}</div>
-        <div class="sede-chip sede-chip-dark">📍 ${f.doc.sedes.join(' · ')}</div>
-        <div class="badge" style="background:${st.bg};color:${st.tx};margin-top:6px"><div class="bdot" style="background:${st.dot}"></div>${f.doc.e}</div>
+        <div class="node-title${_hasLR(docId)?' route-link" data-action="show-learning-route" data-esp-id="'+docId:''}">${f.doc.n}</div>
+        <div class="sede-chip sede-chip-dark">\ud83d\udccd ${f.doc.sedes.join(' · ')}</div>
+        ${stBadge(f.doc.e, f.doc)}
       </div>
     </div>`;
   }
 
   document.getElementById('tree').innerHTML=h;
   }catch(err){
-    document.getElementById('tree').innerHTML='<div class="empty-msg">⚠️ Error al renderizar el árbol. <a href="#" data-action="reset-db" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
+    document.getElementById('tree').innerHTML='<div class="empty-msg">?? Error al renderizar el árbol. <a href="#" data-action="reset-db" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
     console.error('renderTree error:',err);
   }
 }
 
-// ===== TABLE =====
+// ===== TABLA =====
 function renderTabla(){
   const f=AppData.getFacultad(AppState.navigation.curFac);let rows='';
   f.progs.forEach(p=>{
@@ -601,7 +653,7 @@ function renderTabla(){
     :`<tbody><tr><td colspan="7" style="padding:2rem;text-align:center;color:#888">Sin resultados</td></tr></tbody>`;
 }
 
-// ===== SEDE VIEW =====
+// ===== VISTA POR SEDE =====
 function renderSedeView(){
   const f=AppData.getFacultad(AppState.navigation.curFac);const sm={};
   f.progs.forEach(p=>{
@@ -615,7 +667,7 @@ function renderSedeView(){
   if(!sedes.length){document.getElementById('sede-content').innerHTML='<div class="empty-msg">Sin resultados</div>';return;}
   let h='';
   sedes.forEach(s=>{
-    h+=`<div class="sede-card"><div class="sede-name">📍 ${s} <span style="font-size:9px;background:#e6f2eb;color:#006633;padding:1px 6px;border-radius:8px;margin-left:4px">${sm[s].length}</span></div>`;
+    h+=`<div class="sede-card"><div class="sede-name">?? ${s} <span style="font-size:9px;background:#e6f2eb;color:#006633;padding:1px 6px;border-radius:8px;margin-left:4px">${sm[s].length}</span></div>`;
     sm[s].forEach(it=>{
       const st=getSt(it.e);const os=it.o==='V'?'#006633':'#1a5cb0';
       var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
@@ -632,7 +684,7 @@ function renderSedeView(){
 }
 
 
-// ===== PROG FORM =====
+// ===== FORMULARIO DE PROGRAMA =====
 function renderProgForm(){
   var f=AppData.getFacultad(AppState.navigation.curFac),isNew=editingProgId==='__new__';
   var p=isNew?{id:uid(),n:'',sedes:[],lineas:[{id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'V',sedes:[],resp:'',mes:null,ano:null}],mae:[{id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null}]}:f.progs.find(function(x){return x.id===editingProgId;});
@@ -649,30 +701,30 @@ function renderProgForm(){
   function ao(c){return '<option value="">— Año —</option>'+AS.map(function(y){return '<option value="'+y+'"'+(y===c?' selected':'')+'>'+y+'</option>';}).join('');}
   var lH=tmpLineas.map(function(l){
     return '<div class="linea-card" id="lc'+l.id+'">'
-      +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">✕ Quitar</button>'
+      +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">? Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Línea</label><input id="ll'+l.id+'" value="'+(l.l||'')+'" placeholder="Nombre de la línea"></div>'
       +'<div class="field"><label>Tipo</label><select id="lt'+l.id+'"><option'+(l.t==='Profundización 1'?' selected':'')+'>Profundización 1</option><option'+(l.t==='Profundización 2'?' selected':'')+'>Profundización 2</option></select></div></div>'
       +'<div class="grid2"><div class="field"><label>Especialización</label><input id="le'+l.id+'" value="'+(l.esp||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="les'+l.id+'">'+eo(l.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+l.id+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
-      +'<div class="field"><label>👤 Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
+      +'<div class="field"><label>?? Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
+      +'<div class="grid3"><div class="field"><label>?? Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
+      +'<div class="field"><label>?? Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>?? Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var mH=tmpMaes.map(function(m){
     return '<div class="linea-card" id="mc'+m.id+'">'
-      +'<button class="del-btn" data-action="del-mae" data-mae-id="'+m.id+'">✕ Quitar</button>'
+      +'<button class="del-btn" data-action="del-mae" data-mae-id="'+m.id+'">? Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Maestría</label><input id="mn'+m.id+'" value="'+(m.n||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="mes'+m.id+'">'+eo(m.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="mo'+m.id+'"><option value="V"'+(m.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(m.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
-      +'<div class="field"><label>👤 Responsable</label><input id="mresp'+m.id+'" value="'+(m.resp||'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="mmes'+m.id+'">'+mo(m.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"></div></div>'
+      +'<div class="field"><label>?? Responsable</label><input id="mresp'+m.id+'" value="'+(m.resp||'')+'" placeholder="Docente o equipo"></div></div>'
+      +'<div class="grid3"><div class="field"><label>?? Mes</label><select id="mmes'+m.id+'">'+mo(m.mes)+'</select></div>'
+      +'<div class="field"><label>?? Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"><label>?? Enlace</label><input type="url" id="menlace'+m.id+'" value="'+(m.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var h='<div class="modal-overlay"><div class="modal">'
-    +'<div class="modal-title"><span>'+(isNew?'➕':'✎')+'</span>'+(isNew?'Nuevo programa':'Editar — '+p.n)+'</div>'
+    +'<div class="modal-title"><span>'+(isNew?'?':'?')+'</span>'+(isNew?'Nuevo programa':'Editar — '+p.n)+'</div>'
     +'<div class="form-section"><h3>Programa de pregrado</h3>'
       +'<div class="grid2"><div class="field"><label>Nombre</label><input id="pn" value="'+(p.n||'')+'" placeholder="Nombre del pregrado"></div>'
       +'<div class="field"><label>Sedes</label><input id="psedes" value="'+(p.sedes?p.sedes.join(', '):'')+'" placeholder="Ej: Fusagasugá, Chía"></div></div></div>'
@@ -683,19 +735,19 @@ function renderProgForm(){
       +'<div id="maes-container">'+mH+'</div>'
       +'<button data-action="add-mae" style="margin-top:6px;border-color:#C8A43A;color:#8a6d00">+ Agregar maestría</button></div>'
     +'<div class="modal-actions">'
-      +'<button class="btn-green" data-action="save-prog" data-pid="'+p.id+'" data-is-new="'+(isNew?'true':'false')+'">💾 Guardar</button>'
+      +'<button class="btn-green" data-action="save-prog" data-pid="'+p.id+'" data-is-new="'+(isNew?'true':'false')+'">?? Guardar</button>'
       +'<button data-action="cancel-edit">Cancelar</button>'
-      +(isNew?'':'<button class="btn-red" data-action="delete-prog" data-pid="'+p.id+'">🗑 Eliminar</button>')
+      +(isNew?'':'<button class="btn-red" data-action="delete-prog" data-pid="'+p.id+'">?? Eliminar</button>')
     +'</div></div></div>';
   document.getElementById('editor-content').innerHTML=h;
 }
 
 function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpLineas._progId=pid;renderProgForm();}
 function delLinea(lid){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas=tmpLineas.filter(function(l){return l.id!==lid;});tmpLineas._progId=pid;renderProgForm();}
-function addMae(){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes.push({id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null});tmpMaes._progId=pid;renderProgForm();}
+function addMae(){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes.push({id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpMaes._progId=pid;renderProgForm();}
 function delMae(mid){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes=tmpMaes.filter(function(m){return m.id!==mid;});tmpMaes._progId=pid;renderProgForm();}
 function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(function(l){return{id:l.id,l:gv('ll'+l.id)||l.l,t:gv('lt'+l.id)||l.t,esp:gv('le'+l.id)||l.esp,e:gv('les'+l.id),o:gv('lo'+l.id)||l.o,sedes:l.sedes,resp:gv('lresp'+l.id),mes:gi('lmes'+l.id),ano:gi('lano'+l.id),enlaceObtencion:gv('lenlace'+l.id)||null};});tmpLineas._progId=pid;}
-function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id)};});tmpMaes._progId=pid;}
+function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id),enlaceObtencion:gv('menlace'+m.id)||null};});tmpMaes._progId=pid;}
 function saveProg(pid,isNew){
   collectLineas();collectMaes();
   var prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
@@ -738,22 +790,22 @@ function showTab(id){
 function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();}
 
 
-// ===== SNIES LOOKUP MAPS + DOWNLOAD DATABASE =====
-// Extraído a assets/js/modules/export.js (Fase 2)
-// window.downloadDB es definido por export.js via window.*
+// ===== SNIES + EXPORT (extraído a modules/export.js) =====
 
-// ===== INDICADORES =====
-// Extraído a assets/js/modules/indicators.js (Fase 2)
-// window.renderIndicadores es definido por indicators.js via window.*
+// ===== INDICADORES (extraído a modules/indicators.js) =====
 
-// ===== INIT =====
+// ===== RUTAS DE APRENDIZAJE — storage key (debe ir antes de INIT) =====
+var LR_STORAGE_KEY = 'udec_learning_routes';
+
+// ===== INICIALIZACIÓN =====
 loadDB();
+loadLearningRoutes();
 renderFacBar();
 populateSedes();
 renderViews();
-// curFac sync legacy → AppState: manejado por window accessors
+// curFac sincronizado a AppState vía window accessors
 
-// ===== SNIES DATA =====
+// ===== DATOS SNIES =====
 Object.defineProperty(window,'SD',{get:function(){return window.AppState.snies.SD;},set:function(v){window.AppState.snies.SD=v;},configurable:true});
 AppState.snies.SD = {"resumen": [{"AÑO_ARCHIVO": 2020, "INSCRITOS": 319, "ADMITIDOS": 277, "PRIMER_CURSO": 305, "MATRICULADOS": 546, "GRADUADOS": 303, "Hombre": 592.0, "Mujer": 700.0, "T_ABSORCION": 197.1, "T_SELECTIVIDAD": 86.8, "T_GRADUACION": 55.5, "T_PRIMER_CURSO": 55.9, "PCT_H": 45.8, "PCT_M": 54.2}, {"AÑO_ARCHIVO": 2021, "INSCRITOS": 594, "ADMITIDOS": 419, "PRIMER_CURSO": 316, "MATRICULADOS": 466, "GRADUADOS": 296, "Hombre": 637.0, "Mujer": 602.0, "T_ABSORCION": 111.2, "T_SELECTIVIDAD": 70.5, "T_GRADUACION": 63.5, "T_PRIMER_CURSO": 67.8, "PCT_H": 51.4, "PCT_M": 48.6}, {"AÑO_ARCHIVO": 2022, "INSCRITOS": 473, "ADMITIDOS": 425, "PRIMER_CURSO": 317, "MATRICULADOS": 514, "GRADUADOS": 301, "Hombre": 643.0, "Mujer": 764.0, "T_ABSORCION": 120.9, "T_SELECTIVIDAD": 89.9, "T_GRADUACION": 58.6, "T_PRIMER_CURSO": 61.7, "PCT_H": 45.7, "PCT_M": 54.3}, {"AÑO_ARCHIVO": 2023, "INSCRITOS": 424, "ADMITIDOS": 398, "PRIMER_CURSO": 328, "MATRICULADOS": 533, "GRADUADOS": 324, "Hombre": 702.0, "Mujer": 699.0, "T_ABSORCION": 133.9, "T_SELECTIVIDAD": 93.9, "T_GRADUACION": 60.8, "T_PRIMER_CURSO": 61.5, "PCT_H": 50.1, "PCT_M": 49.9}, {"AÑO_ARCHIVO": 2024, "INSCRITOS": 460, "ADMITIDOS": 383, "PRIMER_CURSO": 289, "MATRICULADOS": 403, "GRADUADOS": 306, "Hombre": 454.0, "Mujer": 501.0, "T_ABSORCION": 105.2, "T_SELECTIVIDAD": 83.3, "T_GRADUACION": 75.9, "T_PRIMER_CURSO": 71.7, "PCT_H": 47.5, "PCT_M": 52.5}], "programs": [{"name": "Espec. Educación Ambiental y Desarrollo Comunidad", "nivel": "Especialización", "years": {"2020": {"ins": 61, "adm": 48, "mat": 80, "grad": 85, "tabs": 166.7, "tsel": 78.7, "tgrad": 106.2, "pctH": 48.8, "pctM": 51.2, "brecha": -2.4}, "2021": {"ins": 92, "adm": 65, "mat": 53, "grad": 66, "tabs": 81.5, "tsel": 70.7, "tgrad": 124.5, "pctH": 50.9, "pctM": 49.1, "brecha": 1.8}, "2022": {"ins": 34, "adm": 33, "mat": 47, "grad": 59, "tabs": 142.4, "tsel": 97.1, "tgrad": 125.5, "pctH": 36.2, "pctM": 63.8, "brecha": -27.6}, "2023": {"ins": 15, "adm": 15, "mat": 32, "grad": 19, "tabs": 213.3, "tsel": 100.0, "tgrad": 59.4, "pctH": 34.4, "pctM": 65.6, "brecha": -31.2}, "2024": {"ins": 12, "adm": 8, "mat": 16, "grad": 10, "tabs": 200.0, "tsel": 66.7, "tgrad": 62.5, "pctH": 62.5, "pctM": 37.5, "brecha": 25.0}}}, {"name": "Espec. Gerencia para el Desarrollo Organizacional", "nivel": "Especialización", "years": {"2020": {"ins": 71, "adm": 53, "mat": 99, "grad": 50, "tabs": 186.8, "tsel": 74.6, "tgrad": 50.5, "pctH": 30.3, "pctM": 69.7, "brecha": -39.4}, "2021": {"ins": 206, "adm": 137, "mat": 130, "grad": 45, "tabs": 94.9, "tsel": 66.5, "tgrad": 34.6, "pctH": 46.2, "pctM": 53.8, "brecha": -7.6}, "2022": {"ins": 187, "adm": 181, "mat": 172, "grad": 108, "tabs": 95.0, "tsel": 96.8, "tgrad": 62.8, "pctH": 40.1, "pctM": 59.9, "brecha": -19.8}, "2023": {"ins": 194, "adm": 185, "mat": 187, "grad": 170, "tabs": 101.1, "tsel": 95.4, "tgrad": 90.9, "pctH": 44.4, "pctM": 55.6, "brecha": -11.2}, "2024": {"ins": 174, "adm": 149, "mat": 129, "grad": 144, "tabs": 86.6, "tsel": 85.6, "tgrad": 111.6, "pctH": 42.6, "pctM": 57.4, "brecha": -14.8}}}, {"name": "Espec. Gestión de Sistemas de Información Gerencial", "nivel": "Especialización", "years": {"2020": {"ins": 74, "adm": 71, "mat": 113, "grad": 66, "tabs": 159.2, "tsel": 95.9, "tgrad": 58.4, "pctH": 51.3, "pctM": 48.7, "brecha": 2.6}, "2021": {"ins": 123, "adm": 91, "mat": 85, "grad": 93, "tabs": 93.4, "tsel": 74.0, "tgrad": 109.4, "pctH": 51.8, "pctM": 48.2, "brecha": 3.6}, "2022": {"ins": 112, "adm": 105, "mat": 109, "grad": 66, "tabs": 103.8, "tsel": 93.8, "tgrad": 60.6, "pctH": 56.0, "pctM": 44.0, "brecha": 12.0}, "2023": {"ins": 174, "adm": 164, "mat": 161, "grad": 101, "tabs": 98.2, "tsel": 94.3, "tgrad": 62.7, "pctH": 60.9, "pctM": 39.1, "brecha": 21.8}, "2024": {"ins": 85, "adm": 81, "mat": 84, "grad": 102, "tabs": 103.7, "tsel": 95.3, "tgrad": 121.4, "pctH": 57.1, "pctM": 42.9, "brecha": 14.2}}}, {"name": "Espec. Negocios y Comercio Electrónico", "nivel": "Especialización", "years": {"2020": {"ins": 25, "adm": 24, "mat": 25, "grad": 29, "tabs": 104.2, "tsel": 96.0, "tgrad": 116.0, "pctH": 72.0, "pctM": 28.0, "brecha": 44.0}, "2021": {"ins": 34, "adm": 27, "mat": 24, "grad": 21, "tabs": 88.9, "tsel": 79.4, "tgrad": 87.5, "pctH": 45.8, "pctM": 54.2, "brecha": -8.4}, "2022": {"ins": 20, "adm": 18, "mat": 17, "grad": 22, "tabs": 94.4, "tsel": 90.0, "tgrad": 129.4, "pctH": 64.7, "pctM": 35.3, "brecha": 29.4}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 14, "tabs": 0.0, "tsel": 0.0, "tgrad": 0.0, "pctH": 0.0, "pctM": 0.0, "brecha": 0.0}, "2024": {"ins": 0, "adm": 0, "mat": 0, "grad": 2, "tabs": 0.0, "tsel": 0.0, "tgrad": 0.0, "pctH": 0.0, "pctM": 0.0, "brecha": 0.0}}}, {"name": "Espec. Procesos Pedagógicos Entrenamiento Deportivo", "nivel": "Especialización", "years": {"2020": {"ins": 19, "adm": 14, "mat": 45, "grad": 43, "tabs": 321.4, "tsel": 73.7, "tgrad": 95.6, "pctH": 88.9, "pctM": 11.1, "brecha": 77.8}, "2021": {"ins": 38, "adm": 27, "mat": 30, "grad": 16, "tabs": 111.1, "tsel": 71.1, "tgrad": 53.3, "pctH": 86.7, "pctM": 13.3, "brecha": 73.4}, "2022": {"ins": 17, "adm": 0, "mat": 10, "grad": 22, "tabs": 0.0, "tsel": 0.0, "tgrad": 220.0, "pctH": 70.0, "pctM": 30.0, "brecha": 40.0}, "2023": {"ins": 26, "adm": 23, "mat": 23, "grad": 0, "tabs": 100.0, "tsel": 88.5, "tgrad": 0.0, "pctH": 78.3, "pctM": 21.7, "brecha": 56.6}, "2024": {"ins": 8, "adm": 1, "mat": 8, "grad": 17, "tabs": 800.0, "tsel": 12.5, "tgrad": 212.5, "pctH": 87.5, "pctM": 12.5, "brecha": 75.0}}}, {"name": "Maestría en Ciencias Ambientales", "nivel": "Maestría", "years": {"2020": {"ins": 13, "adm": 11, "mat": 39, "grad": 8, "tabs": 354.5, "tsel": 84.6, "tgrad": 20.5, "pctH": 59.0, "pctM": 41.0, "brecha": 18.0}, "2021": {"ins": 31, "adm": 24, "mat": 27, "grad": 18, "tabs": 112.5, "tsel": 77.4, "tgrad": 66.7, "pctH": 63.0, "pctM": 37.0, "brecha": 26.0}, "2022": {"ins": 43, "adm": 43, "mat": 44, "grad": 10, "tabs": 102.3, "tsel": 100.0, "tgrad": 22.7, "pctH": 59.1, "pctM": 40.9, "brecha": 18.2}, "2023": {"ins": 0, "adm": 0, "mat": 37, "grad": 5, "tabs": 0.0, "tsel": 0.0, "tgrad": 13.5, "pctH": 62.2, "pctM": 37.8, "brecha": 24.4}, "2024": {"ins": 0, "adm": 0, "mat": 14, "grad": 5, "tabs": 0.0, "tsel": 0.0, "tgrad": 35.7, "pctH": 42.9, "pctM": 57.1, "brecha": -14.2}}}, {"name": "Maestría en Educación", "nivel": "Maestría", "years": {"2020": {"ins": 56, "adm": 56, "mat": 145, "grad": 21, "tabs": 258.9, "tsel": 100.0, "tgrad": 14.5, "pctH": 50.3, "pctM": 49.7, "brecha": 0.6}, "2021": {"ins": 70, "adm": 48, "mat": 117, "grad": 37, "tabs": 243.8, "tsel": 68.6, "tgrad": 31.6, "pctH": 56.4, "pctM": 43.6, "brecha": 12.8}, "2022": {"ins": 45, "adm": 33, "mat": 101, "grad": 13, "tabs": 306.1, "tsel": 73.3, "tgrad": 12.9, "pctH": 63.4, "pctM": 36.6, "brecha": 26.8}, "2023": {"ins": 0, "adm": 0, "mat": 65, "grad": 15, "tabs": 0.0, "tsel": 0.0, "tgrad": 23.1, "pctH": 70.8, "pctM": 29.2, "brecha": 41.6}, "2024": {"ins": 0, "adm": 0, "mat": 12, "grad": 26, "tabs": 0.0, "tsel": 0.0, "tgrad": 216.7, "pctH": 50.0, "pctM": 50.0, "brecha": 0.0}}}, {"name": "Doctorado en Ciencias de la Educación", "nivel": "Doctorado", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 15, "adm": 12, "mat": 14, "grad": 0, "tabs": 116.7, "tsel": 80.0, "tgrad": 0.0, "pctH": 50.0, "pctM": 50.0, "brecha": 0.0}, "2023": {"ins": 15, "adm": 11, "mat": 28, "grad": 0, "tabs": 254.5, "tsel": 73.3, "tgrad": 0.0, "pctH": 57.1, "pctM": 42.9, "brecha": 14.2}, "2024": {"ins": 15, "adm": 13, "mat": 37, "grad": 0, "tabs": 284.6, "tsel": 86.7, "tgrad": 0.0, "pctH": 59.5, "pctM": 40.5, "brecha": 19.0}}}, {"name": "Espec. Gerencia para la Transformación Digital", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 68, "adm": 60, "mat": 52, "grad": 0, "tabs": 86.7, "tsel": 88.2, "tgrad": 0.0, "pctH": 65.4, "pctM": 34.6, "brecha": 30.8}}}, {"name": "Espec. Gestión Pública", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 23, "adm": 21, "mat": 11, "grad": 0, "tabs": 52.4, "tsel": 91.3, "tgrad": 0.0, "pctH": 36.4, "pctM": 63.6, "brecha": -27.2}}}, {"name": "Espec. Marketing Digital", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 34, "adm": 33, "mat": 30, "grad": 0, "tabs": 90.9, "tsel": 97.1, "tgrad": 0.0, "pctH": 43.3, "pctM": 56.7, "brecha": -13.4}}}, {"name": "Espec. Agronegocios Sostenibles", "nivel": "Especialización", "years": {"2020": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2021": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2022": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2023": {"ins": 0, "adm": 0, "mat": 0, "grad": 0, "tabs": 0, "tsel": 0, "tgrad": 0, "pctH": 0, "pctM": 0, "brecha": 0}, "2024": {"ins": 14, "adm": 11, "mat": 10, "grad": 0, "tabs": 90.9, "tsel": 78.6, "tgrad": 0.0, "pctH": 60.0, "pctM": 40.0, "brecha": 20.0}}}], "genero": [{"COD_SNIES": 4266, "PROG_CORTO": "Espec. Educación Ambiental y Desarrollo Comunidad", "NIVEL_CORTO": "Especialización", "2020_Hombre": 39, "2020_Mujer": 41, "2021_Hombre": 27, "2021_Mujer": 26, "2022_Hombre": 17, "2022_Mujer": 30, "2023_Hombre": 11, "2023_Mujer": 21, "2024_Hombre": 10, "2024_Mujer": 6}, {"COD_SNIES": 9949, "PROG_CORTO": "Espec. Gerencia para el Desarrollo Organizacional", "NIVEL_CORTO": "Especialización", "2020_Hombre": 30, "2020_Mujer": 69, "2021_Hombre": 60, "2021_Mujer": 70, "2022_Hombre": 69, "2022_Mujer": 103, "2023_Hombre": 83, "2023_Mujer": 104, "2024_Hombre": 55, "2024_Mujer": 74}, {"COD_SNIES": 11324, "PROG_CORTO": "Espec. Procesos Pedagógicos Entrenamiento Deportivo", "NIVEL_CORTO": "Especialización", "2020_Hombre": 40, "2020_Mujer": 5, "2021_Hombre": 26, "2021_Mujer": 4, "2022_Hombre": 7, "2022_Mujer": 3, "2023_Hombre": 18, "2023_Mujer": 5, "2024_Hombre": 7, "2024_Mujer": 1}, {"COD_SNIES": 104239, "PROG_CORTO": "Espec. Negocios y Comercio Electrónico", "NIVEL_CORTO": "Especialización", "2020_Hombre": 18, "2020_Mujer": 7, "2021_Hombre": 11, "2021_Mujer": 13, "2022_Hombre": 11, "2022_Mujer": 6, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 0, "2024_Mujer": 0}, {"COD_SNIES": 104968, "PROG_CORTO": "Maestría en Educación", "NIVEL_CORTO": "Maestría", "2020_Hombre": 73, "2020_Mujer": 72, "2021_Hombre": 66, "2021_Mujer": 51, "2022_Hombre": 64, "2022_Mujer": 37, "2023_Hombre": 46, "2023_Mujer": 19, "2024_Hombre": 6, "2024_Mujer": 6}, {"COD_SNIES": 105093, "PROG_CORTO": "Maestría en Ciencias Ambientales", "NIVEL_CORTO": "Maestría", "2020_Hombre": 23, "2020_Mujer": 16, "2021_Hombre": 17, "2021_Mujer": 10, "2022_Hombre": 26, "2022_Mujer": 18, "2023_Hombre": 23, "2023_Mujer": 14, "2024_Hombre": 6, "2024_Mujer": 8}, {"COD_SNIES": 105401, "PROG_CORTO": "Espec. Gestión de Sistemas de Información Gerencial", "NIVEL_CORTO": "Especialización", "2020_Hombre": 58, "2020_Mujer": 55, "2021_Hombre": 44, "2021_Mujer": 41, "2022_Hombre": 61, "2022_Mujer": 48, "2023_Hombre": 98, "2023_Mujer": 63, "2024_Hombre": 48, "2024_Mujer": 36}, {"COD_SNIES": 110008, "PROG_CORTO": "Doctorado en Ciencias de la Educación", "NIVEL_CORTO": "Doctorado", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 7, "2022_Mujer": 7, "2023_Hombre": 16, "2023_Mujer": 12, "2024_Hombre": 22, "2024_Mujer": 15}, {"COD_SNIES": 115949, "PROG_CORTO": "Espec. Gerencia para la Transformación Digital", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 34, "2024_Mujer": 18}, {"COD_SNIES": 116475, "PROG_CORTO": "Espec. Gestión Pública", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 4, "2024_Mujer": 7}, {"COD_SNIES": 116654, "PROG_CORTO": "Espec. Marketing Digital", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 13, "2024_Mujer": 17}, {"COD_SNIES": 116771, "PROG_CORTO": "Espec. Agronegocios Sostenibles", "NIVEL_CORTO": "Especialización", "2020_Hombre": 0, "2020_Mujer": 0, "2021_Hombre": 0, "2021_Mujer": 0, "2022_Hombre": 0, "2022_Mujer": 0, "2023_Hombre": 0, "2023_Mujer": 0, "2024_Hombre": 6, "2024_Mujer": 4}]};
 Object.defineProperty(window,'_snFac',{get:function(){return window.AppState.snies.fac;},set:function(v){window.AppState.snies.fac=v;},configurable:true});
@@ -783,17 +835,14 @@ function renderSNIES(){
     var y24=prog.years['2024'],y23=prog.years['2023'];
     var nivCol={'Especialización':'#3aaa72','Maestría':'#C8A43A','Doctorado':'#0d3d22'};
     h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+prog.name+'</div><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+prog.nivel+'</span></div>';
-    // KPIs
     h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">';
     var kpis=[['Matriculados 2024',fmt(y24.mat),'vs '+fmt(y23.mat)+' en 2023',fc],['Graduados 2024',fmt(y24.grad),'vs '+fmt(y23.grad)+' en 2023','#C8A43A'],['Inscritos 2024',fmt(y24.ins),'vs '+fmt(y23.ins)+' en 2023','#185FA5'],['Admitidos 2024',fmt(y24.adm),'vs '+fmt(y23.adm)+' en 2023','#0891b2']];
     kpis.forEach(function(k){h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;border-left:4px solid '+k[3]+';padding:12px 14px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:5px">'+k[0]+'</div><div style="font-size:26px;font-weight:800;color:'+k[3]+';font-family:monospace">'+k[1]+'</div><div style="font-size:10px;color:#888;margin-top:3px">'+k[2]+'</div></div>';});
     h+='</div>';
-    // Charts area
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden"><div style="padding:10px 14px;border-bottom:1px solid #f0f4f0;font-size:10px;font-weight:700;color:'+fc+';text-transform:uppercase">Flujo estudiantil 2020–2024</div><div style="padding:12px;height:220px"><canvas id="sn-flujo"></canvas></div></div>';
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden"><div style="padding:10px 14px;border-bottom:1px solid #f0f4f0;font-size:10px;font-weight:700;color:#C8A43A;text-transform:uppercase">Tasas indicadores %</div><div style="padding:12px;height:220px"><canvas id="sn-tasas"></canvas></div></div>';
     h+='</div>';
-    // Tabla historica
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden">';
     h+='<div style="padding:10px 14px;background:'+fc+';color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Histórico 2020–2024 · '+prog.name+'</div>';
     h+='<table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+fc+'22">';
@@ -803,7 +852,6 @@ function renderSNIES(){
     h+='</tbody></table></div>';
     h+='</div>';
     wrap.innerHTML=h;
-    // Charts
     setTimeout(function(){
       var lo={responsive:true,maintainAspectRatio:false,animation:{duration:500},plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:8}},tooltip:{mode:'index',intersect:false}}};
       function ds(lbl,data,color,type,fill){return{type:type||'bar',label:lbl,data:data,backgroundColor:type==='line'?'transparent':color+'bb',borderColor:color,borderWidth:2,tension:.4,fill:fill||false,pointRadius:type==='line'?4:0,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,borderRadius:type==='bar'?4:0};}
@@ -821,9 +869,9 @@ function renderSNIES(){
 }
 function snSetFac(f){_snFac=f;_snProg=null;renderSNIES();}
 function snSetProg(p){_snProg=p;renderSNIES();}
-// exportSNIES extraído a assets/js/modules/export.js (Fase 2)
+// exportSNIES (extraído a modules/export.js)
 
-// ===== PIPELINE =====
+// ===== ESTADO DE DESARROLLO =====
 function renderPipeline(){
   var wrap=document.getElementById('pipeline-content');
   if(!wrap) return;
@@ -857,7 +905,7 @@ function renderPipeline(){
   function nivBadge(n){return '<span style="background:'+(nivCol[n]||'#888')+';color:#fff;padding:2px 8px;border-radius:7px;font-size:9px;font-weight:700">'+n+'</span>';}
   function tabla(items,color){
     if(!items.length) return '<div style="padding:1.5rem;text-align:center;color:#ccc;font-style:italic;font-size:11px">Sin programas</div>';
-    var t='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+color+';color:#fff"><th style="padding:8px 12px;text-align:left">Facultad</th><th style="padding:8px;text-align:center">Nivel</th><th style="padding:8px 10px;text-align:left">Programa</th><th style="padding:8px 10px;text-align:left">Estado</th><th style="padding:8px 10px;text-align:left">👤 Responsable</th><th style="padding:8px;text-align:center">📅 Inicio</th></tr></thead><tbody>';
+    var t='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+color+';color:#fff"><th style="padding:8px 12px;text-align:left">Facultad</th><th style="padding:8px;text-align:center">Nivel</th><th style="padding:8px 10px;text-align:left">Programa</th><th style="padding:8px 10px;text-align:left">Estado</th><th style="padding:8px 10px;text-align:left">?? Responsable</th><th style="padding:8px;text-align:center">?? Inicio</th></tr></thead><tbody>';
     items.forEach(function(p,i){
       var tri=getTri(p.mes);
       var fecha=p.mes&&p.ano?'<span style="background:'+(TRI_BG[tri]||'#f5f5f5')+';color:'+(TRI_COL[tri]||'#555')+';padding:2px 7px;border-radius:7px;font-size:9px;font-weight:700">'+MESES[p.mes]+' '+p.ano+'</span>':'<span style="color:#ccc;font-style:italic;font-size:9px">Sin fecha</span>';
@@ -872,7 +920,6 @@ function renderPipeline(){
     });
     return t+'</tbody></table></div>';
   }
-  // Timeline
   function buildTimeline(items){
     var byYearTri={};
     items.forEach(function(p){if(!p.ano||!p.mes)return;var k=p.ano+'|'+getTri(p.mes);if(!byYearTri[k]){byYearTri[k]={year:p.ano,tri:getTri(p.mes),items:[]};}byYearTri[k].items.push(p);});
@@ -897,7 +944,7 @@ function renderPipeline(){
               +'</div>'
               +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
                 +'<span style="background:'+(nivCol[p.nivel]||'#888')+'22;color:'+(nivCol[p.nivel]||'#888')+';padding:1px 7px;border-radius:6px;font-size:8px;font-weight:700">'+p.nivel+'</span>'
-                +(p.resp?'<span style="font-size:9px;color:#555">👤 '+p.resp+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
+                +(p.resp?'<span style="font-size:9px;color:#555">?? '+p.resp+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
               +'</div>'
               +'<div style="margin-top:3px"><span style="font-size:9px;color:'+estCol(p.estado)+';font-weight:600">'+p.estado+'</span> <span style="font-size:9px;color:#aaa">· '+p.fac+'</span></div>'
               +'</div>';
@@ -920,7 +967,7 @@ function renderPipeline(){
       +'<div style="background:'+bg+';padding:13px 16px;border-bottom:2px solid '+col+';display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="'+id+'"'
         +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">'+ic+'</div>'
         +'<div><div style="font-size:13px;font-weight:700;color:'+col+'">'+titulo+'</div><div style="font-size:10px;color:#666;margin-top:1px">'+sub+'</div></div></div>'
-        +'<div style="display:flex;align-items:center;gap:10px"><span style="background:'+col+';color:#fff;border-radius:20px;padding:3px 14px;font-size:13px;font-weight:700">'+items.length+'</span><span id="icon-'+id+'" style="color:'+col+';font-size:16px;font-weight:700">▼</span></div>'
+        +'<div style="display:flex;align-items:center;gap:10px"><span style="background:'+col+';color:#fff;border-radius:20px;padding:3px 14px;font-size:13px;font-weight:700">'+items.length+'</span><span id="icon-'+id+'" style="color:'+col+';font-size:16px;font-weight:700">?</span></div>'
       +'</div>'
       +'<div id="'+id+'" style="display:none">'+tabla(items,col)+'</div>'
       +'</div>';
@@ -928,41 +975,43 @@ function renderPipeline(){
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:15px;font-weight:700;color:#1a2e1a;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:22px;background:#006633;border-radius:2px;display:inline-block"></span>Estado de desarrollo — Programas de posgrado</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:1.2rem">'
-    +kpi('✅','Vigente',grupos.vigente.length,G)
-    +kpi('📤','Radicado MEN',grupos.radicado.length,BL)
-    +kpi('🔨','En construcción',grupos.construccion.length,AM)
-    +kpi('📐','Por construir',grupos.porConstruir.length,OR)
-    +kpi('❌','Negado MEN',grupos.negado.length,RD)
-    +kpi('⚠️','Reclamación',grupos.reclamacion.length,'#dc2626')
+    +kpi('?','Vigente',grupos.vigente.length,G)
+    +kpi('??','Radicado MEN',grupos.radicado.length,BL)
+    +kpi('??','En construcción',grupos.construccion.length,AM)
+    +kpi('??','Por construir',grupos.porConstruir.length,OR)
+    +kpi('?','Negado MEN',grupos.negado.length,RD)
+    +kpi('??','Reclamación',grupos.reclamacion.length,'#dc2626')
   +'</div>';
-  // Timeline
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
     +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="timeline"'
-      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">📅</span><div><div style="font-size:13px;font-weight:700;color:#fff">Cronograma por trimestre</div><div style="font-size:10px;color:rgba(200,164,58,.8)">Programas en desarrollo con fecha asignada · '+conFecha.length+' programas</div></div></div>'
-      +'<span id="icon-timeline" style="color:#C8A43A;font-size:16px;font-weight:700">▼</span>'
+      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">??</span><div><div style="font-size:13px;font-weight:700;color:#fff">Cronograma por trimestre</div><div style="font-size:10px;color:rgba(200,164,58,.8)">Programas en desarrollo con fecha asignada · '+conFecha.length+' programas</div></div></div>'
+      +'<span id="icon-timeline" style="color:#C8A43A;font-size:16px;font-weight:700">?</span>'
     +'</div>'
     +'<div id="timeline">'+buildTimeline(conFecha)+'</div>'
   +'</div>';
-  h+=sec('🔨','En construcción',grupos.construccion.length+' programas con desarrollo activo',grupos.construccion,AM,'#fffdf5');
-  h+=sec('📐','Por construir',grupos.porConstruir.length+' programas identificados',grupos.porConstruir,OR,'#fff9f0');
-  h+=sec('📤','Radicado MEN',grupos.radicado.length+' programas en evaluación',grupos.radicado,BL,'#f0f6ff');
-  h+=sec('⚠️','En reclamación',grupos.reclamacion.length+' con observaciones del MEN',grupos.reclamacion,'#dc2626','#fff8f8');
-  h+=sec('❌','Negado MEN',grupos.negado.length+' con resolución negativa',grupos.negado,RD,'#fff5f5');
-  h+=sec('✅','Vigente',grupos.vigente.length+' programas activos con registro',grupos.vigente,G,'#f0fdf4');
+  h+=sec('??','En construcción',grupos.construccion.length+' programas con desarrollo activo',grupos.construccion,AM,'#fffdf5');
+  h+=sec('??','Por construir',grupos.porConstruir.length+' programas identificados',grupos.porConstruir,OR,'#fff9f0');
+  h+=sec('??','Radicado MEN',grupos.radicado.length+' programas en evaluación',grupos.radicado,BL,'#f0f6ff');
+  h+=sec('??','En reclamación',grupos.reclamacion.length+' con observaciones del MEN',grupos.reclamacion,'#dc2626','#fff8f8');
+  h+=sec('?','Negado MEN',grupos.negado.length+' con resolución negativa',grupos.negado,RD,'#fff5f5');
+  h+=sec('?','Vigente',grupos.vigente.length+' programas activos con registro',grupos.vigente,G,'#f0fdf4');
   h+='</div>';
   wrap.innerHTML=h;
 }
-function toggleSec(id){var el=document.getElementById(id),ic=document.getElementById('icon-'+id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';if(ic)ic.textContent=open?'▼':'▲';}
+function toggleSec(id){var el=document.getElementById(id),ic=document.getElementById('icon-'+id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';if(ic)ic.textContent=open?'?':'?';}
 
 // ===== EDITOR CON SELECTOR DE FACULTAD =====
-// Versión ACTIVA — sombrea a renderEditor en línea 364.
+// Versión ACTIVA — sombrea a renderEditor legacy.
 // TODO [MVC]: unificar con la implementación legacy en Fase 3.
 function renderEditor(){
   var f=AppData.getFacultad(AppState.navigation.curFac);
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
-  var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
+  var _tab=window._lrEditorTab||'programas';
   var h='<div style="padding:1rem">';
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button></div></div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+(_tab==='rutas'?'<!-- Crear ruta desde sección Sin ruta -->':'<button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">? Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button>')+'</div></div>';
+  h+='<div style="display:flex;gap:0;margin-bottom:1rem;border-bottom:2px solid #e0ece4"><button data-action="lr-set-tab" data-tab="programas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='programas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='programas'?'#006633':'transparent')+';margin-bottom:-2px">?? Programas</button><button data-action="lr-set-tab" data-tab="rutas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='rutas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='rutas'?'#006633':'transparent')+';margin-bottom:-2px">?? Rutas de aprendizaje</button></div>';
+  if(_tab==='rutas'){h+=_lrRenderList();h+='</div>';document.getElementById('editor-content').innerHTML=h;return;}
+  var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Selecciona la facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
   h+='<div style="background:#006633;border-radius:10px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12px;font-weight:700;color:#fff">'+f.name+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">'+f.progs.length+' programa(s)</div></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:1.5rem">';
@@ -970,47 +1019,48 @@ function renderEditor(){
     var st=cbs(p.lineas.concat(p.mae));
     var cr=p.lineas.concat(p.mae).filter(function(x){return x.resp;}).length;
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden">'
-      +'<div style="background:#006633;padding:11px 14px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#fff">'+p.n+'</div><div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">'+p.lineas.length+' especialización(es) · '+p.mae.length+' maestría(s)</div></div><div style="font-size:15px">🎓</div></div>'
+      +'<div style="background:#006633;padding:11px 14px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#fff">'+p.n+'</div><div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">'+p.lineas.length+' especialización(es) · '+p.mae.length+' maestría(s)</div></div><div style="font-size:15px">??</div></div>'
       +'<div style="padding:10px 14px">'
         +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">'
-          +(st.v?'<span style="background:#e6f2eb;color:#006633;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">✅ '+st.v+' vigente</span>':'')
-          +(st.c?'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">🔨 '+st.c+' en proceso</span>':'')
-          +(st.p?'<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">📐 '+st.p+' por construir</span>':'')
-          +(cr?'<span style="background:#e6f0fb;color:#185FA5;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">👤 '+cr+' con responsable</span>':'<span style="background:#f5f5f5;color:#aaa;padding:2px 8px;border-radius:8px;font-size:9px">Sin responsable</span>')
+          +(st.v?'<span style="background:#e6f2eb;color:#006633;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">? '+st.v+' vigente</span>':'')
+          +(st.c?'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">?? '+st.c+' en proceso</span>':'')
+          +(st.p?'<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">?? '+st.p+' por construir</span>':'')
+          +(cr?'<span style="background:#e6f0fb;color:#185FA5;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">?? '+cr+' con responsable</span>':'<span style="background:#f5f5f5;color:#aaa;padding:2px 8px;border-radius:8px;font-size:9px">Sin responsable</span>')
         +'</div>'
         +'<div style="font-size:10px;color:#666;margin-bottom:10px">'
           +p.lineas.slice(0,3).map(function(l){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#3aaa72;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.esp+'</span>'+(l.mes&&l.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][l.mes]+' '+l.ano+'</span>':'')+'</div>';}).join('')
           +(p.lineas.length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+(p.lineas.length-3)+' más...</div>':'')
           +p.mae.slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.n+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
         +'</div>'
-        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">✎ Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">🗑</button></div>'
+        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">? Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">??</button></div>'
       +'</div></div>';
   });
   h+='</div>';
   // Doctorado colapsable
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
     +'<div style="background:#0d3d22;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-doc-form">'
-      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px">🏆</span><div><div style="font-size:12px;font-weight:700;color:#fff">Doctorado de la facultad</div><div style="font-size:10px;color:rgba(200,164,58,.8);margin-top:1px">'+(f.doc?f.doc.n:'Sin doctorado — haz clic para agregar')+'</div></div></div>'
-      +'<span id="doc-toggle-icon" style="color:#C8A43A;font-size:18px;font-weight:700">▼</span>'
+      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px">??</span><div><div style="font-size:12px;font-weight:700;color:#fff">Doctorado de la facultad</div><div style="font-size:10px;color:rgba(200,164,58,.8);margin-top:1px">'+(f.doc?f.doc.n:'Sin doctorado — haz clic para agregar')+'</div></div></div>'
+      +'<span id="doc-toggle-icon" style="color:#C8A43A;font-size:18px;font-weight:700">?</span>'
     +'</div>'
     +'<div id="doc-form-body" style="padding:16px;display:none">'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Nombre del doctorado</label><input id="doc-name" value="'+(f.doc?f.doc.n:'')+'" placeholder="Nombre del doctorado"></div><div class="field"><label>Estado actual</label><input id="doc-estado" value="'+(f.doc?f.doc.e:'')+'" placeholder="Ej: En construcción"></div></div>'
-      +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>👤 Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>📅 Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>📅 Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
-      +'<button class="btn-green" data-action="save-doc">💾 Guardar doctorado</button>'
+      +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>?? Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
+      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>?? Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>?? Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>\u{1f517} Enlace</label><input type="url" id="doc-enlace" value="'+(f.doc&&f.doc.enlaceObtencion?f.doc.enlaceObtencion:'')+'\" placeholder="URL del programa"></div><div class="field"></div></div>'
+      +'<button class="btn-green" data-action="save-doc">?? Guardar doctorado</button>'
     +'</div>'
   +'</div>';
   h+='</div>';
   document.getElementById('editor-content').innerHTML=h;
 }
-function toggleDocForm(){var b=document.getElementById('doc-form-body'),ic=document.getElementById('doc-toggle-icon');if(!b)return;var o=b.style.display!=='none';b.style.display=o?'none':'block';if(ic)ic.textContent=o?'▼':'▲';}
+function toggleDocForm(){var b=document.getElementById('doc-form-body'),ic=document.getElementById('doc-toggle-icon');if(!b)return;var o=b.style.display!=='none';b.style.display=o?'none':'block';if(ic)ic.textContent=o?'?':'?';}
 function saveDoc(){
   var n=document.getElementById('doc-name').value.trim();
   if(!n){AppData.saveDocumento(curFac,null);}
   else{
     var mes=parseInt(document.getElementById('doc-mes').value)||null;
     var ano=parseInt(document.getElementById('doc-ano').value)||null;
-    AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano});
+    AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano,enlaceObtencion:document.getElementById('doc-enlace')?document.getElementById('doc-enlace').value.trim():null});
   }
   toast('Doctorado guardado');renderViews();renderEditor();
 }
@@ -1022,11 +1072,11 @@ function deleteFac(){
   });
 }
 function openNewFac(){
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">💾 Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>?</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">?? Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
 }
 function openEditFac(){
   var f=AppData.getFacultad(curFac);
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✎</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+(f?f.name:'')+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑 Eliminar facultad</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>?</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+(f?f.name:'')+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">?? Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">?? Eliminar facultad</button></div></div></div>';
 }
 function saveFac(isNew){
   var n=document.getElementById('fac-name').value.trim();
@@ -1038,3 +1088,254 @@ function saveFac(isNew){
 function openNewProg(){editingProgId='__new__';tmpLineas=[];tmpMaes=[];renderProgForm();}
 function openEditProg(pid){showTab('editor');editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
 
+// ===== EDITOR DE RUTAS DE APRENDIZAJE =====
+var _lrEditorTab = 'programas';
+function _lrSetTab(tab){ _lrEditorTab=tab; renderEditor(); }
+
+function _lrRenderList(){
+  var lr=window.__LEARNING_ROUTES||{};
+  var allProgs=_getAllAcademicPrograms();
+  var withRoute=[], withoutRoute=[];
+  allProgs.forEach(function(p){
+    if(lr[p.id]) withRoute.push(p);
+    else withoutRoute.push(p);
+  });
+  var h='';
+  h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">'
+    +'<div><div style="font-size:12px;font-weight:700;color:#333">'+withRoute.length+' rutas activas</div>'
+    +'<div style="font-size:10px;color:#999;margin-top:2px">'+withoutRoute.length+' programa(s) sin ruta</div></div>'
+    +'<button data-action="restore-default-routes" style="background:none;border:1px solid #e0ece4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">Restaurar por defecto</button>'
+    +'</div>';
+  if(withRoute.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#006633;margin-bottom:8px;padding:0 4px">\u25a0 CON RUTA ('+withRoute.length+')</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">';
+    withRoute.forEach(function(p){
+      var e=lr[p.id];
+      var lrCred=e.semesters.reduce(function(t,s){return t+(s.subjects||[]).reduce(function(tt,sj){return tt+(sj.credits||0);},0);},0);
+      var ts=e.semesters.reduce(function(t,s){return t+(s.subjects||[]).length;},0);
+      var type=e.type||p.type||'especializacion';
+      h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+e.espName+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+p.id+' · '+e.semesters.length+' semestre(s) · '+lrCred+' créditos · '+ts+' materia(s)</div></div>'
+        +'<div style="display:flex;gap:6px;flex-shrink:0">'
+        +'<button data-action="lr-edit-route" data-esp-id="'+p.id+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\u270e Editar</button>'
+        +'<button data-action="lr-preview-route" data-esp-id="'+p.id+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+        +'<button data-action="lr-delete-route" data-esp-id="'+p.id+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\uddd1</button></div>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  if(withoutRoute.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#999;margin-bottom:8px;padding:0 4px">\u25a0 SIN RUTA ('+withoutRoute.length+')</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px">';
+    withoutRoute.forEach(function(p){
+      h+='<div style="background:#fafcfa;border-radius:10px;border:1px solid #e8f0ec;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:0.85">'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555">'+_getTypeBadge(p.type)+p.name+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">'+p.facName+(p.progName?' · '+p.progName:'')+'</div></div>'
+        +'<button data-action="create-route-for-prog" data-prog-id="'+p.id+'" data-prog-name="'+p.name.replace(/"/g,'&quot;')+'" data-prog-type="'+p.type+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta</button>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  if(!withRoute.length && !withoutRoute.length){
+    h+='<div style="text-align:center;padding:2rem;color:#999">No hay programas académicos disponibles</div>';
+  }
+  return h;
+}
+
+function _lrEditRoute(progId, prefill){
+  _lrEditingId=progId; renderEditor();
+  var lr=window.__LEARNING_ROUTES||{};
+  var e=lr[progId];
+  var isNew=!e;
+  var route=isNew
+    ? { espName:(prefill&&prefill.name)||'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentación',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
+    : JSON.parse(JSON.stringify(e));
+  var type=route.type||'especializacion';
+  var h='<div style="padding:1rem">';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">'
+    +'<button data-action="lr-back-to-list" style="background:none;border:none;font-size:16px;cursor:pointer;color:#666">\u2190</button>'
+    +_getTypeBadge(type)+'<div style="font-size:14px;font-weight:700;color:#006633">'+(isNew?'Nueva ruta':'Editar ruta')+'</div></div>';
+  h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'">';
+  h+='<div class="grid2" style="margin-bottom:12px">';
+  h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especialización en..." style="width:100%"></div>';
+  h+='<div class="field"><label>ID</label><div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666">'+progId+'</div></div>';
+  h+='</div>';
+  var tc=0; route.semesters.forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
+  h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
+    +'<span style="font-weight:700;color:#006633">Total créditos: <span id="lr-total-credits">'+tc+'</span></span>'
+    +'<span style="color:#999">·</span>'
+    +'<span style="color:#666"><span id="lr-sem-count">'+route.semesters.length+'</span> semestre(s)</span></div>';
+  h+='<div id="lr-semesters">';
+  route.semesters.forEach(function(sem,si){
+    h+='<div class="lr-semester" data-si="'+si+'">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<span style="font-size:12px;font-weight:700;color:#333">Semestre '+(si+1)+'</span>'
+      +'<div style="flex:1"></div>'
+      +(route.semesters.length>1?'<button data-action="lr-delete-semester" data-si="'+si+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:4px 8px;font-size:9px;font-weight:700;cursor:pointer">Eliminar semestre</button>':'')
+      +'</div>';
+    h+='<div class="grid2" style="margin-bottom:8px">'
+      +'<div class="field"><label>Título</label><input class="lr-sem-title" value="'+(sem.title||'')+'" style="width:100%"></div>'
+      +'<div class="field"><label>Tipo</label><select class="lr-sem-type" style="width:100%"><option value="Fundamentación" '+(sem.type==='Fundamentación'?'selected':'')+'>Fundamentación</option><option value="Profundización" '+(sem.type==='Profundización'?'selected':'')+'>Profundización</option></select></div>'
+      +'</div>';
+    var semInitCr=(sem.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0);
+    h+='<div class="field" style="margin-bottom:8px"><label>Créditos del semestre</label><span class="lr-sem-credits-display" style="display:inline-block;padding:6px 10px;background:#f0f7f2;border-radius:6px;font-size:11px;color:#006633;font-weight:600">'+semInitCr+'</span><span style="font-size:10px;color:#999;margin-left:6px">calculado automáticamente</span></div>';
+    h+='<div class="lr-subjects" data-si="'+si+'" style="margin-bottom:6px">';
+    sem.subjects.forEach(function(subj,ji){
+      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px">'
+        +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
+        +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
+        +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
+        +'<button data-action="lr-delete-subject" data-si="'+si+'" data-ji="'+ji+'" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px" title="Eliminar materia">×</button>'
+        +'</div>';
+    });
+    h+='</div>';
+    h+='<button data-action="lr-add-subject" data-si="'+si+'" style="padding:4px 10px;background:none;border:1px dashed #ccc;border-radius:4px;cursor:pointer;font-size:9px;color:#999;width:100%">+ Agregar materia</button>';
+    h+='</div>';
+  });
+  h+='</div>';
+  h+='<button data-action="lr-add-semester" style="width:100%;padding:10px;background:#f5f5f5;border:1px dashed #ccc;border-radius:8px;cursor:pointer;font-size:11px;color:#666;margin-bottom:1rem">+ Agregar semestre</button>';
+  h+='<div style="display:flex;gap:8px">'
+    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+progId+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
+    +'<button data-action="lr-preview-route" data-esp-id="'+progId+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+    +'<button data-action="lr-back-to-list" style="background:#f5f5f5;color:#666;border:1px solid #ddd;border-radius:8px;padding:8px 16px;font-size:11px;cursor:pointer">Cancelar</button>'
+    +'</div>';
+  h+='</div></div>';
+  document.getElementById('editor-content').innerHTML=h;
+  _lrRecalcCredits();
+}
+
+function _lrCollectFormData(){
+  var c=document.getElementById('lr-form-container'); if(!c) return null;
+  var espId=c.dataset.espId;
+  var type=c.dataset.progType||'especializacion';
+  var espName=document.getElementById('lr-esp-name')?.value.trim();
+  if(!espName){ toast('Escribe el nombre del programa'); return null; }
+  var sems=[]; var totalCr=0;
+  document.querySelectorAll('.lr-semester').forEach(function(el){
+    var t=el.querySelector('.lr-sem-title')?.value.trim()||'';
+    var tp=el.querySelector('.lr-sem-type')?.value||'Fundamentación';
+    var subs=[];
+    el.querySelectorAll('.lr-subject').forEach(function(s){
+      var st=s.querySelector('.lr-subj-name')?.value.trim()||'';
+      var sc=parseInt(s.querySelector('.lr-subj-credits')?.value)||0;
+      var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
+      if(st) subs.push({title:st,credits:sc,homologa:sh});
+    });
+    var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
+    sems.push({title:t,type:tp,credits:cr,subjects:subs});
+    totalCr+=cr;
+  });
+  return {espName:espName,espId:espId,type:type,credits:totalCr,semesters:sems};
+}
+
+function _lrRecalcCredits(){
+  var tc=0; document.querySelectorAll('.lr-subj-credits').forEach(function(i){ tc+=parseInt(i.value)||0; });
+  var el=document.getElementById('lr-total-credits'); if(el) el.textContent=tc;
+}
+
+function _lrSaveRoute(espId){
+  var data=_lrCollectFormData(); if(!data) return;
+  var id=data.espId;
+  window.__LEARNING_ROUTES[id]={
+    id:'lr-'+id.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
+    espId:id, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
+  };
+  toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); renderViews();
+}
+
+function _lrDeleteRoute(espId){
+  if(!window.__LEARNING_ROUTES[espId]){ toast('Ruta no encontrada'); return; }
+  showConfirm('Eliminar ruta','¿Eliminar la ruta de <strong>'+(window.__LEARNING_ROUTES[espId].espName||espId)+'</strong>?',function(){
+    delete window.__LEARNING_ROUTES[espId]; saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); renderViews();
+  });
+}
+
+function _lrAddSemester(){
+  var data=_lrCollectFormData(); if(!data) return;
+  var n=data.semesters.length+1;
+  data.semesters.push({title:'Semestre '+n,type:'Profundización',credits:10,subjects:[{title:'',credits:2,homologa:false}]});
+  _rerenderForm(data,data.espId);
+}
+
+function _lrDeleteSemester(si){
+  var data=_lrCollectFormData(); if(!data) return;
+  if(data.semesters.length<=1){ toast('Debe haber al menos un semestre'); return; }
+  data.semesters.splice(si,1);
+  _rerenderForm(data,data.espId);
+}
+
+function _lrAddSubject(si){
+  var data=_lrCollectFormData(); if(!data) return;
+  if(!data.semesters[si]){ toast('Semestre no encontrado'); return; }
+  data.semesters[si].subjects.push({title:'',credits:2,homologa:false});
+  _rerenderForm(data,data.espId);
+}
+
+function _lrDeleteSubject(si,ji){
+  var data=_lrCollectFormData(); if(!data) return;
+  if(!data.semesters[si]){ toast('Semestre no encontrado'); return; }
+  if(data.semesters[si].subjects.length<=1){ toast('Debe haber al menos una materia'); return; }
+  data.semesters[si].subjects.splice(ji,1);
+  _rerenderForm(data,data.espId);
+}
+
+function _rerenderForm(data,espId){
+  window.__LEARNING_ROUTES[espId]={
+    id:'lr-'+espId.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
+    espId:espId, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
+  };
+  _lrEditRoute(espId);
+}
+
+function _lrPreviewRoute(espId){
+  var lr=window.__LEARNING_ROUTES||{};
+  if(lr[espId]){
+    openLearningRouteModal(espId);
+  } else {
+    var data=_lrCollectFormData(); if(!data) return;
+    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
+  }
+}
+
+// ===== PERSISTENCIA (localStorage) =====
+// LR_STORAGE_KEY definido antes de INIT (ver arriba)
+
+function loadLearningRoutes(){
+  // Guardar defaults originales la primera vez
+  if(!window.__LEARNING_ROUTES_DEFAULT && window.__LEARNING_ROUTES){
+    window.__LEARNING_ROUTES_DEFAULT = JSON.parse(JSON.stringify(window.__LEARNING_ROUTES));
+  }
+  var stored = localStorage.getItem(LR_STORAGE_KEY);
+  if(stored){
+    try {
+      var parsed = JSON.parse(stored);
+      if(parsed && typeof parsed === 'object'){
+        window.__LEARNING_ROUTES = parsed;
+        return;
+      }
+    } catch(e){}
+  }
+  // Sin stored data: mantener lo que vino de learning-routes.js
+}
+
+function saveLearningRoutes(){
+  try {
+    localStorage.setItem(LR_STORAGE_KEY, JSON.stringify(window.__LEARNING_ROUTES || {}));
+  } catch(e){}
+}
+
+function restoreDefaultRoutes(){
+  showConfirm('Restaurar rutas', '¿Restaurar rutas de aprendizaje por defecto? Se perderán los cambios personalizados.', function(){
+    localStorage.removeItem(LR_STORAGE_KEY);
+    if(window.__LEARNING_ROUTES_DEFAULT){
+      window.__LEARNING_ROUTES = JSON.parse(JSON.stringify(window.__LEARNING_ROUTES_DEFAULT));
+    }
+    saveLearningRoutes();
+    renderEditor();
+    toast('Rutas restauradas');
+  });
+}
+
+// Inicializar desde localStorage (sobrescribe learning-routes.js si hay datos guardados)
+// Nota: loadLearningRoutes() se llama al inicio, tras loadDB(), para que renderViews() vea las rutas guardadas.

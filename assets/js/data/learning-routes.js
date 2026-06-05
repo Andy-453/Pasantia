@@ -1,8 +1,8 @@
 /**
- * learning-routes.js — Rutas de aprendizaje para especializaciones
+ * learning-routes.js — Rutas de aprendizaje para programas acad\u00e9micos
  *
- * Estructura: { [espId]: { id, espId, espName, credits, semesters[] } }
- * Lookup O(1) por espId.
+ * Estructura: { [progId]: { id, espId, espName, type, credits, semesters[] } }
+ * Lookup O(1) por progId.
  *
  * Datos del pensum: Universidad de Cundinamarca — Res. No.023930 del 12/12/2023 MEN
  * Fuente: https://www.ucundinamarca.edu.co/index.php/posgrado/especializaciones/agroecologia-y-desarrollo-agroecoturistico
@@ -11,6 +11,7 @@ window.__LEARNING_ROUTES = {
   "id17749182094742u1": {
     id: "lr-agroeco",
     espId: "id17749182094742u1",
+    type: "especializacion",
     espName: "Esp. en Agroecolog\u00eda y Desarrollo Agroecotur\u00edstico",
     credits: 20,
     semesters: [
@@ -44,6 +45,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474cat": {
     id: "lr-nutricion",
     espId: "id1774918209474cat",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Nutrici\u00f3n y Alimentaci\u00f3n Animal de Especies no Convencionales",
     credits: 20,
     semesters: [
@@ -78,6 +80,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474rky": {
     id: "lr-gestion-publica",
     espId: "id1774918209474rky",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Gesti\u00f3n P\u00fablica",
     credits: 20,
     semesters: [
@@ -112,6 +115,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474720": {
     id: "lr-transformacion-digital",
     espId: "id1774918209474720",
+    type: "especializacion",
     espName: "Esp. Gerencia para la Transformaci\u00f3n Digital",
     credits: 20,
     semesters: [
@@ -146,6 +150,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474pfl": {
     id: "lr-marketing-digital",
     espId: "id1774918209474pfl",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Marketing Digital",
     credits: 20,
     semesters: [
@@ -180,6 +185,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474vuu": {
     id: "lr-agronegocios",
     espId: "id1774918209474vuu",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Agronegocios Sostenibles",
     credits: 20,
     semesters: [
@@ -214,6 +220,7 @@ window.__LEARNING_ROUTES = {
   "id17749182094742q2": {
     id: "lr-analitica-negocios",
     espId: "id17749182094742q2",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Anal\u00edtica Aplicada a Negocios",
     credits: 20,
     semesters: [
@@ -248,6 +255,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474mir": {
     id: "lr-analitica-negocios-industrial",
     espId: "id1774918209474mir",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Anal\u00edtica Aplicada a Negocios",
     credits: 20,
     semesters: [
@@ -282,6 +290,7 @@ window.__LEARNING_ROUTES = {
   "id177491820947414p": {
     id: "lr-deporte-escolar",
     espId: "id177491820947414p",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Deporte Escolar",
     credits: 20,
     semesters: [
@@ -316,6 +325,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474eru": {
     id: "lr-analitica-datos",
     espId: "id1774918209474eru",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Anal\u00edtica y Ciencia de Datos",
     credits: 20,
     semesters: [
@@ -350,6 +360,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474zo6": {
     id: "lr-analitica-datos-sw",
     espId: "id1774918209474zo6",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Anal\u00edtica y Ciencia de Datos",
     credits: 20,
     semesters: [
@@ -384,6 +395,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474afo": {
     id: "lr-infraestructura-redes-sistemas",
     espId: "id1774918209474afo",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Infraestructura y Seguridad de Redes",
     credits: 20,
     semesters: [
@@ -418,6 +430,7 @@ window.__LEARNING_ROUTES = {
   "id177491820947445x": {
     id: "lr-infraestructura-redes-electronica",
     espId: "id177491820947445x",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Infraestructura y Seguridad de Redes",
     credits: 20,
     semesters: [
@@ -452,6 +465,7 @@ window.__LEARNING_ROUTES = {
   "id17749182094747we": {
     id: "lr-recursos-zoogeneticos",
     espId: "id17749182094747we",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Recursos Zoogen\u00e9ticos",
     credits: 20,
     semesters: [
@@ -486,6 +500,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474zw7": {
     id: "lr-metodologias-calidad-sw",
     espId: "id1774918209474zw7",
+    type: "especializacion",
     espName: "Esp. en Metodolog\u00edas de Calidad para el Desarrollo del Software",
     credits: 20,
     semesters: [
@@ -520,6 +535,7 @@ window.__LEARNING_ROUTES = {
   "id177491820947468q": {
     id: "lr-metodologias-calidad-sistemas",
     espId: "id177491820947468q",
+    type: "especializacion",
     espName: "Esp. en Metodolog\u00edas de Calidad para el Desarrollo del Software",
     credits: 20,
     semesters: [
@@ -554,6 +570,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474vrm": {
     id: "lr-inteligencia-artificial",
     espId: "id1774918209474vrm",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Inteligencia Artificial",
     credits: 20,
     semesters: [
@@ -588,6 +605,7 @@ window.__LEARNING_ROUTES = {
   "id1774918209474rf4": {
     id: "lr-gerencia-financiera-contable",
     espId: "id1774918209474rf4",
+    type: "especializacion",
     espName: "Especializaci\u00f3n en Gerencia Financiera y Contable",
     credits: 20,
     semesters: [
