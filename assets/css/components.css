@@ -25,7 +25,7 @@
 .connector-line{width:2.5px;flex:1;background:linear-gradient(to bottom,#c0d8c8,#8fb8a0);min-height:12px;border-radius:1px}
 .connector-dot{width:8px;height:8px;border-radius:50%;background:#006633;flex-shrink:0;position:relative;z-index:1;box-shadow:0 0 0 3px rgba(0,102,51,.12)}
 .connector-bar{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:1.5px;background:linear-gradient(to right,transparent,#c0d8c8,transparent);border-radius:1px}
-.semesters-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;width:100%;max-width:680px;margin:0 auto}
+.semesters-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:20px;width:100%;max-width:960px;margin:0 auto}
 .semester-col{display:flex;flex-direction:column;align-items:stretch;flex:1 1 210px;min-width:0;max-width:320px}
 
 /* Print */

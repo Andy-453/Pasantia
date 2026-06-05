@@ -243,8 +243,8 @@ button:active{transform:scale(.98)}
 
   /* ── TREE ── */
   .scroll{overflow:visible!important;padding:.3rem!important;background:#fff!important;border:none!important}
-  .tree{transform:scale(.7);transform-origin:top left}
-  .node{overflow:visible!important;page-break-inside:avoid;break-inside:avoid}
+  .tree{transform:scale(.55);transform-origin:top left}
+  .node{overflow:visible!important;page-break-inside:auto;break-inside:auto}
   .node:hover{transform:none!important}
   .node-root{min-width:180px!important;max-width:240px!important}
   .node-pregrado,.node-linea,.node-espec,.node-mae{min-width:130px!important;max-width:160px!important}
@@ -254,6 +254,17 @@ button:active{transform:scale(.98)}
   .edit-node-btn{display:none!important}
   .progs-row{gap:10px!important}
   .lineas-row{gap:10px!important}
+
+  /* ── Node card compact ── */
+  .node-body{padding:3px 6px 4px!important}
+  .node-root .node-body,.node-doc .node-body{padding:6px 12px!important}
+  .node-espec .node-title,.node-mae .node-title{font-size:7px!important;line-height:1.2!important}
+  .node-pregrado .node-title,.node-linea .node-title{font-size:8px!important;line-height:1.2!important}
+  .node-root .node-title{font-size:9px!important;line-height:1.2!important}
+  .node-doc .node-title{font-size:9px!important;line-height:1.2!important}
+  .node-label,.tipo-tag{font-size:6px!important}
+  .node-stripe{height:2px!important}
+  .pill,.badge,.sede-chip{font-size:7px!important;padding:1px 4px!important}
 
   /* ── TABLA ── */
   .tbl-wrap{overflow:visible!important;max-height:none!important;border:1px solid #ccc!important}

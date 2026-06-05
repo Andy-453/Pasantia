@@ -1,4 +1,4 @@
-/**
+﻿/**
  * app.js — orquestador principal
  * ---
  * Responsabilidad:
@@ -175,8 +175,10 @@ var __ACTIONS = {
   // === Learning Route Editor ===
   'lr-set-tab': function(b){ _lrSetTab(b.dataset.tab); },
   'lr-edit-route': function(b){ _lrEditRoute(b.dataset.espId); },
-  'lr-new-route': function(){ _lrEditRoute('__new__'); },
   'lr-delete-route': function(b){ _lrDeleteRoute(b.dataset.espId); },
+  'create-route-for-prog': function(b){
+    _lrEditRoute(b.dataset.progId, {name:b.dataset.progName, type:b.dataset.progType});
+  },
   'lr-back-to-list': function(){ _lrEditingId=null;renderEditor(); },
   'lr-add-semester': function(){ _lrAddSemester(); },
   'lr-delete-semester': function(b){ _lrDeleteSemester(parseInt(b.dataset.si,10)); },
@@ -213,13 +215,42 @@ document.addEventListener('change', function(e){
 
 function _getObtencionUrl(e, item){
   if(!item || !item.enlaceObtencion) return '';
-  if((e||'').toLowerCase() !== 'obtención') return '';
+  if(!(e||'').toLowerCase().includes('obtención')) return '';
   var url = item.enlaceObtencion.trim();
   if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
   return url;
 }
 function _hasLR(id){
   return !!(window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id]);
+}
+
+function _getTypeLabel(type){
+  var map={especializacion:'Especializaci\u00f3n',maestria:'Maestr\u00eda',doctorado:'Doctorado'};
+  return map[type]||'Programa';
+}
+function _getTypeBadge(type){
+  var labels={especializacion:{label:'Esp.',color:'#3aaa72',bg:'#e8f5ee'},
+              maestria:{label:'Mae.',color:'#C8A43A',bg:'#faf3e0'},
+              doctorado:{label:'Doc.',color:'#0d3d22',bg:'#d4e8da'}};
+  var l=labels[type]||labels.especializacion;
+  return '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700;background:'+l.bg+';color:'+l.color+'">'+l.label+'</span>';
+}
+function _getAllAcademicPrograms(){
+  var list=[];
+  AppData.getFacultades().forEach(function(f){
+    if(f.doc){
+      list.push({id:'doc-'+f.id,type:'doctorado',name:f.doc.n, facName:f.name, sedes:f.doc.sedes||[], enlaceObtencion:f.doc.enlaceObtencion||null});
+    }
+    f.progs.forEach(function(p){
+      (p.mae||[]).forEach(function(m){
+        list.push({id:m.id,type:'maestria',name:m.n, facName:f.name, progName:p.n, sedes:m.sedes});
+      });
+      (p.lineas||[]).forEach(function(l){
+        list.push({id:l.id,type:'especializacion',name:l.esp, facName:f.name, progName:p.n, lineaName:l.l, sedes:l.sedes});
+      });
+    });
+  });
+  return list;
 }
 
 function renderLearningRouteHTML(route){
@@ -232,10 +263,11 @@ function renderLearningRouteHTML(route){
     return t + (s.subjects||[]).reduce(function(tt,sj){ return tt + (sj.credits||0); }, 0);
   }, 0);
   var semCount = n;
+  var typeLabel=_getTypeLabel(route.type||'especializacion');
   var espCard = '<div class="node node-espec" style="min-width:260px;max-width:380px;width:100%">'
     + '<div class="node-stripe"></div>'
     + '<div class="node-body">'
-    + '<div class="node-label">Especializaci\u00f3n</div>'
+    + '<div class="node-label">'+typeLabel+'</div>'
     + '<div class="node-title" style="font-size:11px">'+route.espName+'</div>'
     + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
     + totalCredits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
@@ -288,7 +320,7 @@ function renderLearningRouteHTML(route){
     : '';
 
   // --- Full modal ---
-  return '<div class="modal" style="max-width:700px">'
+  return '<div class="modal" style="max-width:960px">'
     + '<div class="modal-title" style="display:flex;align-items:center">'
     + '<span>\uD83D\uDCCB</span><span style="flex:1">Ruta de Aprendizaje</span>'
     + editBtn
@@ -309,7 +341,7 @@ function openLearningRouteModal(espId){
   var overlay = document.createElement('div');
   overlay.id = 'lr-modal-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto';
-  overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:680px">' + renderLearningRouteHTML(route) + '</div>';
+  overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:960px">' + renderLearningRouteHTML(route) + '</div>';
   overlay.dataset.espId = typeof espId === 'string' ? espId : (espId.espId || '');
   document.body.appendChild(overlay);
   function _closeLR(){
@@ -494,8 +526,8 @@ function renderTree(){
             <div class="node-stripe"></div>
             <div class="node-body">
               ${pll(m.o)}
-              <div class="node-label">Maestría</div>
-              <div class="node-title">${m.n}</div>
+              <div class="node-label">Maestr\u00eda</div>
+              <div class="node-title${_hasLR(m.id)?' route-link" data-action="show-learning-route" data-esp-id="'+m.id:''}">${m.n}</div>
               <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
               ${stBadge(m.e, m)}
             </div>
@@ -559,9 +591,9 @@ function renderTree(){
           <div class="node-stripe"></div>
           <div class="node-body">
             ${pll(m.o)}
-            <div class="node-label">Maestría</div>
-            <div class="node-title">${m.n}</div>
-            <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
+            <div class="node-label">Maestr\u00eda</div>
+            <div class="node-title${_hasLR(m.id)?' route-link" data-action="show-learning-route" data-esp-id="'+m.id:''}">${m.n}</div>
+            <div class="sede-chip">\ud83d\udccd ${m.sedes.join(' \u00b7 ')}</div>
             ${stBadge(m.e, m)}
           </div>
         </div>`;
@@ -573,16 +605,16 @@ function renderTree(){
 
   // DOCTORADO
   if(f.doc&&itemMatch(f.doc,'doc')){
-    const st=getSt(f.doc.e);
+    var docId='doc-'+f.id;
     h+=`
     ${vline(24)}
     <div class="node node-doc">
       <div class="node-body">
         <div style="margin-bottom:5px">${pll(f.doc.o)}</div>
         <div class="node-label">Doctorado</div>
-        <div class="node-title">${f.doc.n}</div>
-        <div class="sede-chip sede-chip-dark">📍 ${f.doc.sedes.join(' · ')}</div>
-        <div class="badge" style="background:${st.bg};color:${st.tx};margin-top:6px"><div class="bdot" style="background:${st.dot}"></div>${f.doc.e}</div>
+        <div class="node-title${_hasLR(docId)?' route-link" data-action="show-learning-route" data-esp-id="'+docId:''}">${f.doc.n}</div>
+        <div class="sede-chip sede-chip-dark">\ud83d\udccd ${f.doc.sedes.join(' \u00b7 ')}</div>
+        ${stBadge(f.doc.e, f.doc)}
       </div>
     </div>`;
   }
@@ -697,7 +729,7 @@ function renderProgForm(){
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="mo'+m.id+'"><option value="V"'+(m.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(m.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
       +'<div class="field"><label>👤 Responsable</label><input id="mresp'+m.id+'" value="'+(m.resp||'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="mmes'+m.id+'">'+mo(m.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"></div></div>'
+      +'<div class="field"><label>📅 Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="menlace'+m.id+'" value="'+(m.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var h='<div class="modal-overlay"><div class="modal">'
@@ -721,10 +753,10 @@ function renderProgForm(){
 
 function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpLineas._progId=pid;renderProgForm();}
 function delLinea(lid){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas=tmpLineas.filter(function(l){return l.id!==lid;});tmpLineas._progId=pid;renderProgForm();}
-function addMae(){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes.push({id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null});tmpMaes._progId=pid;renderProgForm();}
+function addMae(){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes.push({id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpMaes._progId=pid;renderProgForm();}
 function delMae(mid){collectLineas();collectMaes();var pid=tmpMaes._progId;tmpMaes=tmpMaes.filter(function(m){return m.id!==mid;});tmpMaes._progId=pid;renderProgForm();}
 function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(function(l){return{id:l.id,l:gv('ll'+l.id)||l.l,t:gv('lt'+l.id)||l.t,esp:gv('le'+l.id)||l.esp,e:gv('les'+l.id),o:gv('lo'+l.id)||l.o,sedes:l.sedes,resp:gv('lresp'+l.id),mes:gi('lmes'+l.id),ano:gi('lano'+l.id),enlaceObtencion:gv('lenlace'+l.id)||null};});tmpLineas._progId=pid;}
-function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id)};});tmpMaes._progId=pid;}
+function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id),enlaceObtencion:gv('menlace'+m.id)||null};});tmpMaes._progId=pid;}
 function saveProg(pid,isNew){
   collectLineas();collectMaes();
   var prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
@@ -775,8 +807,12 @@ function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();
 // Extraído a assets/js/modules/indicators.js (Fase 2)
 // window.renderIndicadores es definido por indicators.js via window.*
 
+// ===== LEARNING ROUTES — storage key (debe ir antes de INIT) =====
+var LR_STORAGE_KEY = 'udec_learning_routes';
+
 // ===== INIT =====
 loadDB();
+loadLearningRoutes();
 renderFacBar();
 populateSedes();
 renderViews();
@@ -991,7 +1027,7 @@ function renderEditor(){
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
   var _tab=window._lrEditorTab||'programas';
   var h='<div style="padding:1rem">';
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+(_tab==='rutas'?'<button class="btn-green" data-action="lr-new-route">+ Nueva ruta</button>':'<button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button>')+'</div></div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+(_tab==='rutas'?'<!-- Crear ruta desde sección Sin ruta -->':'<button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✎ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button>')+'</div></div>';
   h+='<div style="display:flex;gap:0;margin-bottom:1rem;border-bottom:2px solid #e0ece4"><button data-action="lr-set-tab" data-tab="programas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='programas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='programas'?'#006633':'transparent')+';margin-bottom:-2px">📋 Programas</button><button data-action="lr-set-tab" data-tab="rutas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='rutas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='rutas'?'#006633':'transparent')+';margin-bottom:-2px">📚 Rutas de aprendizaje</button></div>';
   if(_tab==='rutas'){h+=_lrRenderList();h+='</div>';document.getElementById('editor-content').innerHTML=h;return;}
   var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
@@ -1029,6 +1065,7 @@ function renderEditor(){
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Nombre del doctorado</label><input id="doc-name" value="'+(f.doc?f.doc.n:'')+'" placeholder="Nombre del doctorado"></div><div class="field"><label>Estado actual</label><input id="doc-estado" value="'+(f.doc?f.doc.e:'')+'" placeholder="Ej: En construcción"></div></div>'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>👤 Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>📅 Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>📅 Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>\u{1f517} Enlace</label><input type="url" id="doc-enlace" value="'+(f.doc&&f.doc.enlaceObtencion?f.doc.enlaceObtencion:'')+'\" placeholder="URL del programa"></div><div class="field"></div></div>'
       +'<button class="btn-green" data-action="save-doc">💾 Guardar doctorado</button>'
     +'</div>'
   +'</div>';
@@ -1042,7 +1079,7 @@ function saveDoc(){
   else{
     var mes=parseInt(document.getElementById('doc-mes').value)||null;
     var ano=parseInt(document.getElementById('doc-ano').value)||null;
-    AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano});
+    AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano,enlaceObtencion:document.getElementById('doc-enlace')?document.getElementById('doc-enlace').value.trim():null});
   }
   toast('Doctorado guardado');renderViews();renderEditor();
 }
@@ -1075,50 +1112,74 @@ var _lrEditorTab = 'programas';
 function _lrSetTab(tab){ _lrEditorTab=tab; renderEditor(); }
 
 function _lrRenderList(){
-  var lr=window.__LEARNING_ROUTES||{}; var keys=Object.keys(lr);
+  var lr=window.__LEARNING_ROUTES||{};
+  var allProgs=_getAllAcademicPrograms();
+  var withRoute=[], withoutRoute=[];
+  allProgs.forEach(function(p){
+    if(lr[p.id]) withRoute.push(p);
+    else withoutRoute.push(p);
+  });
   var h='';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">'
-    +'<div><div style="font-size:12px;font-weight:700;color:#333">'+keys.length+' rutas activas</div>'
-    +'<div style="font-size:10px;color:#999;margin-top:2px">'+keys.length+' especializaci\u00f3n(es) con ruta</div></div>'
+    +'<div><div style="font-size:12px;font-weight:700;color:#333">'+withRoute.length+' rutas activas</div>'
+    +'<div style="font-size:10px;color:#999;margin-top:2px">'+withoutRoute.length+' programa(s) sin ruta</div></div>'
     +'<button data-action="restore-default-routes" style="background:none;border:1px solid #e0ece4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">Restaurar por defecto</button>'
     +'</div>';
-  if(!keys.length){ h+='<div style="text-align:center;padding:2rem;color:#999">No hay rutas registradas</div>'; }
-  else {
-    keys.sort();
-    h+='<div style="display:flex;flex-direction:column;gap:8px">';
-    keys.forEach(function(k){
-      var e=lr[k]; var ts=0; e.semesters.forEach(function(s){ ts+=s.subjects.length; });
+  if(withRoute.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#006633;margin-bottom:8px;padding:0 4px">\u25a0 CON RUTA ('+withRoute.length+')</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">';
+    withRoute.forEach(function(p){
+      var e=lr[p.id];
       var lrCred=e.semesters.reduce(function(t,s){return t+(s.subjects||[]).reduce(function(tt,sj){return tt+(sj.credits||0);},0);},0);
+      var ts=e.semesters.reduce(function(t,s){return t+(s.subjects||[]).length;},0);
+      var type=e.type||p.type||'especializacion';
       h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">'
-        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#333">'+e.espName+'</div>'
-        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+k+' · '+e.semesters.length+' semestre(s) · '+lrCred+' cr\u00e9ditos · '+ts+' materia(s)</div></div>'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+e.espName+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+p.id+' · '+e.semesters.length+' semestre(s) · '+lrCred+' cr\u00e9ditos · '+ts+' materia(s)</div></div>'
         +'<div style="display:flex;gap:6px;flex-shrink:0">'
-        +'<button data-action="lr-edit-route" data-esp-id="'+k+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\u270e Editar</button>'
-        +'<button data-action="lr-preview-route" data-esp-id="'+k+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
-        +'<button data-action="lr-delete-route" data-esp-id="'+k+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\uddd1</button></div>'
+        +'<button data-action="lr-edit-route" data-esp-id="'+p.id+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\u270e Editar</button>'
+        +'<button data-action="lr-preview-route" data-esp-id="'+p.id+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+        +'<button data-action="lr-delete-route" data-esp-id="'+p.id+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\uddd1</button></div>'
         +'</div>';
     });
     h+='</div>';
   }
+  if(withoutRoute.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#999;margin-bottom:8px;padding:0 4px">\u25a0 SIN RUTA ('+withoutRoute.length+')</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px">';
+    withoutRoute.forEach(function(p){
+      h+='<div style="background:#fafcfa;border-radius:10px;border:1px solid #e8f0ec;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:0.85">'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555">'+_getTypeBadge(p.type)+p.name+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">'+p.facName+(p.progName?' \u00b7 '+p.progName:'')+'</div></div>'
+        +'<button data-action="create-route-for-prog" data-prog-id="'+p.id+'" data-prog-name="'+p.name.replace(/"/g,'&quot;')+'" data-prog-type="'+p.type+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta</button>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  if(!withRoute.length && !withoutRoute.length){
+    h+='<div style="text-align:center;padding:2rem;color:#999">No hay programas acad\u00e9micos disponibles</div>';
+  }
   return h;
 }
 
-function _lrEditRoute(espId){
-  _lrEditingId=espId; renderEditor();
+function _lrEditRoute(progId, prefill){
+  _lrEditingId=progId; renderEditor();
   var lr=window.__LEARNING_ROUTES||{};
-  var e=(espId==='__new__') ? null : lr[espId];
-  var isNew=espId==='__new__'||!e;
-  if(!isNew && !e){ toast('Ruta no encontrada'); _lrEditingId=null; renderEditor(); return; }
-  var route=isNew ? { espName:'', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
+  var e=lr[progId];
+  var isNew=!e;
+  if(!isNew && progId!=='__new__'){ if(!e){ toast('Ruta no encontrada'); _lrEditingId=null; renderEditor(); return; } }
+  var route=isNew
+    ? { espName:(prefill&&prefill.name)||'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
     : JSON.parse(JSON.stringify(e));
+  var type=route.type||'especializacion';
   var h='<div style="padding:1rem">';
   h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">'
     +'<button data-action="lr-back-to-list" style="background:none;border:none;font-size:16px;cursor:pointer;color:#666">\u2190</button>'
-    +'<div style="font-size:14px;font-weight:700;color:#006633">'+(isNew?'Nueva ruta':'Editar ruta')+'</div></div>';
-  h+='<div id="lr-form-container" data-esp-id="'+espId+'">';
+    +_getTypeBadge(type)+'<div style="font-size:14px;font-weight:700;color:#006633">'+(isNew?'Nueva ruta':'Editar ruta')+'</div></div>';
+  h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'">';
   h+='<div class="grid2" style="margin-bottom:12px">';
-  h+='<div class="field"><label>Nombre de la especializaci\u00f3n</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
-  h+='<div class="field"><label>ID (espId)</label>'+(isNew?'<input id="lr-esp-id" value="" placeholder="Ej: id123..." style="width:100%">':'<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666">'+espId+'</div>')+'</div>';
+  h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
+  h+='<div class="field"><label>ID</label><div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666">'+progId+'</div></div>';
   h+='</div>';
   var tc=0; route.semesters.forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
   h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
@@ -1155,8 +1216,8 @@ function _lrEditRoute(espId){
   h+='</div>';
   h+='<button data-action="lr-add-semester" style="width:100%;padding:10px;background:#f5f5f5;border:1px dashed #ccc;border-radius:8px;cursor:pointer;font-size:11px;color:#666;margin-bottom:1rem">+ Agregar semestre</button>';
   h+='<div style="display:flex;gap:8px">'
-    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+espId+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
-    +'<button data-action="lr-preview-route" data-esp-id="'+espId+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+progId+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
+    +'<button data-action="lr-preview-route" data-esp-id="'+progId+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
     +'<button data-action="lr-back-to-list" style="background:#f5f5f5;color:#666;border:1px solid #ddd;border-radius:8px;padding:8px 16px;font-size:11px;cursor:pointer">Cancelar</button>'
     +'</div>';
   h+='</div></div>';
@@ -1166,12 +1227,10 @@ function _lrEditRoute(espId){
 
 function _lrCollectFormData(){
   var c=document.getElementById('lr-form-container'); if(!c) return null;
-  var isNew=c.dataset.espId==='__new__';
+  var espId=c.dataset.espId;
+  var type=c.dataset.progType||'especializacion';
   var espName=document.getElementById('lr-esp-name')?.value.trim();
-  var espId=isNew ? document.getElementById('lr-esp-id')?.value.trim() : c.dataset.espId;
-  if(!espName){ toast('Escribe el nombre de la especializaci\u00f3n'); return null; }
-  if(isNew && !espId){ toast('Escribe el ID de la especializaci\u00f3n'); return null; }
-  if(isNew && window.__LEARNING_ROUTES[espId]){ toast('Ya existe una ruta con ese ID'); return null; }
+  if(!espName){ toast('Escribe el nombre del programa'); return null; }
   var sems=[]; var totalCr=0;
   document.querySelectorAll('.lr-semester').forEach(function(el){
     var t=el.querySelector('.lr-sem-title')?.value.trim()||'';
@@ -1187,7 +1246,7 @@ function _lrCollectFormData(){
     sems.push({title:t,type:tp,credits:cr,subjects:subs});
     totalCr+=cr;
   });
-  return {espName:espName,espId:espId,credits:totalCr,semesters:sems};
+  return {espName:espName,espId:espId,type:type,credits:totalCr,semesters:sems};
 }
 
 function _lrRecalcCredits(){
@@ -1200,15 +1259,15 @@ function _lrSaveRoute(espId){
   var id=data.espId;
   window.__LEARNING_ROUTES[id]={
     id:'lr-'+id.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:id, espName:data.espName, credits:data.credits, semesters:data.semesters
+    espId:id, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
-  toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor();
+  toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); renderViews();
 }
 
 function _lrDeleteRoute(espId){
   if(!window.__LEARNING_ROUTES[espId]){ toast('Ruta no encontrada'); return; }
   showConfirm('Eliminar ruta','\u00bfEliminar la ruta de <strong>'+(window.__LEARNING_ROUTES[espId].espName||espId)+'</strong>?',function(){
-    delete window.__LEARNING_ROUTES[espId]; saveLearningRoutes(); toast('Ruta eliminada'); renderEditor();
+    delete window.__LEARNING_ROUTES[espId]; saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); renderViews();
   });
 }
 
@@ -1244,25 +1303,23 @@ function _lrDeleteSubject(si,ji){
 function _rerenderForm(data,espId){
   window.__LEARNING_ROUTES[espId]={
     id:'lr-'+espId.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:espId, espName:data.espName, credits:data.credits, semesters:data.semesters
+    espId:espId, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
   _lrEditRoute(espId);
 }
 
 function _lrPreviewRoute(espId){
   var lr=window.__LEARNING_ROUTES||{};
-  if(espId==='__new__'){
-    var data=_lrCollectFormData(); if(!data) return;
-    openLearningRouteModal({id:'lr-preview',espId:'__preview__',espName:data.espName,credits:data.credits,semesters:data.semesters});
-  } else if(lr[espId]){
+  if(lr[espId]){
     openLearningRouteModal(espId);
   } else {
-    toast('Ruta no disponible');
+    var data=_lrCollectFormData(); if(!data) return;
+    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
   }
 }
 
 // ===== PERSISTENCIA (localStorage) =====
-var LR_STORAGE_KEY = 'udec_learning_routes';
+// LR_STORAGE_KEY definido antes de INIT (ver arriba)
 
 function loadLearningRoutes(){
   // Guardar defaults originales la primera vez
@@ -1301,4 +1358,4 @@ function restoreDefaultRoutes(){
 }
 
 // Inicializar desde localStorage (sobrescribe learning-routes.js si hay datos guardados)
-loadLearningRoutes();
+// Nota: loadLearningRoutes() se llama al inicio, tras loadDB(), para que renderViews() vea las rutas guardadas.
