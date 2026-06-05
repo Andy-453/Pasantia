@@ -411,7 +411,7 @@ function renderTree(){
 
     h+=`
     <div class="node node-pregrado" style="min-width:260px;max-width:340px">
-      <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">?</button>
+      <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✏️</button>
       <div class="node-stripe"></div>
       <div class="node-body">
         <div class="node-label">Programa de pregrado</div>
@@ -419,7 +419,7 @@ function renderTree(){
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e8f2ec">
           <div style="font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:4px">Sede(s)</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center">
-            ${p.sedes.map(s=>`<span class="sede-chip">?? ${s}</span>`).join('')}
+                ${p.sedes.map(s=>`<span class="sede-chip">📍 ${s}</span>`).join('')}
           </div>
         </div>
       </div>
@@ -473,7 +473,7 @@ function renderTree(){
               ${pll(l.o)}
               <div class="node-label">Especialización</div>
               <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
-              <div class="sede-chip">?? ${l.sedes.join(' · ')}</div>
+              <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
               ${stBadge(l.e, l)}
             </div>
           </div>
@@ -520,7 +520,7 @@ function renderTree(){
               ${pll(m.o)}
               <div class="node-label">Maestría</div>
               <div class="node-title${_hasLR(m.id)?' route-link" data-action="show-learning-route" data-esp-id="'+m.id:''}">${m.n}</div>
-              <div class="sede-chip">?? ${m.sedes.join(' · ')}</div>
+              <div class="sede-chip">📍 ${m.sedes.join(' · ')}</div>
               ${stBadge(m.e, m)}
             </div>
           </div>
@@ -538,7 +538,7 @@ function renderTree(){
       h+=`<div class="pcol">
         ${vline(14)}
         <div class="node node-pregrado">
-          <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">?</button>
+          <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✏️</button>
           <div class="node-stripe"></div>
           <div class="node-body">
             <div class="node-label">Programa de pregrado</div>
@@ -546,7 +546,7 @@ function renderTree(){
             <div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec">
               <div style="font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:4px">Sede(s)</div>
               <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center">
-                ${p.sedes.map(s=>`<span class="sede-chip">?? ${s}</span>`).join('')}
+            ${p.sedes.map(s=>`<span class="sede-chip">📍 ${s}</span>`).join('')}
               </div>
             </div>
           </div>
@@ -570,7 +570,7 @@ function renderTree(){
             ${pll(l.o)}
             <div class="node-label">Especialización</div>
             <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
-            <div class="sede-chip">?? ${l.sedes.join(' · ')}</div>
+            <div class="sede-chip">📍 ${l.sedes.join(' · ')}</div>
             ${stBadge(l.e, l)}
           </div>
         </div>`;
@@ -612,7 +612,7 @@ function renderTree(){
 
   document.getElementById('tree').innerHTML=h;
   }catch(err){
-    document.getElementById('tree').innerHTML='<div class="empty-msg">?? Error al renderizar el árbol. <a href="#" data-action="reset-db" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
+    document.getElementById('tree').innerHTML='<div class="empty-msg">⚠️ Error al renderizar el árbol. <a href="#" data-action="reset-db" style="color:#006633;font-weight:700">Haz clic aquí para restablecer los datos</a></div>';
     console.error('renderTree error:',err);
   }
 }
@@ -667,7 +667,7 @@ function renderSedeView(){
   if(!sedes.length){document.getElementById('sede-content').innerHTML='<div class="empty-msg">Sin resultados</div>';return;}
   let h='';
   sedes.forEach(s=>{
-    h+=`<div class="sede-card"><div class="sede-name">?? ${s} <span style="font-size:9px;background:#e6f2eb;color:#006633;padding:1px 6px;border-radius:8px;margin-left:4px">${sm[s].length}</span></div>`;
+    h+=`<div class="sede-card"><div class="sede-name">📍 ${s} <span style="font-size:9px;background:#e6f2eb;color:#006633;padding:1px 6px;border-radius:8px;margin-left:4px">${sm[s].length}</span></div>`;
     sm[s].forEach(it=>{
       const st=getSt(it.e);const os=it.o==='V'?'#006633':'#1a5cb0';
       var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
@@ -701,30 +701,30 @@ function renderProgForm(){
   function ao(c){return '<option value="">— Año —</option>'+AS.map(function(y){return '<option value="'+y+'"'+(y===c?' selected':'')+'>'+y+'</option>';}).join('');}
   var lH=tmpLineas.map(function(l){
     return '<div class="linea-card" id="lc'+l.id+'">'
-      +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">? Quitar</button>'
+      +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">🗑️ Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Línea</label><input id="ll'+l.id+'" value="'+(l.l||'')+'" placeholder="Nombre de la línea"></div>'
       +'<div class="field"><label>Tipo</label><select id="lt'+l.id+'"><option'+(l.t==='Profundización 1'?' selected':'')+'>Profundización 1</option><option'+(l.t==='Profundización 2'?' selected':'')+'>Profundización 2</option></select></div></div>'
       +'<div class="grid2"><div class="field"><label>Especialización</label><input id="le'+l.id+'" value="'+(l.esp||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="les'+l.id+'">'+eo(l.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+l.id+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
-      +'<div class="field"><label>?? Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid3"><div class="field"><label>?? Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
-      +'<div class="field"><label>?? Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>?? Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
+      +'<div class="field"><label>👤 Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
+      +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
+      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var mH=tmpMaes.map(function(m){
     return '<div class="linea-card" id="mc'+m.id+'">'
-      +'<button class="del-btn" data-action="del-mae" data-mae-id="'+m.id+'">? Quitar</button>'
+      +'<button class="del-btn" data-action="del-mae" data-mae-id="'+m.id+'">🗑️ Quitar</button>'
       +'<div class="grid2"><div class="field"><label>Maestría</label><input id="mn'+m.id+'" value="'+(m.n||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="mes'+m.id+'">'+eo(m.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="mo'+m.id+'"><option value="V"'+(m.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(m.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
-      +'<div class="field"><label>?? Responsable</label><input id="mresp'+m.id+'" value="'+(m.resp||'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid3"><div class="field"><label>?? Mes</label><select id="mmes'+m.id+'">'+mo(m.mes)+'</select></div>'
-      +'<div class="field"><label>?? Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"><label>?? Enlace</label><input type="url" id="menlace'+m.id+'" value="'+(m.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
+      +'<div class="field"><label>👤 Responsable</label><input id="mresp'+m.id+'" value="'+(m.resp||'')+'" placeholder="Docente o equipo"></div></div>'
+      +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="mmes'+m.id+'">'+mo(m.mes)+'</select></div>'
+      +'<div class="field"><label>📅 Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="menlace'+m.id+'" value="'+(m.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
       +'</div>';
   }).join('');
   var h='<div class="modal-overlay"><div class="modal">'
-    +'<div class="modal-title"><span>'+(isNew?'?':'?')+'</span>'+(isNew?'Nuevo programa':'Editar — '+p.n)+'</div>'
+    +'<div class="modal-title"><span>'+(isNew?'🆕':'✏️')+'</span>'+(isNew?'Nuevo programa':'Editar — '+p.n)+'</div>'
     +'<div class="form-section"><h3>Programa de pregrado</h3>'
       +'<div class="grid2"><div class="field"><label>Nombre</label><input id="pn" value="'+(p.n||'')+'" placeholder="Nombre del pregrado"></div>'
       +'<div class="field"><label>Sedes</label><input id="psedes" value="'+(p.sedes?p.sedes.join(', '):'')+'" placeholder="Ej: Fusagasugá, Chía"></div></div></div>'
@@ -735,9 +735,9 @@ function renderProgForm(){
       +'<div id="maes-container">'+mH+'</div>'
       +'<button data-action="add-mae" style="margin-top:6px;border-color:#C8A43A;color:#8a6d00">+ Agregar maestría</button></div>'
     +'<div class="modal-actions">'
-      +'<button class="btn-green" data-action="save-prog" data-pid="'+p.id+'" data-is-new="'+(isNew?'true':'false')+'">?? Guardar</button>'
+      +'<button class="btn-green" data-action="save-prog" data-pid="'+p.id+'" data-is-new="'+(isNew?'true':'false')+'">💾 Guardar</button>'
       +'<button data-action="cancel-edit">Cancelar</button>'
-      +(isNew?'':'<button class="btn-red" data-action="delete-prog" data-pid="'+p.id+'">?? Eliminar</button>')
+      +(isNew?'':'<button class="btn-red" data-action="delete-prog" data-pid="'+p.id+'">🗑️ Eliminar</button>')
     +'</div></div></div>';
   document.getElementById('editor-content').innerHTML=h;
 }
@@ -905,7 +905,7 @@ function renderPipeline(){
   function nivBadge(n){return '<span style="background:'+(nivCol[n]||'#888')+';color:#fff;padding:2px 8px;border-radius:7px;font-size:9px;font-weight:700">'+n+'</span>';}
   function tabla(items,color){
     if(!items.length) return '<div style="padding:1.5rem;text-align:center;color:#ccc;font-style:italic;font-size:11px">Sin programas</div>';
-    var t='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+color+';color:#fff"><th style="padding:8px 12px;text-align:left">Facultad</th><th style="padding:8px;text-align:center">Nivel</th><th style="padding:8px 10px;text-align:left">Programa</th><th style="padding:8px 10px;text-align:left">Estado</th><th style="padding:8px 10px;text-align:left">?? Responsable</th><th style="padding:8px;text-align:center">?? Inicio</th></tr></thead><tbody>';
+    var t='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+color+';color:#fff"><th style="padding:8px 12px;text-align:left">Facultad</th><th style="padding:8px;text-align:center">Nivel</th><th style="padding:8px 10px;text-align:left">Programa</th><th style="padding:8px 10px;text-align:left">Estado</th><th style="padding:8px 10px;text-align:left">👤 Responsable</th><th style="padding:8px;text-align:center">📅 Inicio</th></tr></thead><tbody>';
     items.forEach(function(p,i){
       var tri=getTri(p.mes);
       var fecha=p.mes&&p.ano?'<span style="background:'+(TRI_BG[tri]||'#f5f5f5')+';color:'+(TRI_COL[tri]||'#555')+';padding:2px 7px;border-radius:7px;font-size:9px;font-weight:700">'+MESES[p.mes]+' '+p.ano+'</span>':'<span style="color:#ccc;font-style:italic;font-size:9px">Sin fecha</span>';
@@ -944,7 +944,7 @@ function renderPipeline(){
               +'</div>'
               +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
                 +'<span style="background:'+(nivCol[p.nivel]||'#888')+'22;color:'+(nivCol[p.nivel]||'#888')+';padding:1px 7px;border-radius:6px;font-size:8px;font-weight:700">'+p.nivel+'</span>'
-                +(p.resp?'<span style="font-size:9px;color:#555">?? '+p.resp+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
+                +(p.resp?'<span style="font-size:9px;color:#555">👤 '+p.resp+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
               +'</div>'
               +'<div style="margin-top:3px"><span style="font-size:9px;color:'+estCol(p.estado)+';font-weight:600">'+p.estado+'</span> <span style="font-size:9px;color:#aaa">· '+p.fac+'</span></div>'
               +'</div>';
@@ -967,7 +967,7 @@ function renderPipeline(){
       +'<div style="background:'+bg+';padding:13px 16px;border-bottom:2px solid '+col+';display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="'+id+'"'
         +'<div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">'+ic+'</div>'
         +'<div><div style="font-size:13px;font-weight:700;color:'+col+'">'+titulo+'</div><div style="font-size:10px;color:#666;margin-top:1px">'+sub+'</div></div></div>'
-        +'<div style="display:flex;align-items:center;gap:10px"><span style="background:'+col+';color:#fff;border-radius:20px;padding:3px 14px;font-size:13px;font-weight:700">'+items.length+'</span><span id="icon-'+id+'" style="color:'+col+';font-size:16px;font-weight:700">?</span></div>'
+        +'<div style="display:flex;align-items:center;gap:10px"><span style="background:'+col+';color:#fff;border-radius:20px;padding:3px 14px;font-size:13px;font-weight:700">'+items.length+'</span><span id="icon-'+id+'" style="color:'+col+';font-size:16px;font-weight:700">▸</span></div>'
       +'</div>'
       +'<div id="'+id+'" style="display:none">'+tabla(items,col)+'</div>'
       +'</div>';
@@ -975,30 +975,30 @@ function renderPipeline(){
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:15px;font-weight:700;color:#1a2e1a;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:22px;background:#006633;border-radius:2px;display:inline-block"></span>Estado de desarrollo — Programas de posgrado</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:1.2rem">'
-    +kpi('?','Vigente',grupos.vigente.length,G)
-    +kpi('??','Radicado MEN',grupos.radicado.length,BL)
-    +kpi('??','En construcción',grupos.construccion.length,AM)
-    +kpi('??','Por construir',grupos.porConstruir.length,OR)
-    +kpi('?','Negado MEN',grupos.negado.length,RD)
-    +kpi('??','Reclamación',grupos.reclamacion.length,'#dc2626')
+    +kpi('✅','Vigente',grupos.vigente.length,G)
+    +kpi('📋','Radicado MEN',grupos.radicado.length,BL)
+    +kpi('🔧','En construcción',grupos.construccion.length,AM)
+    +kpi('📝','Por construir',grupos.porConstruir.length,OR)
+    +kpi('❌','Negado MEN',grupos.negado.length,RD)
+    +kpi('⚖️','Reclamación',grupos.reclamacion.length,'#dc2626')
   +'</div>';
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
     +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="timeline"'
-      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">??</span><div><div style="font-size:13px;font-weight:700;color:#fff">Cronograma por trimestre</div><div style="font-size:10px;color:rgba(200,164,58,.8)">Programas en desarrollo con fecha asignada · '+conFecha.length+' programas</div></div></div>'
-      +'<span id="icon-timeline" style="color:#C8A43A;font-size:16px;font-weight:700">?</span>'
+      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">📊</span><div><div style="font-size:13px;font-weight:700;color:#fff">Cronograma por trimestre</div><div style="font-size:10px;color:rgba(200,164,58,.8)">Programas en desarrollo con fecha asignada · '+conFecha.length+' programas</div></div></div>'
+      +'<span id="icon-timeline" style="color:#C8A43A;font-size:16px;font-weight:700">▸</span>'
     +'</div>'
     +'<div id="timeline">'+buildTimeline(conFecha)+'</div>'
   +'</div>';
-  h+=sec('??','En construcción',grupos.construccion.length+' programas con desarrollo activo',grupos.construccion,AM,'#fffdf5');
-  h+=sec('??','Por construir',grupos.porConstruir.length+' programas identificados',grupos.porConstruir,OR,'#fff9f0');
-  h+=sec('??','Radicado MEN',grupos.radicado.length+' programas en evaluación',grupos.radicado,BL,'#f0f6ff');
-  h+=sec('??','En reclamación',grupos.reclamacion.length+' con observaciones del MEN',grupos.reclamacion,'#dc2626','#fff8f8');
-  h+=sec('?','Negado MEN',grupos.negado.length+' con resolución negativa',grupos.negado,RD,'#fff5f5');
-  h+=sec('?','Vigente',grupos.vigente.length+' programas activos con registro',grupos.vigente,G,'#f0fdf4');
+  h+=sec('🔧','En construcción',grupos.construccion.length+' programas con desarrollo activo',grupos.construccion,AM,'#fffdf5');
+  h+=sec('📝','Por construir',grupos.porConstruir.length+' programas identificados',grupos.porConstruir,OR,'#fff9f0');
+  h+=sec('📋','Radicado MEN',grupos.radicado.length+' programas en evaluación',grupos.radicado,BL,'#f0f6ff');
+  h+=sec('⚖️','En reclamación',grupos.reclamacion.length+' con observaciones del MEN',grupos.reclamacion,'#dc2626','#fff8f8');
+  h+=sec('❌','Negado MEN',grupos.negado.length+' con resolución negativa',grupos.negado,RD,'#fff5f5');
+  h+=sec('✅','Vigente',grupos.vigente.length+' programas activos con registro',grupos.vigente,G,'#f0fdf4');
   h+='</div>';
   wrap.innerHTML=h;
 }
-function toggleSec(id){var el=document.getElementById(id),ic=document.getElementById('icon-'+id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';if(ic)ic.textContent=open?'?':'?';}
+function toggleSec(id){var el=document.getElementById(id),ic=document.getElementById('icon-'+id);if(!el)return;var open=el.style.display!=='none';el.style.display=open?'none':'block';if(ic)ic.textContent=open?'▾':'▸';}
 
 // ===== EDITOR CON SELECTOR DE FACULTAD =====
 // Versión ACTIVA — sombrea a renderEditor legacy.
@@ -1008,8 +1008,8 @@ function renderEditor(){
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
   var _tab=window._lrEditorTab||'programas';
   var h='<div style="padding:1rem">';
-  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+(_tab==='rutas'?'<!-- Crear ruta desde sección Sin ruta -->':'<button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">? Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button>')+'</div></div>';
-  h+='<div style="display:flex;gap:0;margin-bottom:1rem;border-bottom:2px solid #e0ece4"><button data-action="lr-set-tab" data-tab="programas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='programas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='programas'?'#006633':'transparent')+';margin-bottom:-2px">?? Programas</button><button data-action="lr-set-tab" data-tab="rutas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='rutas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='rutas'?'#006633':'transparent')+';margin-bottom:-2px">?? Rutas de aprendizaje</button></div>';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+(_tab==='rutas'?'<!-- Crear ruta desde sección Sin ruta -->':'<button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">✏️ Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button>')+'</div></div>';
+  h+='<div style="display:flex;gap:0;margin-bottom:1rem;border-bottom:2px solid #e0ece4"><button data-action="lr-set-tab" data-tab="programas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='programas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='programas'?'#006633':'transparent')+';margin-bottom:-2px">📋 Programas</button><button data-action="lr-set-tab" data-tab="rutas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='rutas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='rutas'?'#006633':'transparent')+';margin-bottom:-2px">🗺️ Rutas de aprendizaje</button></div>';
   if(_tab==='rutas'){h+=_lrRenderList();h+='</div>';document.getElementById('editor-content').innerHTML=h;return;}
   var facBtns=AppData.getFacultades().map(function(fac,i){var a=i===curFac;return '<button data-action="sel-fac" data-fac="'+i+'" style="padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid '+(a?'#006633':'#d0e4d8')+';background:'+(a?'#006633':'#fff')+';color:'+(a?'#fff':'#555')+'">'+fac.name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim()+'</button>';}).join('');
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Selecciona la facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
@@ -1019,41 +1019,41 @@ function renderEditor(){
     var st=cbs(p.lineas.concat(p.mae));
     var cr=p.lineas.concat(p.mae).filter(function(x){return x.resp;}).length;
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden">'
-      +'<div style="background:#006633;padding:11px 14px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#fff">'+p.n+'</div><div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">'+p.lineas.length+' especialización(es) · '+p.mae.length+' maestría(s)</div></div><div style="font-size:15px">??</div></div>'
+      +'<div style="background:#006633;padding:11px 14px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#fff">'+p.n+'</div><div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">'+p.lineas.length+' especialización(es) · '+p.mae.length+' maestría(s)</div></div><div style="font-size:15px">🎓</div></div>'
       +'<div style="padding:10px 14px">'
         +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">'
-          +(st.v?'<span style="background:#e6f2eb;color:#006633;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">? '+st.v+' vigente</span>':'')
-          +(st.c?'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">?? '+st.c+' en proceso</span>':'')
-          +(st.p?'<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">?? '+st.p+' por construir</span>':'')
-          +(cr?'<span style="background:#e6f0fb;color:#185FA5;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">?? '+cr+' con responsable</span>':'<span style="background:#f5f5f5;color:#aaa;padding:2px 8px;border-radius:8px;font-size:9px">Sin responsable</span>')
+          +(st.v?'<span style="background:#e6f2eb;color:#006633;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">✅ '+st.v+' vigente</span>':'')
+          +(st.c?'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">🔧 '+st.c+' en proceso</span>':'')
+          +(st.p?'<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">📝 '+st.p+' por construir</span>':'')
+          +(cr?'<span style="background:#e6f0fb;color:#185FA5;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">👤 '+cr+' con responsable</span>':'<span style="background:#f5f5f5;color:#aaa;padding:2px 8px;border-radius:8px;font-size:9px">Sin responsable</span>')
         +'</div>'
         +'<div style="font-size:10px;color:#666;margin-bottom:10px">'
           +p.lineas.slice(0,3).map(function(l){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#3aaa72;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.esp+'</span>'+(l.mes&&l.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][l.mes]+' '+l.ano+'</span>':'')+'</div>';}).join('')
           +(p.lineas.length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+(p.lineas.length-3)+' más...</div>':'')
           +p.mae.slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.n+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
         +'</div>'
-        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">? Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">??</button></div>'
+        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">🗑️</button></div>'
       +'</div></div>';
   });
   h+='</div>';
   // Doctorado colapsable
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
     +'<div style="background:#0d3d22;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-doc-form">'
-      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px">??</span><div><div style="font-size:12px;font-weight:700;color:#fff">Doctorado de la facultad</div><div style="font-size:10px;color:rgba(200,164,58,.8);margin-top:1px">'+(f.doc?f.doc.n:'Sin doctorado — haz clic para agregar')+'</div></div></div>'
-      +'<span id="doc-toggle-icon" style="color:#C8A43A;font-size:18px;font-weight:700">?</span>'
+      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px"></span><div><div style="font-size:12px;font-weight:700;color:#fff">Doctorado de la facultad</div><div style="font-size:10px;color:rgba(200,164,58,.8);margin-top:1px">'+(f.doc?f.doc.n:'Sin doctorado — haz clic para agregar')+'</div></div></div>'
+      +'<span id="doc-toggle-icon" style="color:#C8A43A;font-size:18px;font-weight:700">▸</span>'
     +'</div>'
     +'<div id="doc-form-body" style="padding:16px;display:none">'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Nombre del doctorado</label><input id="doc-name" value="'+(f.doc?f.doc.n:'')+'" placeholder="Nombre del doctorado"></div><div class="field"><label>Estado actual</label><input id="doc-estado" value="'+(f.doc?f.doc.e:'')+'" placeholder="Ej: En construcción"></div></div>'
-      +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>?? Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>?? Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>?? Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>👤 Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
+      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>📅 Mes inicio</label><select id="doc-mes"><option value="">— Mes —</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>📅 Año inicio</label><select id="doc-ano"><option value="">— Año —</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
       +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>\u{1f517} Enlace</label><input type="url" id="doc-enlace" value="'+(f.doc&&f.doc.enlaceObtencion?f.doc.enlaceObtencion:'')+'\" placeholder="URL del programa"></div><div class="field"></div></div>'
-      +'<button class="btn-green" data-action="save-doc">?? Guardar doctorado</button>'
+      +'<button class="btn-green" data-action="save-doc">💾 Guardar doctorado</button>'
     +'</div>'
   +'</div>';
   h+='</div>';
   document.getElementById('editor-content').innerHTML=h;
 }
-function toggleDocForm(){var b=document.getElementById('doc-form-body'),ic=document.getElementById('doc-toggle-icon');if(!b)return;var o=b.style.display!=='none';b.style.display=o?'none':'block';if(ic)ic.textContent=o?'?':'?';}
+function toggleDocForm(){var b=document.getElementById('doc-form-body'),ic=document.getElementById('doc-toggle-icon');if(!b)return;var o=b.style.display!=='none';b.style.display=o?'none':'block';if(ic)ic.textContent=o?'▾':'▸';}
 function saveDoc(){
   var n=document.getElementById('doc-name').value.trim();
   if(!n){AppData.saveDocumento(curFac,null);}
@@ -1072,11 +1072,11 @@ function deleteFac(){
   });
 }
 function openNewFac(){
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>?</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">?? Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>➕</span>Nueva facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" placeholder="Ej: Facultad de Ingeniería"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="true">➕ Crear facultad</button><button data-action="cancel-edit">Cancelar</button></div></div></div>';
 }
 function openEditFac(){
   var f=AppData.getFacultad(curFac);
-  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>?</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+(f?f.name:'')+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">?? Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">?? Eliminar facultad</button></div></div></div>';
+  document.getElementById('editor-content').innerHTML='<div class="modal-overlay"><div class="modal"><div class="modal-title"><span>✏️</span>Editar facultad</div><div class="form-section"><div class="field"><label>Nombre de la facultad</label><input id="fac-name" value="'+(f?f.name:'')+'"></div></div><div class="modal-actions"><button class="btn-green" data-action="save-fac" data-is-new="false">💾 Guardar</button><button data-action="cancel-edit">Cancelar</button><button class="btn-red" data-action="delete-fac">🗑️ Eliminar facultad</button></div></div></div>';
 }
 function saveFac(isNew){
   var n=document.getElementById('fac-name').value.trim();
