@@ -56,7 +56,7 @@ function downloadHTML(){
   var filename='Dashboard_UDEC_Posgrados_'+fecha+'.html';
 
   if(!window.__EMBED){
-    // Fallback clásico si embed.js no cargó
+    // Alternativa clásica si embed.js no cargó
     var html=document.documentElement.outerHTML;
     html=html.replace(/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,'var DEFAULT_DATA='+JSON.stringify(window.DB));
     html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
@@ -72,7 +72,7 @@ function downloadHTML(){
     if(toastEl){toastEl.textContent='✅ Dashboard guardado con datos actualizados';setTimeout(function(){toastEl.style.display='none';},2500);}
   }).catch(function(err){
     console.error('embed error:',err);
-    // Fallback: método clásico
+    // Alternativa: método clásico
     var html=document.documentElement.outerHTML;
     html=html.replace(/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,'var DEFAULT_DATA='+JSON.stringify(window.DB));
     html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');

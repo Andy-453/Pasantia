@@ -44,7 +44,7 @@
  */
 
 window.AppData = {
-  // ===== Queries readonly =====
+  // ===== Consultas (solo lectura) =====
 
   getFacultades: function() { return window.DB; },
   getFacultad: function(i) { return window.DB ? window.DB[i] : undefined; },
@@ -132,7 +132,7 @@ window.AppData = {
     return r?r.facIndex:-1;
   },
 
-  // ===== Write operations =====
+  // ===== Operaciones de escritura =====
 
   /** @private validación ligera: índice facultad válido */
   _validFacIndex: function(fi) {

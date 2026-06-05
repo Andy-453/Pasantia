@@ -26,7 +26,6 @@ function renderIndicadores(){
   const wrap = document.getElementById('indicadores-content');
   const state = window.AppState; // future: filtrado por facultad activa
 
-  // Build stats from DB
   let totalPre=0, totalEsp=0, totalMae=0, totalDoc=0;
   let vigente=0, proyectada=0;
   const estadoCount={};
