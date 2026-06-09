@@ -38,7 +38,14 @@ function _validateDB(data){
  * @global window.__UDEC_EMBEDDED__ — si true, ignora localStorage
  * @global window.DEFAULT_DATA — datos iniciales
  */
+function _makeEmbedded(){
+  return '<script>' +
+    'window.__EMBEDDED_DB=' + JSON.stringify(window.DB).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_LR=' + JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/') + ';' +
+    '<\/script>';
+}
 function loadDB(){
+  if(window.__EMBEDDED_DB){window.DB=JSON.parse(JSON.stringify(window.__EMBEDDED_DB));return;}
   if(window.__UDEC_EMBEDDED__){window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));return;}
   try{
     var d=localStorage.getItem('udec_rutas_db');
@@ -58,8 +65,7 @@ function downloadHTML(){
   if(!window.__EMBED){
     // Alternativa clásica si embed.js no cargó
     var html=document.documentElement.outerHTML;
-    html=html.replace(/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,'var DEFAULT_DATA='+JSON.stringify(window.DB));
-    html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
+    html=html.replace('</title>','</title>'+_makeEmbedded());
     _downloadBlob(html,filename);
     return;
   }
@@ -74,8 +80,7 @@ function downloadHTML(){
     console.error('embed error:',err);
     // Alternativa: método clásico
     var html=document.documentElement.outerHTML;
-    html=html.replace(/(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,'var DEFAULT_DATA='+JSON.stringify(window.DB));
-    html=html.replace('</title>','</title><script>window.__UDEC_EMBEDDED__=true;<\/script>');
+    html=html.replace('</title>','</title>'+_makeEmbedded());
     _downloadBlob(html,filename);
     if(toastEl){toastEl.textContent='✅ Dashboard guardado (sin recursos embebidos)';setTimeout(function(){toastEl.style.display='none';},2500);}
   });

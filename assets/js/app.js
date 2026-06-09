@@ -1306,6 +1306,10 @@ function loadLearningRoutes(){
   if(!window.__LEARNING_ROUTES_DEFAULT && window.__LEARNING_ROUTES){
     window.__LEARNING_ROUTES_DEFAULT = JSON.parse(JSON.stringify(window.__LEARNING_ROUTES));
   }
+  if(window.__EMBEDDED_LR){
+    window.__LEARNING_ROUTES = JSON.parse(JSON.stringify(window.__EMBEDDED_LR));
+    return;
+  }
   var stored = localStorage.getItem(LR_STORAGE_KEY);
   if(stored){
     try {

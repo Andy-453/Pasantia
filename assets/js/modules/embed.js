@@ -62,13 +62,21 @@ window.__EMBED = {
     var html = document.documentElement.outerHTML;
     var cssText = this.collectCSS();
 
-    html = html.replace(
-      /(var|const) DEFAULT_DATA=\[[\s\S]*?\](?=\s*\n(var|const) ALL_SEDES)/,
-      'var DEFAULT_DATA=' + JSON.stringify(window.DB)
-    );
-
     html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
-    html = html.replace('</head>', '<style>' + cssText + '</style></head>');
+    var _dbStr   = JSON.stringify(window.DB).replace(/<\//g, '<\\/');
+    var _lrStr   = JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/');
+    var _embedded = '<script>' +
+      'window.__EMBEDDED_DB=' + _dbStr + ';' +
+      'window.__EMBEDDED_LR=' + _lrStr + ';' +
+      '<\/script>';
+    var _adminHide = '/* UDEC EXPORT MODE - READ ONLY */' +
+      '#panel-editor,#tb-editor,.edit-node-btn,.toast{display:none!important}' +
+      'a[data-action="reset-db"],button[data-action="download-html"],' +
+      'button[data-action="reset-db"],' +
+      'button[data-action="show-tab"][data-tab="editor"],' +
+      'button[data-action="edit-lr-from-modal"],' +
+      'button[onclick*="downloadDB"]{display:none!important}';
+    html = html.replace('</head>', _embedded + '<style>' + cssText + _adminHide + '</style></head>');
 
     var scriptSrcs = [];
     html = html.replace(/<script[^>]+src="([^"]*)"[^>]*><\/script>/gi, function(m, src) {
