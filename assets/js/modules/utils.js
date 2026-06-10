@@ -50,3 +50,43 @@ function toast(msg){
   setTimeout(function(){t.style.display='none';},2500);
 }
 
+function _getObtencionUrl(e, item){
+  if(!item || !item.enlaceObtencion) return '';
+  if(!(e||'').toLowerCase().includes('obtención')) return '';
+  var url = item.enlaceObtencion.trim();
+  if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) return '';
+  return url;
+}
+function _hasLR(id){
+  return !!(window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id]);
+}
+
+function _getTypeLabel(type){
+  var map={especializacion:'Especialización',maestria:'Maestría',doctorado:'Doctorado'};
+  return map[type]||'Programa';
+}
+function _getTypeBadge(type){
+  var labels={especializacion:{label:'Esp.',color:'#3aaa72',bg:'#e8f5ee'},
+              maestria:{label:'Mae.',color:'#C8A43A',bg:'#faf3e0'},
+              doctorado:{label:'Doc.',color:'#0d3d22',bg:'#d4e8da'}};
+  var l=labels[type]||labels.especializacion;
+  return '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700;background:'+l.bg+';color:'+l.color+'">'+l.label+'</span>';
+}
+function _getAllAcademicPrograms(){
+  var list=[];
+  AppData.getFacultades().forEach(function(f){
+    if(f.doc){
+      list.push({id:'doc-'+f.id,type:'doctorado',name:f.doc.n, facName:f.name, sedes:f.doc.sedes||[], enlaceObtencion:f.doc.enlaceObtencion||null});
+    }
+    f.progs.forEach(function(p){
+      (p.mae||[]).forEach(function(m){
+        list.push({id:m.id,type:'maestria',name:m.n, facName:f.name, progName:p.n, sedes:m.sedes});
+      });
+      (p.lineas||[]).forEach(function(l){
+        list.push({id:l.id,type:'especializacion',name:l.esp, facName:f.name, progName:p.n, lineaName:l.l, sedes:l.sedes});
+      });
+    });
+  });
+  return list;
+}
+

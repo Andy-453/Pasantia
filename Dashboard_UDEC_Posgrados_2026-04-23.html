@@ -74,6 +74,10 @@
     <div class="tb-icon">✎</div>
     <div class="tb-info"><span class="tb-label">Editor de datos</span><span class="tb-desc">Agregar · editar</span></div>
   </button>
+  <button class="tb" data-action="show-tab" data-tab="rc" id="tb-rc">
+    <div class="tb-icon">📋</div>
+    <div class="tb-info"><span class="tb-label">Registro Calificado</span><span class="tb-desc">Seguimiento de procesos</span></div>
+  </button>
 </div>
 
 <div class="filters no-print">
@@ -1164,16 +1168,50 @@
         <span style="font-size:9px;font-weight:700;color:#e09020;white-space:nowrap">2 (100%)</span>
       </div></div></div></div></div></div></div></div>
 
+<div id="panel-rc" class="panel">
+  <div style="padding:1.25rem;background:#f4f6f4;min-height:400px">
+    <div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px">
+      <span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>
+      📋 Tablero de Registro Calificado
+    </div>
+    <div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;padding:20px;margin-bottom:1rem">
+      <div style="display:inline-block;background:#fef3c7;color:#92400e;padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:12px">🚧 En desarrollo</div>
+      <p style="font-size:13px;color:#333;line-height:1.5;margin:0 0 16px 0">
+        Este módulo permitirá el seguimiento y control de los procesos de Registro Calificado de los programas de posgrado.
+      </p>
+      <div style="font-size:11px;font-weight:700;color:#006633;margin-bottom:8px">Funcionalidades previstas:</div>
+      <ul style="margin:0;padding-left:20px;color:#555;font-size:11px;line-height:1.8">
+        <li>Seguimiento de solicitudes</li>
+        <li>Control de estados</li>
+        <li>Gestión documental</li>
+        <li>Indicadores de avance</li>
+        <li>Reportes y exportación de información</li>
+      </ul>
+    </div>
+  </div>
+</div>
 </div><!-- /main -->
 <script src="assets/js/modules/utils.js"></script>
 <script src="assets/js/modules/embed.js"></script>
 <script src="assets/js/modules/storage.js"></script>
 <script src="assets/js/data/default-data.js"></script>
 <script src="assets/js/data/app-data.js"></script>
+<script src="assets/js/models/app-state.js"></script>
+<script src="assets/js/models/learning-routes.js"></script>
 <script src="assets/js/modules/filters.js"></script>
 <script src="assets/js/modules/dashboard.js"></script>
 <script src="assets/js/modules/indicators.js"></script>
 <script src="assets/js/modules/export.js"></script>
 <script src="assets/js/data/learning-routes.js"></script>
+<script src="assets/js/views/pipeline.js"></script>
+<script src="assets/js/views/sede-view.js"></script>
+<script src="assets/js/views/learning-route.js"></script>
+<script src="assets/js/views/tabla.js"></script>
+<script src="assets/js/views/snies.js"></script>
+<script src="assets/js/views/prog-form.js"></script>
+<script src="assets/js/views/tree.js"></script>
+<script src="assets/js/views/editor.js"></script>
+<script src="assets/js/controllers/navigation.js"></script>
+<script src="assets/js/controllers/actions.js"></script>
 <script src="assets/js/app.js"></script>
 </body></html>
