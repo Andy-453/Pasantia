@@ -40,12 +40,12 @@ function applyFilters(){
   window.filtOferta=document.getElementById('filt-oferta').value;
   window.filtEstado=document.getElementById('filt-estado').value;
   window.filtNivel=document.getElementById('filt-nivel').value;
-  renderViews();
+  __refreshAll();
 }
 function resetFilters(){
   window.filtSede=window.filtOferta=window.filtEstado=window.filtNivel=window.filtPregrado='ALL';
   ['filt-sede','filt-oferta','filt-estado','filt-nivel','filt-pregrado'].forEach(function(id){document.getElementById(id).value='ALL';});
-  renderViews();
+  __refreshAll();
 }
 
 function populateSedes(){

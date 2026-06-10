@@ -64,13 +64,13 @@ function saveDoc(){
     var ano=parseInt(document.getElementById('doc-ano').value)||null;
     AppData.saveDocumento(curFac,{n:n,e:document.getElementById('doc-estado').value.trim(),o:document.getElementById('doc-oferta').value,sedes:[],resp:document.getElementById('doc-resp')?document.getElementById('doc-resp').value.trim():'',mes:mes,ano:ano,enlaceObtencion:document.getElementById('doc-enlace')?document.getElementById('doc-enlace').value.trim():null});
   }
-  toast('Doctorado guardado');renderViews();renderEditor();
+    toast('Doctorado guardado');__refreshAll();renderEditor();
 }
 function deleteFac(){
   var f=AppData.getFacultad(curFac);
   showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+(f?f.name:'')+'</strong> y todos sus programas.',function(){
     AppData.deleteFacultad(curFac);curFac=Math.max(0,curFac-1);
-    toast('Facultad eliminada');renderFacBar();populateSedes();renderViews();renderEditor();
+    toast('Facultad eliminada');__refreshAll();renderEditor();
   });
 }
 function openNewFac(){
@@ -85,10 +85,10 @@ function saveFac(isNew){
   if(!n){toast('Escribe el nombre de la facultad');return;}
   if(isNew){AppData.saveFacultad({name:n,progs:[],doc:null},true);curFac=AppData.getFacultadCount()-1;}
   else{AppData.updateFacultadName(curFac,n);}
-  toast('Facultad guardada');renderFacBar();renderViews();renderEditor();
+    toast('Facultad guardada');__refreshAll();renderEditor();
 }
 function openNewProg(){editingProgId='__new__';tmpLineas=[];tmpMaes=[];renderProgForm();}
-function openEditProg(pid){showTab('editor');editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
+function openEditProg(pid){editingProgId=pid;if(!tmpLineas._progId||tmpLineas._progId!==pid){tmpLineas=[];tmpMaes=[];}renderProgForm();}
 
 function addLinea(){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas.push({id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null,enlaceObtencion:null});tmpLineas._progId=pid;renderProgForm();}
 function delLinea(lid){collectLineas();collectMaes();var pid=tmpLineas._progId;tmpLineas=tmpLineas.filter(function(l){return l.id!==lid;});tmpLineas._progId=pid;renderProgForm();}
@@ -100,13 +100,13 @@ function saveProg(pid,isNew){
   collectLineas();collectMaes();
   var prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
   AppData.savePrograma(curFac,prog,isNew);
-  editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Programa guardado');populateSedes();renderFacBar();renderViews();renderEditor();
+    editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Programa guardado');__refreshAll();renderEditor();
 }
 function deleteProg(pid){
   var r=AppData.findProgramById(pid);
   showConfirm('¿Eliminar?','Se eliminará <strong>'+(r?r.programa.n:'este programa')+'</strong>.',function(){
     if(r) AppData.deletePrograma(r.facIndex,pid);
-    editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Eliminado');renderViews();renderEditor();
+    editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Eliminado');__refreshAll();renderEditor();
   });
 }
 function cancelEdit(){editingProgId=null;tmpLineas=[];tmpMaes=[];renderEditor();}
@@ -265,13 +265,13 @@ function _lrSaveRoute(espId){
     id:'lr-'+id.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
     espId:id, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
-  toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); renderViews();
+    toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); __refreshAll();
 }
 
 function _lrDeleteRoute(espId){
   if(!window.__LEARNING_ROUTES[espId]){ toast('Ruta no encontrada'); return; }
   showConfirm('Eliminar ruta','¿Eliminar la ruta de <strong>'+(window.__LEARNING_ROUTES[espId].espName||espId)+'</strong>?',function(){
-    delete window.__LEARNING_ROUTES[espId]; saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); renderViews();
+    delete window.__LEARNING_ROUTES[espId]; saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); __refreshAll();
   });
 }
 

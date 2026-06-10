@@ -1,8 +1,10 @@
 // controllers/actions.js — Delegación de eventos click/change
 
+function __refreshAll(){renderFacBar();populateSedes();renderViews();}
+
 var __ACTIONS = {
   'show-tab': function(b){ showTab(b.dataset.tab); },
-  'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); },
+  'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); __refreshAll();['indicadores','snies','pipeline','editor'].forEach(function(t){var el=document.getElementById('panel-'+t);if(el&&el.classList.contains('act'))showTab(t);}); },
   'reset-filters': function(){ resetFilters(); },
   'snies-set-fac': function(b){ snSetFac(b.dataset.fac); },
   'snies-set-prog': function(b){ snSetProg(b.dataset.prog); },
@@ -10,7 +12,7 @@ var __ACTIONS = {
   'download-html': function(){ downloadHTML(); },
   'print': function(){ window.print(); },
   'reset-db': function(){ resetDB(); },
-  'open-edit-prog': function(b){ openEditProg(b.dataset.pid); },
+  'open-edit-prog': function(b){ showTab('editor'); openEditProg(b.dataset.pid); },
   'del-linea': function(b){ delLinea(b.dataset.lineaId); },
   'del-mae': function(b){ delMae(b.dataset.maeId); },
   'add-linea': function(){ addLinea(); },

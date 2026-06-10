@@ -31,7 +31,7 @@ function renderFacBar(){
  * Cambia la facultad activa y actualiza toda la vista.
  * @param {number} i - índice de facultad en DB via AppData
  */
-function selFac(i){curFac=i;populateSedes();renderFacBar();renderViews();['indicadores','snies','pipeline','editor'].forEach(function(t){var el=document.getElementById('panel-'+t);if(el&&el.classList.contains('act'))showTab(t);});}
+function selFac(i){curFac=i;populateSedes();}
 
 /**
  * Calcula y renderiza las tarjetas KPI (vigente, proyectada, especializaciones, maestrías, negados).
