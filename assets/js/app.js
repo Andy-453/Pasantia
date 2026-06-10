@@ -296,7 +296,9 @@ function renderLearningRouteHTML(route){
       return '<div class="subj-card">'
         + '<div class="subj-stripe"></div>'
         + '<div class="subj-body">'
-        + '<div class="subj-name">'+subj.title+'</div>'
+        + '<div class="subj-name">'+(subj.resourceUrl
+          ? '<a href="'+subj.resourceUrl+'" target="_blank" rel="noopener noreferrer" style="color:#185FA5;text-decoration:underline;cursor:pointer">'+subj.title+'</a>'
+          : subj.title)+'</div>'
         + '<div class="subj-meta">'
         + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
         + homoBadge
@@ -1186,6 +1188,7 @@ function _lrEditRoute(progId, prefill){
         +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
         +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
+        +'<input class="lr-subj-url" type="url" value="'+(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<button data-action="lr-delete-subject" data-si="'+si+'" data-ji="'+ji+'" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px" title="Eliminar materia">×</button>'
         +'</div>';
     });
@@ -1220,7 +1223,8 @@ function _lrCollectFormData(){
       var st=s.querySelector('.lr-subj-name')?.value.trim()||'';
       var sc=parseInt(s.querySelector('.lr-subj-credits')?.value)||0;
       var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
-      if(st) subs.push({title:st,credits:sc,homologa:sh});
+      var su=s.querySelector('.lr-subj-url')?.value.trim()||'';
+      if(st) subs.push({title:st,credits:sc,homologa:sh,resourceUrl:su||undefined});
     });
     var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
     sems.push({title:t,type:tp,credits:cr,subjects:subs});
