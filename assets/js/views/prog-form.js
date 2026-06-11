@@ -1,6 +1,5 @@
 /**
  * Vista: Formulario de programa (editor CRUD)
- * Extraída de app.js para separación MVC.
  * Dependencias runtime: AppData, AppState, editingProgId, tmpLineas, tmpMaes,
  *   uid (global), document.getElementById
  */

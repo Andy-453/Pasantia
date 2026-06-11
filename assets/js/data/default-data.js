@@ -1,5 +1,5 @@
 /**
- * default-data.js — Datos iniciales de facultades y programas (Fase 4)
+ * default-data.js — Datos iniciales de facultades y programas
  * ---
  * Responsabilidad:
  *   - contener la estructura completa DEFAULT_DATA

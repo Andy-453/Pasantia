@@ -15,8 +15,8 @@
  *   - window.filt* — estado de filtros (legacy, via AppState.filters.*)
  *
  * Estado:
- *   Modular. Acceso DB via AppData (Fase 4). Filtros legacy window.filt*
- *   pendientes de migrar a AppState.filters.* en Fase 5.
+ *   Modular. Acceso DB via AppData. Filtros legacy window.filt*
+ *   migrados a AppState.filters.* via window accessors.
  */
 function sedeMatch(s){return window.filtSede==='ALL'||s&&s.includes(window.filtSede);}
 function ofertaMatch(o){return window.filtOferta==='ALL'||(window.filtOferta==='V'&&o==='V')||(window.filtOferta==='P'&&o==='P');}

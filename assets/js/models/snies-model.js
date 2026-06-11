@@ -1,16 +1,17 @@
 /**
- * snies-model.js — Modelo de datos SNIES
+ * snies-model.js — Modelo de datos SNIES (funciones puras)
  * ---
  * Responsabilidad:
- *   - validación de datos importados desde Excel
+ *   - validación de datos importados desde Excel (catálogo + indicadores)
  *   - construcción del objeto programs[] a partir de catálogo + indicadores
  *   - cálculo automático de indicadores derivados (tabs, tsel, tgrad, pctH, pctM)
+ *   - etiquetado _source: 'imported' en programas construidos desde Excel
  *
  * Dependencias:
  *   - Ninguna (funciones puras, sin DOM, sin window, sin AppState)
  *
  * Estado:
- *   Nueva. Fase 1 — infraestructura de importación Excel.
+ *   Estable. Modelo de datos SNIES maduro.
  */
 
 function validateCatalogo(catalogo) {

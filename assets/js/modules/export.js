@@ -31,7 +31,7 @@
  *   - Unificar CSV generation en un helper compartido.
  *
  * Estado:
- *   Extraído de app.js en Fase 2. Sin cambios funcionales.
+ *   Extraído de app.js. Sin cambios funcionales.
  */
 
 // ===== MAPAS SNIES =====

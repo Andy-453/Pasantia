@@ -1,6 +1,5 @@
 /**
  * Vista: Ruta de Aprendizaje (modal)
- * Extraída de app.js para separación MVC.
  * Dependencias runtime: _getTypeLabel (app.js helper), window.__LEARNING_ROUTES
  */
 

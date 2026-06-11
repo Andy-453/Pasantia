@@ -1,6 +1,5 @@
 /**
  * Vista: Tabla de programas
- * Extraída de app.js para separación MVC.
  * Dependencias runtime: AppData, AppState, pregradoMatch, itemMatch, getSt, _getObtencionUrl
  */
 
