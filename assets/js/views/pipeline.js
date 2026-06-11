@@ -6,11 +6,8 @@
  *     cronograma trimestral y tablas colapsables por estado.
  *
  * Dependencias:
- *   - AppData.getFacultades() — capa de datos (Fase 4)
+ *   - AppData.getFacultades() — capa de datos
  *   - document.getElementById('pipeline-content') — contenedor DOM
- *
- * Historial:
- *   2026-06-10 — Extraído de app.js (Fase 5: extracción de vistas)
  */
 
 function renderPipeline(){

@@ -6,13 +6,15 @@
  *   - fetch de JS (mismo origen) para inlinning
  *   - convertir imágenes a data URIs via canvas
  *   - construir HTML standalone con todo inline
+ *   - serializar DB, rutas de aprendizaje y datos SNIES
+ *     como __EMBEDDED_DB, __EMBEDDED_LR, __EMBEDDED_SD
  *
  * Dependencias:
- *   - window.DB (lectura)
+ *   - window.DB, window.__LEARNING_ROUTES, window.AppState (lectura)
  *   - fetch, document.styleSheets, canvas
  *
  * Estado:
- *   Nuevo. Se integra con storage.js → downloadHTML().
+ *   Estable. Integrado con storage.js → downloadHTML().
  */
 window.__EMBED = {
   collectCSS: function() {

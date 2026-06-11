@@ -12,7 +12,7 @@
  *   - window.DB, window.DEFAULT_DATA, window.__UDEC_EMBEDDED__
  *
  * Estado:
- *   Estable. Dependencia de window.* para acceso a DB.
+ *   Estable. Serializa DB, rutas de aprendizaje y datos SNIES en exportación HTML.
  */
 function saveDB(){try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
 function _validateDB(data){

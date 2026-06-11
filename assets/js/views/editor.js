@@ -1,6 +1,5 @@
 // ===== EDITOR CON SELECTOR DE FACULTAD =====
-// Versión ACTIVA — sombrea a renderEditor legacy.
-// TODO [MVC]: unificar con la implementación legacy en Fase 3.
+// TODO [MVC]: migrar a controlador independiente cuando se adopte ESModules.
 
 var _lrEditingId;
 var _lrEditorTab = 'programas';

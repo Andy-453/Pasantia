@@ -1,5 +1,5 @@
 /**
- * app-data.js — Capa de acceso a datos (Fase 4)
+ * app-data.js — Capa de acceso a datos
  * ---
  * Responsabilidad:
  *   - encapsular operaciones de lectura/escritura sobre DB
@@ -15,8 +15,8 @@
  *   AppData.getFacultad(0) → Facultad object
  *   AppData.savePrograma(fi, prog, isNew) → muta + persiste
  *
- * Fase 4 — encapsulación progresiva.
- * DB sigue siendo fuente de verdad hasta migración completa.
+ * DB access encapsulado via AppData.
+ * DB sigue siendo fuente de verdad.
  *
  * Operaciones documentadas en docs/architecture.md §19.
  *

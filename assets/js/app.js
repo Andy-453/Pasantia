@@ -1,30 +1,39 @@
 ﻿/**
- * app.js â€” orquestador principal
+ * app.js — orquestador principal
  * ---
  * Responsabilidad:
- *   - inicializaciÃ³n de datos (DB, ALL_SEDES)
- *   - renderizado de Ã¡rbol, tabla, vista por sede, editor, SNIES, pipeline, indicadores
- *   - orquestaciÃ³n de vistas (renderViews, showTab)
- *   - editor de datos (CRUD de facultades/programas)
+ *   - inicialización de datos (DB, SD, rutas de aprendizaje)
+ *   - orquestación de vistas (renderViews, showTab)
+ *   - exposición de todas las funciones globales via window.App
  *
  * Dependencias:
- *   - utils.js       â†’ getSt, pll, uid, gv, gi, toast, showConfirm
- *   - storage.js     â†’ saveDB, loadDB, downloadHTML, resetDB
- *   - filters.js     â†’ pregradoMatch, itemMatch, populateSedes, applyFilters
- *   - dashboard.js   â†’ renderKPIs, renderFacBar, selFac
- *   - app-data.js    â†’ AppData (capa de datos)
- *   - default-data.js â†’ window.__DEFAULT_DATA (datos iniciales)
+ *   - models/app-state.js        → AppState (estado centralizado)
+ *   - models/snies-model.js      → validateCatalogo, buildPrograms, computeDerived
+ *   - models/learning-routes.js  → loadLearningRoutes, saveLearningRoutes
+ *   - data/default-data.js       → window.__DEFAULT_DATA
+ *   - data/app-data.js           → AppData (capa de datos)
+ *   - data/learning-routes.js    → window.__LEARNING_ROUTES
+ *   - modules/utils.js           → getSt, toast, showConfirm, uid
+ *   - modules/storage.js         → saveDB, loadDB, downloadHTML, resetDB
+ *   - modules/filters.js         → applyFilters, resetFilters, populateSedes
+ *   - modules/dashboard.js       → renderKPIs, renderFacBar, selFac
+ *   - modules/indicators.js      → renderIndicadores
+ *   - modules/export.js          → downloadDB, exportSNIES
+ *   - modules/embed.js           → window.__EMBED
+ *   - modules/snies-loader.js    → loadSnies, importSniesExcel, clearSnies, removeSniesProgram
+ *   - controllers/navigation.js  → showTab, renderViews, snSetFac, snSetProg
+ *   - controllers/actions.js     → __ACTIONS, __refreshAll
+ *   - views/*.js                 → renderTree, renderTabla, renderSedeView, renderEditor, renderPipeline, renderSNIES
  *
  * Estado:
- *   MÃ³dulo monolÃ­tico en proceso de fragmentaciÃ³n (Fase 4).
- *   var globals legacy: DB, DEFAULT_DATA, ALL_SEDES (pendientes encapsulaciÃ³n).
- *   DB access via AppData en todos los renderers y writes.
- *   curFac y filt* migrados a AppState via window accessors.
- *   DEFAULT_DATA inline mantenido para regex de storage/embed (export).
- *   TODO [MVC]: migrar a controladores por dominio cuando se adopte ESModules.
+ *   Orquestador liviano. Renderizado delegado a módulos extraídos (views/*).
+ *   Funciones globales expuestas via window.App para compatibilidad
+ *   con onclick="" y exportación HTML standalone.
+ *   DB access via AppData. curFac y filt* migrados a AppState.
+ *   SD gestionado por snies-loader (localStorage + __EMBEDDED_SD).
  */
 
-// Flag embed: solo se activa en HTML exportado standalone (vÃ­a inyecciÃ³n en storage.js).
+// Flag embed: solo se activa en HTML exportado standalone.
 // En modo desarrollo (source files) se permite localStorage para persistencia local.
 window.__UDEC_EMBEDDED__=false;
 
@@ -33,15 +42,13 @@ var DEFAULT_DATA=[{"id":"admin","name":"Facultad de Ciencias Admin., EconÃ³mic
 
 var DB=JSON.parse(JSON.stringify(DEFAULT_DATA));
 
-// ===== EXPORTACIÃ“N =====
-// Namespace global para migraciÃ³n futura a ESModules.
-// Compatibilidad legacy: todas las funciones estÃ¡n tambiÃ©n en window
-// vÃ­a declaraciones `function` (implÃ­cito). Inline onclick sigue funcionando.
+// ===== EXPORTACION =====
+// Namespace global para migracion futura a ESModules.
 // TODO [MVC]: cuando se migre a ESModules, reemplazar por import/export.
 window.App = {
   // Estado
   AppState: window.AppState,
-  // NavegaciÃ³n
+  // Navegacion
   showTab: showTab, renderViews: renderViews, selFac: selFac,
   // Panel
   renderKPIs: renderKPIs, renderFacBar: renderFacBar,
@@ -49,7 +56,7 @@ window.App = {
   applyFilters: applyFilters, resetFilters: resetFilters, populateSedes: populateSedes,
   sedeMatch: sedeMatch, ofertaMatch: ofertaMatch, estadoMatch: estadoMatch,
   nivelMatch: nivelMatch, pregradoMatch: pregradoMatch, itemMatch: itemMatch,
-  // Ãrbol, Tabla, VistaSede
+  // Arbol, Tabla, VistaSede
   renderTree: renderTree, renderTabla: renderTabla, renderSedeView: renderSedeView,
   // Editor
   renderEditor: renderEditor, openNewProg: openNewProg, openEditProg: openEditProg,
@@ -73,33 +80,18 @@ window.App = {
   loadLearningRoutes: loadLearningRoutes, saveLearningRoutes: saveLearningRoutes, restoreDefaultRoutes: restoreDefaultRoutes,
 };
 
-// ===== ÃRBOL =====
+// ===== ARBOL =====
 /**
- * Renderiza el Ã¡rbol jerÃ¡rquico (pregrado ? lÃ­nea ? especializaciÃ³n / maestrÃ­a / doctorado).
+ * Renderiza el Arbol jerarquico (pregrado ? li­nea ? especializacion / maestri­a / doctorado).
  * Soporta modo single-pregrado y multi-pregrado.
  */
-// ===== VISTA POR SEDE =====
 
-
-// ===== FORMULARIO DE PROGRAMA =====
-
-
-
-// ===== SNIES + EXPORT (extraÃ­do a modules/export.js) =====
-
-// ===== INDICADORES (extraÃ­do a modules/indicators.js) =====
-
-
-// ===== INICIALIZACIÃ“N =====
+// ===== INICIALIZACION =====
 loadDB();
 loadLearningRoutes();
 loadSnies();
 renderFacBar();
 populateSedes();
 renderViews();
-// curFac sincronizado a AppState vÃ­a window accessors
-
-
-// exportSNIES (extraÃ­do a modules/export.js)
 
 

@@ -1,6 +1,5 @@
 /**
  * Vista: Árbol jerárquico de programas
- * Extraída de app.js para separación MVC.
  * Dependencias runtime: AppData, AppState, filtPregrado (filters.js),
  *   getSt, _getObtencionUrl, pregradoMatch, itemMatch, _hasLR, pll (app.js helpers),
  *   document.getElementById

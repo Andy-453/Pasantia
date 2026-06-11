@@ -1,4 +1,17 @@
-// controllers/actions.js — Delegación de eventos click/change
+/**
+ * controllers/actions.js — Delegación de eventos click/change
+ * ---
+ * Responsabilidad:
+ *   - mapeo de data-action a funciones del sistema
+ *   - __ACTIONS: registro central de acciones UI
+ *   - __refreshAll: recarga completa de barra, sedes y vistas
+ *
+ * Dependencias:
+ *   - Todos los renderers y controladores (navegación, editor, SNIES, etc.)
+ *
+ * Estado:
+ *   Estable. Capa de enlace entre DOM (data-action) y lógica de negocio.
+ */
 
 function __refreshAll(){renderFacBar();populateSedes();renderViews();}
 

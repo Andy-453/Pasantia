@@ -20,8 +20,6 @@ function loadLearningRoutes(){
         return;
       }
     } catch(e){}
-  }
-  // Sin stored data: mantener lo que vino de learning-routes.js
 }
 
 function saveLearningRoutes(){

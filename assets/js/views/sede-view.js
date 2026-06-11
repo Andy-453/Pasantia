@@ -9,10 +9,7 @@
  *   - AppData.getFacultad(AppState.navigation.curFac) — datos de facultad
  *   - pregradoMatch, itemMatch (filters.js) — filtros activos
  *   - getSt (utils.js) — utilidad de estado
- *   - _getObtencionUrl (app.js) — helper de enlaces de obtención (legacy)
- *
- * Historial:
- *   2026-06-10 — Extraído de app.js (Fase 5: extracción de vistas)
+ *   - _getObtencionUrl (app.js) — helper de enlaces de obtención
  */
 
 function renderSedeView(){

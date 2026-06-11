@@ -1,5 +1,23 @@
-// controllers/navigation.js — Navegación y orquestación de vistas
-// showTab, renderViews, toggleSec, snSetFac, snSetProg, openLearningRouteModal
+/**
+ * controllers/navigation.js — Navegación y orquestación de vistas
+ * ---
+ * Responsabilidad:
+ *   - showTab: cambio de pestaña activa y renderizado de panel correspondiente
+ *   - renderViews: renderizado inicial de árbol, tabla y sede
+ *   - toggleSec: colapsar/expandir secciones (pipeline)
+ *   - snSetFac, snSetProg: selección de facultad/programa en panel SNIES
+ *   - openLearningRouteModal: apertura de modal de ruta de aprendizaje
+ *
+ * Dependencias:
+ *   - AppState.navigation (app-state.js)
+ *   - renderSNIES (views/snies.js)
+ *   - renderPipeline (views/pipeline.js)
+ *   - renderIndicadores (modules/indicators.js)
+ *   - renderEditor (views/editor.js)
+ *
+ * Estado:
+ *   Estable. Controlador de navegación entre vistas.
+ */
 
 function showTab(id){
   AppState.navigation.activeTab=id;

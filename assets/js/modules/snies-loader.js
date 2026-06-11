@@ -1,5 +1,5 @@
 /**
- * snies-loader.js — Carga y persistencia de datos SNIES desde Excel
+ * snies-loader.js — Carga, persistencia y gestión de datos SNIES
  * ---
  * Responsabilidad:
  *   - importar datos SNIES desde archivo Excel (.xlsx) vía SheetJS
@@ -7,6 +7,9 @@
  *   - persistir datos SNIES en localStorage
  *   - restaurar datos SNIES desde localStorage o __EMBEDDED_SD
  *   - limpiar datos SNIES y restaurar el dataset por defecto
+ *   - eliminar o restaurar programas individuales (removeSniesProgram)
+ *   - etiquetar programas con _source ('imported' | 'default')
+ *   - capturar snapshot inline (AppState.snies.defaultSD) para restauración
  *
  * Dependencias:
  *   - snies-model.js (validateCatalogo, validateIndicadores, buildPrograms, computeDerived)
@@ -14,9 +17,10 @@
  *   - AppState (app-state.js, global)
  *   - renderSNIES (views/snies.js, global)
  *   - toast (utils.js, global)
+ *   - showConfirm (utils.js, global)
  *
  * Estado:
- *   Fase 2.5 — MERGE en lugar de REPLACE para carga Excel.
+ *   Estable. Gestión completa de programas SNIES.
  */
 
 var SNIES_STORAGE_KEY = 'udec_snies_data';
@@ -35,7 +39,6 @@ function _saveSniesLocal(sd) {
 }
 
 function mergeSNIES(existingSD, incomingPrograms) {
-  // Si no hay datos existentes o están vacíos, usar solo los entrantes
   if (!existingSD || !existingSD.programs || !existingSD.programs.length) {
     return { programs: incomingPrograms };
   }
@@ -119,7 +122,6 @@ function clearSnies() {
   try {
     localStorage.removeItem(SNIES_STORAGE_KEY);
   } catch (e) { /* ignore */ }
-  // Recargar la página para restaurar el SD inline de app-state.js
   location.reload();
 }
 
@@ -221,7 +223,6 @@ function _execRemoveSniesProgram(programName) {
   }
   if (idx === -1) return;
 
-  // ¿Existe en el snapshot inline?
   var inlineProg = null;
   if (AppState.snies.defaultSD && AppState.snies.defaultSD.programs) {
     for (var j = 0; j < AppState.snies.defaultSD.programs.length; j++) {
@@ -233,14 +234,12 @@ function _execRemoveSniesProgram(programName) {
   }
 
   if (inlineProg) {
-    // Restaurar versión original inline (strip facultad, tag default)
     var restored = JSON.parse(JSON.stringify(inlineProg));
     delete restored.facultad;
     restored._source = 'default';
     sd.programs[idx] = restored;
     if (typeof toast === 'function') toast('Programa restaurado: ' + programName);
   } else {
-    // Programa nuevo importado: eliminar completamente
     sd.programs.splice(idx, 1);
     if (typeof toast === 'function') toast('Programa eliminado: ' + programName);
   }

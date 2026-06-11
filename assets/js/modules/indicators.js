@@ -19,7 +19,7 @@
  *     con los estados reales usados en el editor y pipeline.
  *
  * Estado:
- *   Extraído de app.js en Fase 2. Acceso DB via AppData (Fase 4).
+ *   Extraído de app.js. Acceso DB via AppData.
  */
 
 function renderIndicadores(){

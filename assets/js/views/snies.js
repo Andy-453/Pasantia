@@ -1,6 +1,5 @@
 /**
  * Vista: SNIES (análisis de indicadores SNIES con Chart.js)
- * Extraída de app.js para separación MVC.
  * Dependencias runtime: _snFac, _snProg, SD (AppState-backed), Chart (CDN)
  */
 
@@ -83,7 +82,7 @@ if (_dev) {
 window.App = window.App || {};
 window.App.renderSNIES = renderSNIES;
 
-// ===== CONTROLES DE IMPORTACIÓN EXCEL SNIES (Fase 2) =====
+// ===== CONTROLES DE IMPORTACIÓN EXCEL SNIES =====
 // Crea input[type=file] oculto una sola vez y conecta con App.importSniesExcel
 (function(){
   if (document.getElementById('snies-excel-input')) return;

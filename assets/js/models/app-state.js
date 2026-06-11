@@ -1,14 +1,30 @@
 ﻿// models/app-state.js â€” Estado centralizado de la aplicaciÃ³n
 
+/**
+ * models/app-state.js — Estado centralizado de la aplicación
+ * ---
+ * Responsabilidad:
+ *   - AppState: estado de navegación, filtros, editor, datos SNIES
+ *   - window accessors legacy para curFac, filt*, SD, editingProgId
+ *   - snapshot inline de SNIES (AppState.snies.defaultSD)
+ *   - definición de ALL_SEDES
+ *
+ * Dependencias:
+ *   - Ninguna (define estructuras de datos, no importa otros módulos)
+ *
+ * Estado:
+ *   Estable. Contenedor de estado global de la aplicación.
+ */
+
 var ALL_SEDES=['ChÃ­a','FacatativÃ¡','FusagasugÃ¡','Girardot','Soacha','Ubate','ZipaquirÃ¡'];
 
-// Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors a continuaciÃ³n
-// Aliases legacy: AppState.editor es fuente Ãºnica
+// Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors
+// Aliases legacy: AppState.editor es fuente unica
 Object.defineProperty(window,'editingProgId',{get:function(){return window.AppState.editor.editingProgId;},set:function(v){window.AppState.editor.editingProgId=v;},configurable:true});
 Object.defineProperty(window,'tmpLineas',{get:function(){return window.AppState.editor.tmpLineas;},set:function(v){window.AppState.editor.tmpLineas=v;},configurable:true});
 Object.defineProperty(window,'tmpMaes',{get:function(){return window.AppState.editor.tmpMaes;},set:function(v){window.AppState.editor.tmpMaes=v;},configurable:true});
 
-// Estado centralizado (migraciÃ³n gradual)
+// Estado centralizado (migracion gradual)
 // Acceso legacy via window accessors (curFac, filtSede, etc.)
 window.AppState = {
   navigation: {
@@ -39,7 +55,7 @@ window.AppState = {
 };
 
 // ===== ACCESSORS GLOBALES =====
-// Aliases transparentes: window.curFac / window.filt* â†’ AppState.*
+// Aliases transparentes: window.curFac / window.filt* -> AppState.*
 Object.defineProperty(window,'curFac',{get:function(){return window.AppState.navigation.curFac;},set:function(v){window.AppState.navigation.curFac=v;},configurable:true});
 Object.defineProperty(window,'filtSede',{get:function(){return window.AppState.filters.sede;},set:function(v){window.AppState.filters.sede=v;},configurable:true});
 Object.defineProperty(window,'filtOferta',{get:function(){return window.AppState.filters.oferta;},set:function(v){window.AppState.filters.oferta=v;},configurable:true});
