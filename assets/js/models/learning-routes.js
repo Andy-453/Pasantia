@@ -20,6 +20,7 @@ function loadLearningRoutes(){
         return;
       }
     } catch(e){}
+  }
 }
 
 function saveLearningRoutes(){
