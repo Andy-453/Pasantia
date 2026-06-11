@@ -65,9 +65,11 @@ window.__EMBED = {
     html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
     var _dbStr   = JSON.stringify(window.DB).replace(/<\//g, '<\\/');
     var _lrStr   = JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/');
+    var _sdStr   = JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/');
     var _embedded = '<script>' +
       'window.__EMBEDDED_DB=' + _dbStr + ';' +
       'window.__EMBEDDED_LR=' + _lrStr + ';' +
+      'window.__EMBEDDED_SD=' + _sdStr + ';' +
       '<\/script>';
     var _adminHide = '/* UDEC EXPORT MODE - READ ONLY */' +
       '#panel-editor,#tb-editor,.edit-node-btn,.toast{display:none!important}' +

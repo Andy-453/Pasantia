@@ -59,6 +59,7 @@ window.App = {
   addMae: addMae, delMae: delMae, saveProg: saveProg, deleteProg: deleteProg,
   collectLineas: collectLineas, collectMaes: collectMaes, toggleDocForm: toggleDocForm,
   // SNIES
+  loadSnies: loadSnies, importSniesExcel: importSniesExcel, removeSniesProgram: removeSniesProgram, clearSnies: clearSnies,
   renderSNIES: renderSNIES, snSetFac: snSetFac, snSetProg: snSetProg, exportSNIES: exportSNIES,
   // Desarrollo
   renderPipeline: renderPipeline, toggleSec: toggleSec,
@@ -92,6 +93,7 @@ window.App = {
 // ===== INICIALIZACIÃ“N =====
 loadDB();
 loadLearningRoutes();
+loadSnies();
 renderFacBar();
 populateSedes();
 renderViews();

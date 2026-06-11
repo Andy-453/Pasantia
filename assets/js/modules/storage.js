@@ -42,6 +42,7 @@ function _makeEmbedded(){
   return '<script>' +
     'window.__EMBEDDED_DB=' + JSON.stringify(window.DB).replace(/<\//g, '<\\/') + ';' +
     'window.__EMBEDDED_LR=' + JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_SD=' + JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/') + ';' +
     '<\/script>';
 }
 function loadDB(){

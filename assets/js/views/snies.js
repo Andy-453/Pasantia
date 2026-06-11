@@ -7,6 +7,8 @@
 function renderSNIES(){
   var wrap=document.getElementById('snies-content');
   if(!wrap) return;
+  var _dev = !window.__UDEC_EMBEDDED__;
+  var hasExternalData = _dev && AppState.snies.SD && AppState.snies.SD.programs && AppState.snies.SD.programs.length > 0 && AppState.snies.SD.programs[0].facultad !== undefined;
   var facs=['TODAS','Ciencias Admin., Econ. y Contables','Ciencias Agropecuarias','Educación','Ciencias del Deporte y Ed. Física'];
   var FAC_COL={'Ciencias Admin., Econ. y Contables':'#006633','Ciencias Agropecuarias':'#2e8b57','Educación':'#C8A43A','Ciencias del Deporte y Ed. Física':'#185FA5'};
   var FAC_MP={'Espec. Educación Ambiental y Desarrollo Comunidad':'Ciencias Agropecuarias','Espec. Agronegocios Sostenibles':'Ciencias Agropecuarias','Maestría en Ciencias Ambientales':'Ciencias Agropecuarias','Espec. Gerencia para el Desarrollo Organizacional':'Ciencias Admin., Econ. y Contables','Espec. Gerencia para la Transformación Digital':'Ciencias Admin., Econ. y Contables','Espec. Gestión Pública':'Ciencias Admin., Econ. y Contables','Espec. Marketing Digital':'Ciencias Admin., Econ. y Contables','Espec. Negocios y Comercio Electrónico':'Ciencias Admin., Econ. y Contables','Espec. Gestión de Sistemas de Información Gerencial':'Ciencias Admin., Econ. y Contables','Espec. Procesos Pedagógicos Entrenamiento Deportivo':'Ciencias del Deporte y Ed. Física','Doctorado en Ciencias de la Educación':'Educación','Maestría en Educación':'Educación'};
@@ -22,12 +24,31 @@ function renderSNIES(){
   var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Análisis SNIES · Posgrados 2020–2024</div>';
+if (_dev) {
+  h+='<div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">' +
+    '<button onclick="_sniesImportClick()" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid #006633;background:#fff;color:#006633">Importar Excel SNIES</button>' +
+    '<button onclick="_sniesResetClick()" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid #ccc;background:#fff;color:#888">Restablecer datos</button>' +
+    (hasExternalData ? '<span style="font-size:10px;color:#006633;font-weight:600">&#10003; Datos importados</span>' : '') +
+    '</div>';
+}
+  if(!SD || !SD.programs || !SD.programs.length){
+    wrap.innerHTML=h+'<div style="padding:2rem;text-align:center;color:#aaa">' + (_dev ? 'Sin programas para mostrar. Importe un archivo Excel con datos SNIES.' : 'Sin programas para mostrar.') + '</div>';
+    return;
+  }
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:10px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Facultad</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+facBtns+'</div></div>';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:8px">Programa</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+progBtns+'</div></div>';
-  if(prog){
+  if(!prog){
+    h+='<div style="padding:2rem;text-align:center;color:#aaa">Seleccione un programa para ver sus indicadores SNIES.</div>';
+  } else {
     var y24=prog.years['2024'],y23=prog.years['2023'];
     var nivCol={'Especialización':'#3aaa72','Maestría':'#C8A43A','Doctorado':'#0d3d22'};
-    h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+prog.name+'</div><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+prog.nivel+'</span></div>';
+    var _isImported = prog._source === 'imported';
+    var _isInInline = _isImported && AppState.snies.defaultSD && AppState.snies.defaultSD.programs && AppState.snies.defaultSD.programs.some(function(p){return p.name===prog.name;});
+    var _actLabel = _isInInline ? 'Restaurar original' : 'Eliminar programa';
+    var _actColor = _isInInline ? '#d4a017' : '#c0392b';
+    h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+prog.name+'</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+prog.nivel+'</span>'+
+      (_dev && _isImported?'<button onclick="App.removeSniesProgram(\''+prog.name.replace(/"/g,'&quot;')+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
+    '</div></div>';
     h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">';
     var kpis=[['Matriculados 2024',fmt(y24.mat),'vs '+fmt(y23.mat)+' en 2023',fc],['Graduados 2024',fmt(y24.grad),'vs '+fmt(y23.grad)+' en 2023','#C8A43A'],['Inscritos 2024',fmt(y24.ins),'vs '+fmt(y23.ins)+' en 2023','#185FA5'],['Admitidos 2024',fmt(y24.adm),'vs '+fmt(y23.adm)+' en 2023','#0891b2']];
     kpis.forEach(function(k){h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;border-left:4px solid '+k[3]+';padding:12px 14px"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:5px">'+k[0]+'</div><div style="font-size:26px;font-weight:800;color:'+k[3]+';font-family:monospace">'+k[1]+'</div><div style="font-size:10px;color:#888;margin-top:3px">'+k[2]+'</div></div>';});
@@ -56,10 +77,48 @@ function renderSNIES(){
         new Chart(document.getElementById('sn-tasas'),{type:'line',data:{labels:AÑOS,datasets:[ds('Absorción',AÑOS.map(function(y){return n(prog.years[String(y)].tabs);}),'#C8A43A','line'),ds('Selectividad',AÑOS.map(function(y){return n(prog.years[String(y)].tsel);}), '#185FA5','line'),ds('Graduación',AÑOS.map(function(y){return n(prog.years[String(y)].tgrad);}),fc,'line')]},options:lo2});
       }
     },150);
-  } else {
-    wrap.innerHTML='<div style="padding:2rem;text-align:center;color:#aaa">Sin programas para mostrar</div>';
   }
 }
 
 window.App = window.App || {};
 window.App.renderSNIES = renderSNIES;
+
+// ===== CONTROLES DE IMPORTACIÓN EXCEL SNIES (Fase 2) =====
+// Crea input[type=file] oculto una sola vez y conecta con App.importSniesExcel
+(function(){
+  if (document.getElementById('snies-excel-input')) return;
+  var inp = document.createElement('input');
+  inp.id = 'snies-excel-input';
+  inp.type = 'file';
+  inp.accept = '.xlsx,.xls';
+  inp.style.display = 'none';
+  inp.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    if (typeof importSniesExcel !== 'function') {
+      if (typeof toast === 'function') toast('Error: importSniesExcel no disponible');
+      return;
+    }
+    importSniesExcel(file).then(function(result) {
+      if (!result.success) {
+        var msg = result.errors ? result.errors.join(' | ') : 'Error desconocido';
+        if (typeof toast === 'function') toast('Error: ' + msg);
+        console.error('[SNIES] Errores de importación:', result.errors);
+      }
+      // En éxito: importSniesExcel ya muestra toast + re-render
+    });
+    e.target.value = '';
+  });
+  document.body.appendChild(inp);
+})();
+
+function _sniesImportClick() {
+  var inp = document.getElementById('snies-excel-input');
+  if (inp) inp.click();
+}
+
+function _sniesResetClick() {
+  if (typeof App !== 'undefined' && typeof App.clearSnies === 'function') {
+    App.clearSnies();
+  }
+}
