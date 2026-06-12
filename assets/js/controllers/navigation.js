@@ -21,7 +21,7 @@
 
 function showTab(id){
   AppState.navigation.activeTab=id;
-  ['arbol','tabla','sede','indicadores','snies','pipeline','editor'].forEach(t=>{
+  ['arbol','tabla','sede','indicadores','snies','pipeline','editor','rc'].forEach(t=>{
     document.getElementById('panel-'+t).classList.toggle('act',t===id);
     document.getElementById('tb-'+t).classList.toggle('act',t===id);
   });
@@ -29,6 +29,7 @@ function showTab(id){
   if(id==='indicadores') renderIndicadores();
   if(id==='snies') renderSNIES();
   if(id==='pipeline') renderPipeline();
+  if(id==='rc') renderRegistroCalificado();
 }
 
 function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();}

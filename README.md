@@ -40,8 +40,8 @@ Los módulos funcionales se cargan mediante script tags en orden de dependencias
 | 3a | Extraer SNIES (modelo, loader, vista, exportación) | ✅ Completado |
 | 3b | Extraer Pipeline, Indicadores, Rutas de Aprendizaje | ✅ Completado |
 | 3c | Extraer Editor, vistas de árbol/tabla/sede, controladores | ✅ Completado |
-| 4 | Migrar a ESModules + MVC con imports nativos | ⬜ Futuro |
-| 5 | Adoptar framework (Lit, Svelte, o similar) | ⬜ Futuro |
+| 4 | Migrar a ESModules + MVC con imports nativos | ⬜ Quiza |
+| 5 | Adoptar framework (Lit, Svelte, o similar) | ⬜ Quiza |
 
 ## Estructura del proyecto
 

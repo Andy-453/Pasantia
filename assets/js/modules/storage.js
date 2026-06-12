@@ -9,7 +9,7 @@
  *
  * Dependencias:
  *   - utils.js → uid, toast
- *   - window.DB, window.DEFAULT_DATA, window.__UDEC_EMBEDDED__
+ *   - window.DB, window.__DEFAULT_DATA, window.__UDEC_EMBEDDED__
  *
  * Estado:
  *   Estable. Serializa DB, rutas de aprendizaje y datos SNIES en exportación HTML.
@@ -36,7 +36,7 @@ function _validateDB(data){
 /**
  * Carga DB desde localStorage o datos por defecto según flag embed.
  * @global window.__UDEC_EMBEDDED__ — si true, ignora localStorage
- * @global window.DEFAULT_DATA — datos iniciales
+ * @global window.__DEFAULT_DATA — datos iniciales
  */
 function _makeEmbedded(){
   return '<script>' +
@@ -47,12 +47,12 @@ function _makeEmbedded(){
 }
 function loadDB(){
   if(window.__EMBEDDED_DB){window.DB=JSON.parse(JSON.stringify(window.__EMBEDDED_DB));return;}
-  if(window.__UDEC_EMBEDDED__){window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));return;}
+  if(window.__UDEC_EMBEDDED__){window.DB=JSON.parse(JSON.stringify(window.__DEFAULT_DATA));return;}
   try{
     var d=localStorage.getItem('udec_rutas_db');
     if(d){var parsed=JSON.parse(d);if(_validateDB(parsed)){window.DB=parsed;return;}}
   }catch(e){}
-  window.DB=JSON.parse(JSON.stringify(window.DEFAULT_DATA));
+  window.DB=JSON.parse(JSON.stringify(window.__DEFAULT_DATA));
 }
 /**
  * Descarga HTML standalone con CSS, JS e imágenes inline.

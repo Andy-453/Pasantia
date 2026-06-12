@@ -186,11 +186,12 @@ function buildPrograms(catalogo, indicadores) {
       }
     }
     programs.push({
-      name:     String(cat.PROGRAMA).trim(),
-      nivel:    String(cat.NIVEL).trim(),
-      facultad: String(cat.FACULTAD).trim(),
-      _source:  'imported',
-      years:    years
+      name:        String(cat.PROGRAMA).trim(),
+      nivel:       String(cat.NIVEL).trim(),
+      facultad:    String(cat.FACULTAD).trim(),
+      codigoSnies: +cat.CODIGO_SNIES,
+      _source:     'imported',
+      years:       years
     });
   }
 
