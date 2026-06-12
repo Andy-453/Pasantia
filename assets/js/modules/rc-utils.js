@@ -7,7 +7,7 @@
  *   - helpers de normalización y búsqueda: norm, buscaCol, aFecha
  *
  * Dependencias:
- *   - HOY (global, declarado en rc-controller o inline script)
+ *   - (ninguna) — funciones puras
  *
  * Estado:
  *   Estable. Funciones puras + constantes.
@@ -19,7 +19,7 @@ const C = {vOsc:'#00482B', vMed:'#007B3E', vLim:'#79C000', vCla:'#91C256', teal:
 const addM = (d,m)=>{const x=new Date(d);x.setMonth(x.getMonth()+m);return x};
 const fmt = d=>d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
 const fmtCorto = d=>d.toLocaleDateString('es-CO',{month:'short',year:'numeric'});
-const dias = d=>Math.round((d-HOY)/864e5);
+const dias = (d, hoy)=>Math.round((d-hoy)/864e5);
 
 const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
 function buscaCol(keys, ...patrones){
