@@ -68,10 +68,12 @@ window.__EMBED = {
     var _dbStr   = JSON.stringify(window.DB).replace(/<\//g, '<\\/');
     var _lrStr   = JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/');
     var _sdStr   = JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/');
+    var _rcStr   = JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/');
     var _embedded = '<script>' +
       'window.__EMBEDDED_DB=' + _dbStr + ';' +
       'window.__EMBEDDED_LR=' + _lrStr + ';' +
       'window.__EMBEDDED_SD=' + _sdStr + ';' +
+      'window.__EMBEDDED_RC=' + _rcStr + ';' +
       '<\/script>';
     var _adminHide = '/* UDEC EXPORT MODE - READ ONLY */' +
       '#panel-editor,#tb-editor,.edit-node-btn,.toast{display:none!important}' +

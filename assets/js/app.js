@@ -92,5 +92,7 @@ loadSnies();
 renderFacBar();
 populateSedes();
 renderViews();
+var _tb = document.querySelector('.tb.act');
+if(_tb) showTab(_tb.dataset.tab);
 
 

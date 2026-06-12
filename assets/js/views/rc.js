@@ -59,6 +59,12 @@ async function __rcHandleExcel(ev){
     }
     if(!nuevos.length) throw new Error('No se pudo leer ningún programa válido');
     P = procesa(nuevos, HOY);
+    window.__rcRaw = nuevos.map(function(p){
+      var o = {}; for(var k in p) o[k] = p[k];
+      if(o.ejec instanceof Date) o.ejec = o.ejec.getFullYear()+'-'+String(o.ejec.getMonth()+1).padStart(2,'0')+'-'+String(o.ejec.getDate()).padStart(2,'0');
+      if(o.trans instanceof Date) o.trans = o.trans.getFullYear()+'-'+String(o.trans.getMonth()+1).padStart(2,'0')+'-'+String(o.trans.getDate()).padStart(2,'0');
+      return o;
+    });
     document.getElementById('srcName').textContent = f.name;
     msg.className='upload-msg ok';
     msg.textContent = '✓ Datos actualizados: '+nuevos.length+' programas cargados de "'+f.name+'"';
@@ -77,6 +83,7 @@ async function __rcHandleExcel(ev){
 /* ================== RESTORE ================== */
 function restoreRCDefaults(){
   P = procesa(RC_DEFAULT, HOY);
+  window.__rcRaw = null;
   document.getElementById('srcName').textContent = 'base inicial';
   document.getElementById('upMsg').className = 'upload-msg';
   document.getElementById('upMsg').textContent = '';
@@ -119,7 +126,9 @@ function renderRegistroCalificado(){
     document.getElementById('rc-content').innerHTML = rcTemplate();
 
     HOY = new Date(); HOY.setHours(0,0,0,0);
-    P = procesa(BASE, HOY);
+    P = procesa(
+      window.__EMBEDDED_RC && window.__EMBEDDED_RC.length ? window.__EMBEDDED_RC : window.__rcRaw || BASE,
+      HOY);
     fEstado = 'all';
     fNivel = 'all';
     fTexto = '';
