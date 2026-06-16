@@ -14,7 +14,7 @@
  * Estado:
  *   Estable. Serializa DB, rutas de aprendizaje y datos SNIES en exportación HTML.
  */
-function saveDB(){try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
+function saveDB(){if(window.__EMBEDDED_DB)return;try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
 function _validateDB(data){
   if(!Array.isArray(data)||!data.length) return false;
   for(var i=0;i<data.length;i++){

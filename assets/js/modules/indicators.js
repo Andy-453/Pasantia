@@ -55,7 +55,7 @@ function renderIndicadores(){
   function getEstGroup(e){
     if(!e) return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
     const k=e.trim().toLowerCase();
-    for(const [key,val] of Object.entries(ESTADOS_GRUPO)) if(k.includes(key)||key.includes(k)) return val;
+    if(ESTADOS_GRUPO[k]) return ESTADOS_GRUPO[k];
     return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
   }
 

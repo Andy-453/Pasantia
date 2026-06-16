@@ -24,6 +24,7 @@ function loadLearningRoutes(){
 }
 
 function saveLearningRoutes(){
+  if(window.__EMBEDDED_DB)return;
   try {
     localStorage.setItem(LR_STORAGE_KEY, JSON.stringify(window.__LEARNING_ROUTES || {}));
   } catch(e){}

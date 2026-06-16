@@ -65,17 +65,19 @@ if (_dev) {
     h+='</tbody></table></div>';
     h+='</div>';
     wrap.innerHTML=h;
-    setTimeout(function(){
+    requestAnimationFrame(function(){
       var lo={responsive:true,maintainAspectRatio:false,animation:{duration:500},plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:8}},tooltip:{mode:'index',intersect:false}}};
       function ds(lbl,data,color,type,fill){return{type:type||'bar',label:lbl,data:data,backgroundColor:type==='line'?'transparent':color+'bb',borderColor:color,borderWidth:2,tension:.4,fill:fill||false,pointRadius:type==='line'?4:0,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,borderRadius:type==='bar'?4:0};}
       if(document.getElementById('sn-flujo') && typeof Chart==='function'){
+        Chart.getChart('sn-flujo')?.destroy();
         new Chart(document.getElementById('sn-flujo'),{type:'bar',data:{labels:AÑOS,datasets:[ds('Inscritos',AÑOS.map(function(y){return n(prog.years[String(y)].ins);}), '#378ADD'),ds('Admitidos',AÑOS.map(function(y){return n(prog.years[String(y)].adm);}),fc),ds('Matriculados',AÑOS.map(function(y){return n(prog.years[String(y)].mat);}), '#C8A43A'),Object.assign(ds('Graduados',AÑOS.map(function(y){return n(prog.years[String(y)].grad);}), '#c0392b','line'),{order:-1})]},options:lo});
       }
       if(document.getElementById('sn-tasas') && typeof Chart==='function'){
+        Chart.getChart('sn-tasas')?.destroy();
         var lo2=JSON.parse(JSON.stringify(lo));lo2.scales={y:{ticks:{callback:function(v){return v+'%'}},beginAtZero:true}};
         new Chart(document.getElementById('sn-tasas'),{type:'line',data:{labels:AÑOS,datasets:[ds('Absorción',AÑOS.map(function(y){return n(prog.years[String(y)].tabs);}),'#C8A43A','line'),ds('Selectividad',AÑOS.map(function(y){return n(prog.years[String(y)].tsel);}), '#185FA5','line'),ds('Graduación',AÑOS.map(function(y){return n(prog.years[String(y)].tgrad);}),fc,'line')]},options:lo2});
       }
-    },150);
+    });
   }
 }
 

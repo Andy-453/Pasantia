@@ -122,7 +122,13 @@ function clearSnies() {
   try {
     localStorage.removeItem(SNIES_STORAGE_KEY);
   } catch (e) { /* ignore */ }
-  location.reload();
+  if (AppState.snies.defaultSD) {
+    AppState.snies.SD = JSON.parse(JSON.stringify(AppState.snies.defaultSD));
+  }
+  _tagDefaultPrograms();
+  AppState.snies.fac = 'TODAS';
+  AppState.snies.prog = null;
+  if (typeof renderSNIES === 'function') renderSNIES();
 }
 
 function importSniesExcel(file) {

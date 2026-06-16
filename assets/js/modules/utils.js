@@ -38,7 +38,7 @@ var ST_MAP={
 function getSt(s){
   if(!s||!s.trim()) return {dot:'#aaa',bg:'#f5f5f0',tx:'#666',cat:''};
   var k=s.trim().toLowerCase();
-  for(var key in ST_MAP){if(k.includes(key)||key.includes(k))return ST_MAP[key];}
+  if(ST_MAP[k]) return ST_MAP[k];
   return {dot:'#aaa',bg:'#f5f5f0',tx:'#666',cat:''};
 }
 function pll(o){return o==='V'?'<span class="pill pv">Vigente</span>':'<span class="pill pp">Proyectada</span>';}
