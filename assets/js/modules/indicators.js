@@ -121,8 +121,9 @@ function renderIndicadores(){
 
   h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem">`;
 
-  const pctV=Math.round(vigente/(vigente+proyectada)*100);
-  const pctP=100-pctV;
+  const totalOferta=vigente+proyectada;
+  const pctV=totalOferta>0?Math.round(vigente/totalOferta*100):0;
+  const pctP=totalOferta>0?100-pctV:0;
 
   function pieSlices(segments){
     const cx=80, cy=80, r=62, ri=36;

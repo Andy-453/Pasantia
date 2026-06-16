@@ -17,7 +17,7 @@ function __refreshAll(){renderFacBar();populateSedes();renderViews();}
 
 var __ACTIONS = {
   'show-tab': function(b){ showTab(b.dataset.tab); },
-  'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); __refreshAll();['indicadores','snies','pipeline','editor'].forEach(function(t){var el=document.getElementById('panel-'+t);if(el&&el.classList.contains('act'))showTab(t);}); },
+  'sel-fac':  function(b){ selFac(parseInt(b.dataset.fac,10)); __refreshAll();var _actTab=document.querySelector('.tb.act');if(_actTab)showTab(_actTab.dataset.tab); },
   'reset-filters': function(){ resetFilters(); },
   'snies-set-fac': function(b){ snSetFac(b.dataset.fac); },
   'snies-set-prog': function(b){ snSetProg(b.dataset.prog); },

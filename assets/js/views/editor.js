@@ -5,7 +5,7 @@ var _lrEditingId;
 var _lrEditorTab = 'programas';
 
 function renderEditor(){
-  var f=AppData.getFacultad(AppState.navigation.curFac);
+  var f=AppData.getFacultad(AppState.navigation.curFac);if(!f)return;
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
   var _tab=window._lrEditorTab||'programas';
   var h='<div style="padding:1rem">';
@@ -17,8 +17,8 @@ function renderEditor(){
   h+='<div style="background:#006633;border-radius:10px;padding:10px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between"><div style="font-size:12px;font-weight:700;color:#fff">'+f.name+'</div><div style="font-size:10px;color:rgba(255,255,255,.7)">'+f.progs.length+' programa(s)</div></div>';
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:1.5rem">';
   f.progs.forEach(function(p){
-    var st=cbs(p.lineas.concat(p.mae));
-    var cr=p.lineas.concat(p.mae).filter(function(x){return x.resp;}).length;
+    var st=cbs((p.lineas||[]).concat(p.mae||[]));
+    var cr=(p.lineas||[]).concat(p.mae||[]).filter(function(x){return x.resp;}).length;
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden">'
       +'<div style="background:#006633;padding:11px 14px;display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:12px;font-weight:700;color:#fff">'+p.n+'</div><div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:2px">'+p.lineas.length+' especializaci\u00f3n(es) \u00b7 '+p.mae.length+' maestr\u00eda(s)</div></div><div style="font-size:15px">\ud83c\udf93</div></div>'
       +'<div style="padding:10px 14px">'
@@ -29,9 +29,9 @@ function renderEditor(){
           +(cr?'<span style="background:#e6f0fb;color:#185FA5;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:700">\ud83d\udc64 '+cr+' con responsable</span>':'<span style="background:#f5f5f5;color:#aaa;padding:2px 8px;border-radius:8px;font-size:9px">Sin responsable</span>')
         +'</div>'
         +'<div style="font-size:10px;color:#666;margin-bottom:10px">'
-          +p.lineas.slice(0,3).map(function(l){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#3aaa72;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.esp+'</span>'+(l.mes&&l.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][l.mes]+' '+l.ano+'</span>':'')+'</div>';}).join('')
-          +(p.lineas.length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+(p.lineas.length-3)+' m\u00e1s...</div>':'')
-          +p.mae.slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.n+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
+          +(p.lineas||[]).slice(0,3).map(function(l){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#3aaa72;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.esp+'</span>'+(l.mes&&l.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][l.mes]+' '+l.ano+'</span>':'')+'</div>';}).join('')
+          +((p.lineas||[]).length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+((p.lineas||[]).length-3)+' m\u00e1s...</div>':'')
+          +(p.mae||[]).slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.n+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
         +'</div>'
         +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">\u270f\ufe0f Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">\ud83d\uddd1\ufe0f</button></div>'
       +'</div></div>';
@@ -97,7 +97,7 @@ function collectLineas(){var pid=tmpLineas._progId;tmpLineas=tmpLineas.map(funct
 function collectMaes(){var pid=tmpMaes._progId;tmpMaes=tmpMaes.map(function(m){return{id:m.id,n:gv('mn'+m.id)||m.n,e:gv('mes'+m.id),o:gv('mo'+m.id)||m.o,sedes:m.sedes,resp:gv('mresp'+m.id),mes:gi('mmes'+m.id),ano:gi('mano'+m.id),enlaceObtencion:gv('menlace'+m.id)||null};});tmpMaes._progId=pid;}
 function saveProg(pid,isNew){
   collectLineas();collectMaes();
-  var prog={id:pid,n:gv('pn').trim(),sedes:gv('psedes').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
+  var prog={id:pid,n:gv('pn').trim(),sedes:(gv('psedes')||'').split(',').map(function(s){return s.trim();}).filter(Boolean),lineas:tmpLineas,mae:tmpMaes};
   AppData.savePrograma(curFac,prog,isNew);
     editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Programa guardado');__refreshAll();renderEditor();
 }
@@ -115,7 +115,7 @@ function _lrSetTab(tab){ _lrEditorTab=tab; renderEditor(); }
 
 function _lrRenderList(){
   var lr=window.__LEARNING_ROUTES||{};
-  var allProgs=_getAllAcademicPrograms();
+  var allProgs=_getAllAcademicPrograms();if(!allProgs) return '';
   var withRoute=[], withoutRoute=[];
   allProgs.forEach(function(p){
     if(lr[p.id]) withRoute.push(p);
@@ -132,8 +132,8 @@ function _lrRenderList(){
     h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">';
     withRoute.forEach(function(p){
       var e=lr[p.id];
-      var lrCred=e.semesters.reduce(function(t,s){return t+(s.subjects||[]).reduce(function(tt,sj){return tt+(sj.credits||0);},0);},0);
-      var ts=e.semesters.reduce(function(t,s){return t+(s.subjects||[]).length;},0);
+      var lrCred=(e.semesters||[]).reduce(function(t,s){return t+(s.subjects||[]).reduce(function(tt,sj){return tt+(sj.credits||0);},0);},0);
+      var ts=(e.semesters||[]).reduce(function(t,s){return t+(s.subjects||[]).length;},0);
       var type=e.type||p.type||'especializacion';
       h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">'
         +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+e.espName+'</div>'
@@ -182,7 +182,7 @@ function _lrEditRoute(progId, prefill){
   h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
   h+='<div class="field"><label>ID</label><div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666">'+progId+'</div></div>';
   h+='</div>';
-  var tc=0; route.semesters.forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
+  var tc=0; (route.semesters||[]).forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
   h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
     +'<span style="font-weight:700;color:#006633">Total cr\u00e9ditos: <span id="lr-total-credits">'+tc+'</span></span>'
     +'<span style="color:#999">\u00b7</span>'

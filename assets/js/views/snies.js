@@ -15,9 +15,9 @@ function renderSNIES(){
   var n=function(v){return isNaN(+v)?0:+v;};
   var fmt=function(v){return Math.round(n(v)).toLocaleString('es-CO');};
   var fmtP=function(v){return n(v).toFixed(1)+'%';};
-  var progs=_snFac==='TODAS'?SD.programs:SD.programs.filter(function(p){return FAC_MP[p.name]===_snFac;});
+  var progs=_snFac==='TODAS'?(SD&&SD.programs||[]):(SD&&SD.programs||[]).filter(function(p){return FAC_MP[p.name]===_snFac;});
   if(!_snProg||!progs.find(function(p){return p.name===_snProg;})) _snProg=progs.length?progs[0].name:null;
-  var prog=_snProg?SD.programs.find(function(p){return p.name===_snProg;}):null;
+  var prog=_snProg?(SD&&SD.programs||[]).find(function(p){return p.name===_snProg;}):null;
   var fc=_snFac==='TODAS'?'#006633':(FAC_COL[_snFac]||'#006633');
   var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+f.replace(/"/g,'&quot;')+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
   var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
@@ -39,7 +39,7 @@ if (_dev) {
   if(!prog){
     h+='<div style="padding:2rem;text-align:center;color:#aaa">Seleccione un programa para ver sus indicadores SNIES.</div>';
   } else {
-    var y24=prog.years['2024'],y23=prog.years['2023'];
+    var y24=prog.years&&prog.years['2024']||{},y23=prog.years&&prog.years['2023']||{};
     var nivCol={'Especialización':'#3aaa72','Maestría':'#C8A43A','Doctorado':'#0d3d22'};
     var _isImported = prog._source === 'imported';
     var _isInInline = _isImported && AppState.snies.defaultSD && AppState.snies.defaultSD.programs && AppState.snies.defaultSD.programs.some(function(p){return p.name===prog.name;});
@@ -61,17 +61,17 @@ if (_dev) {
     h+='<table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+fc+'22">';
     ['Año','Inscritos','Admitidos','Matriculados','Graduados','T.Absorción','T.Selectividad','T.Graduación','% H','% M'].forEach(function(c){h+='<th style="padding:8px;text-align:center">'+c+'</th>';});
     h+='</tr></thead><tbody>';
-    AÑOS.forEach(function(y){var d=prog.years[String(y)],has=n(d.mat)+n(d.grad)+n(d.ins)>0,bg=y===2024?'background:#e6f2eb':'';h+='<tr style="border-bottom:1px solid #edf2ee;'+bg+'"><td style="padding:7px 10px;font-weight:'+(y===2024?'700':'400')+';color:'+(y===2024?fc:'#333')+'">'+y+'</td>';[d.ins,d.adm,d.mat,d.grad].forEach(function(v){h+='<td style="padding:7px;text-align:center;font-family:monospace">'+(has?fmt(v):'—')+'</td>';});[d.tabs,d.tsel,d.tgrad,d.pctH,d.pctM].forEach(function(v){h+='<td style="padding:7px;text-align:center;font-family:monospace">'+(has?fmtP(v):'—')+'</td>';});h+='</tr>';});
+    AÑOS.forEach(function(y){var d=prog.years&&prog.years[String(y)]||{},has=n(d.mat)+n(d.grad)+n(d.ins)>0,bg=y===2024?'background:#e6f2eb':'';h+='<tr style="border-bottom:1px solid #edf2ee;'+bg+'"><td style="padding:7px 10px;font-weight:'+(y===2024?'700':'400')+';color:'+(y===2024?fc:'#333')+'">'+y+'</td>';[d.ins,d.adm,d.mat,d.grad].forEach(function(v){h+='<td style="padding:7px;text-align:center;font-family:monospace">'+(has?fmt(v):'—')+'</td>';});[d.tabs,d.tsel,d.tgrad,d.pctH,d.pctM].forEach(function(v){h+='<td style="padding:7px;text-align:center;font-family:monospace">'+(has?fmtP(v):'—')+'</td>';});h+='</tr>';});
     h+='</tbody></table></div>';
     h+='</div>';
     wrap.innerHTML=h;
     setTimeout(function(){
       var lo={responsive:true,maintainAspectRatio:false,animation:{duration:500},plugins:{legend:{position:'bottom',labels:{font:{size:9},boxWidth:10,padding:8}},tooltip:{mode:'index',intersect:false}}};
       function ds(lbl,data,color,type,fill){return{type:type||'bar',label:lbl,data:data,backgroundColor:type==='line'?'transparent':color+'bb',borderColor:color,borderWidth:2,tension:.4,fill:fill||false,pointRadius:type==='line'?4:0,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,borderRadius:type==='bar'?4:0};}
-      if(document.getElementById('sn-flujo')){
+      if(document.getElementById('sn-flujo') && typeof Chart==='function'){
         new Chart(document.getElementById('sn-flujo'),{type:'bar',data:{labels:AÑOS,datasets:[ds('Inscritos',AÑOS.map(function(y){return n(prog.years[String(y)].ins);}), '#378ADD'),ds('Admitidos',AÑOS.map(function(y){return n(prog.years[String(y)].adm);}),fc),ds('Matriculados',AÑOS.map(function(y){return n(prog.years[String(y)].mat);}), '#C8A43A'),Object.assign(ds('Graduados',AÑOS.map(function(y){return n(prog.years[String(y)].grad);}), '#c0392b','line'),{order:-1})]},options:lo});
       }
-      if(document.getElementById('sn-tasas')){
+      if(document.getElementById('sn-tasas') && typeof Chart==='function'){
         var lo2=JSON.parse(JSON.stringify(lo));lo2.scales={y:{ticks:{callback:function(v){return v+'%'}},beginAtZero:true}};
         new Chart(document.getElementById('sn-tasas'),{type:'line',data:{labels:AÑOS,datasets:[ds('Absorción',AÑOS.map(function(y){return n(prog.years[String(y)].tabs);}),'#C8A43A','line'),ds('Selectividad',AÑOS.map(function(y){return n(prog.years[String(y)].tsel);}), '#185FA5','line'),ds('Graduación',AÑOS.map(function(y){return n(prog.years[String(y)].tgrad);}),fc,'line')]},options:lo2});
       }

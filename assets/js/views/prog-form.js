@@ -5,12 +5,12 @@
  */
 
 function renderProgForm(){
-  var f=AppData.getFacultad(AppState.navigation.curFac),isNew=editingProgId==='__new__';
+  var f=AppData.getFacultad(AppState.navigation.curFac),isNew=editingProgId==='__new__';if(!f)return;
   var p=isNew?{id:uid(),n:'',sedes:[],lineas:[{id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'V',sedes:[],resp:'',mes:null,ano:null}],mae:[{id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null}]}:f.progs.find(function(x){return x.id===editingProgId;});
   if(!p) return;
   if(!tmpLineas._progId||tmpLineas._progId!==p.id){
-    tmpLineas=JSON.parse(JSON.stringify(p.lineas));tmpLineas._progId=p.id;
-    tmpMaes=JSON.parse(JSON.stringify(p.mae));tmpMaes._progId=p.id;
+    tmpLineas=JSON.parse(JSON.stringify(p.lineas||[]));tmpLineas._progId=p.id;
+    tmpMaes=JSON.parse(JSON.stringify(p.mae||[]));tmpMaes._progId=p.id;
   }
   var ES=['','Con registro Calificado','En oferta','Obtención','Radicado MEN','En radicación','Entregado para radicar','En construcción','Por construir','En proyección','Nueva Propuesta de la Facultad','En reclamación  MEN','Renovación','Renovación y modificación de la denominación','Negado MEN'];
   var MS=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];

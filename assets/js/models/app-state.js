@@ -16,7 +16,7 @@
  *   Estable. Contenedor de estado global de la aplicación.
  */
 
-var ALL_SEDES=['ChÃ­a','FacatativÃ¡','FusagasugÃ¡','Girardot','Soacha','Ubate','ZipaquirÃ¡'];
+var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
 
 // Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors
 // Aliases legacy: AppState.editor es fuente unica

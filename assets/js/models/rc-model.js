@@ -34,7 +34,7 @@ function procesa(raw, hoy){
   });
 }
 
-function filtrados(){
+function filtrados(P, fEstado, fNivel, fTexto){
   return P.filter(p=>{
     if(fEstado!=='all' && p.cls!==mapEstado[fEstado])return false;
     if(fNivel!=='all' && !norm(p.nivel).includes(norm(fNivel).slice(0,8)))return false;
