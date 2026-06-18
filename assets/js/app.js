@@ -73,6 +73,7 @@ window.App = {
   renderIndicadores: renderIndicadores,
   // Almacenamiento
   loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
+  backupDB: backupDB, restoreDB: restoreDB,
   // Utilidades
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
   // Rutas de Aprendizaje
