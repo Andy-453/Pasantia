@@ -54,8 +54,8 @@ function populateSedes(){
   f.progs.forEach(function(p){p.sedes.forEach(function(x){s.add(x);});});
   var sel=document.getElementById('filt-sede');
   sel.innerHTML='<option value="ALL">Todas las sedes</option>';
-  AppState.staticData.ALL_SEDES.filter(function(x){return s.has(x);}).forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
-  if(window.filtSede!=='ALL'&&!s.has(window.filtSede)) window.filtSede='ALL';
+  AppState.staticData.ALL_SEDES.forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
+  if(window.filtSede!=='ALL'&&AppState.staticData.ALL_SEDES.indexOf(window.filtSede)===-1) window.filtSede='ALL';
   sel.value=window.filtSede;
 
   var pSel=document.getElementById('filt-pregrado');

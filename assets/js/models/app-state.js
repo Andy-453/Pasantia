@@ -16,7 +16,17 @@
  *   Estable. Contenedor de estado global de la aplicación.
  */
 
-var ALL_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
+var DEFAULT_SEDES=['Chía','Facatativá','Fusagasugá','Girardot','Soacha','Ubate','Zipaquirá'];
+function loadSedesCatalog(){
+  try{var d=localStorage.getItem('udec_sedes_catalog');if(d){var p=JSON.parse(d);if(Array.isArray(p)&&p.length)return p;}
+  }catch(e){}
+  return DEFAULT_SEDES.slice();
+}
+var ALL_SEDES=loadSedesCatalog();
+function saveSedesCatalog(arr){
+  ALL_SEDES.length=0;Array.prototype.push.apply(ALL_SEDES,arr);
+  try{localStorage.setItem('udec_sedes_catalog',JSON.stringify(arr));}catch(e){}
+}
 
 // Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors
 // Aliases legacy: AppState.editor es fuente unica
@@ -62,8 +72,9 @@ Object.defineProperty(window,'filtOferta',{get:function(){return window.AppState
 Object.defineProperty(window,'filtEstado',{get:function(){return window.AppState.filters.estado;},set:function(v){window.AppState.filters.estado=v;},configurable:true});
 Object.defineProperty(window,'filtNivel',{get:function(){return window.AppState.filters.nivel;},set:function(v){window.AppState.filters.nivel=v;},configurable:true});
 Object.defineProperty(window,'filtPregrado',{get:function(){return window.AppState.filters.pregrado;},set:function(v){window.AppState.filters.pregrado=v;},configurable:true});
-// Inicializar staticData (solo lectura)
+// Inicializar staticData (solo lectura, mutación vía saveSedesCatalog)
 window.AppState.staticData.ALL_SEDES=ALL_SEDES;
+window.AppState.staticData.saveSedesCatalog=saveSedesCatalog;
 
 // ===== DATOS SNIES =====
 Object.defineProperty(window,'SD',{get:function(){return window.AppState.snies.SD;},set:function(v){window.AppState.snies.SD=v;},configurable:true});

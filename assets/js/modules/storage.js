@@ -97,5 +97,66 @@ function _downloadBlob(html,filename){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+<<<<<<< Updated upstream
+=======
+function _downloadJSON(obj,filename){
+  var json=JSON.stringify(obj,null,2);
+  var blob=new Blob([json],{type:'application/json;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function backupDB(){
+  var payload={
+    version:1,
+    date:new Date().toISOString(),
+    db:window.DB,
+    learningRoutes:window.__LEARNING_ROUTES||{},
+    sniesSD:window.AppState?window.AppState.snies.SD||null:null,
+    rcRaw:window.__rcRaw||null,
+    sedesCatalog:window.AppState?window.AppState.staticData.ALL_SEDES.slice():null
+  };
+  var now=new Date();
+  var y=now.getFullYear();
+  var m=String(now.getMonth()+1).padStart(2,'0');
+  var d=String(now.getDate()).padStart(2,'0');
+  var hh=String(now.getHours()).padStart(2,'0');
+  var mm=String(now.getMinutes()).padStart(2,'0');
+  _downloadJSON(payload,'Dashboard_UDEC_Backup_'+y+'-'+m+'-'+d+'_'+hh+mm+'.json');
+  toast('✅ Respaldo generado');
+}
+function restoreDB(file){
+  if(!file) return;
+  if(!confirm('Se reemplazarán los datos actuales por los del respaldo. ¿Desea continuar?')) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var payload=JSON.parse(e.target.result);
+      if(!payload||payload.version!==1){toast('❌ Archivo de respaldo no compatible');return;}
+      window.DB=payload.db;
+      window.__LEARNING_ROUTES=payload.learningRoutes||{};
+      if(window.AppState) AppState.snies.SD=payload.sniesSD||AppState.snies.SD;
+      window.__rcRaw=payload.rcRaw||null;
+      saveDB();
+      saveLearningRoutes();
+      if(typeof _saveSniesLocal==='function'&&AppState.snies.SD) _saveSniesLocal(AppState.snies.SD);
+      if(payload.sedesCatalog&&Array.isArray(payload.sedesCatalog)&&typeof saveSedesCatalog==='function') saveSedesCatalog(payload.sedesCatalog);
+      if(typeof _tagDefaultPrograms==='function') _tagDefaultPrograms();
+      if(typeof __refreshAll==='function') __refreshAll();
+      if(typeof renderSNIES==='function') renderSNIES();
+      if(typeof renderIndicadores==='function') renderIndicadores();
+      if(typeof renderPipeline==='function') renderPipeline();
+      toast('✅ Datos restaurados correctamente');
+    }catch(err){
+      toast('❌ Archivo inválido');
+    }
+  };
+  reader.onerror=function(){toast('❌ Error al leer el archivo');};
+  reader.readAsText(file);
+}
+>>>>>>> Stashed changes
 function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){try{localStorage.removeItem('udec_rutas_db');}catch(e){}location.reload();}}
 

@@ -73,6 +73,12 @@ window.App = {
   renderIndicadores: renderIndicadores,
   // Almacenamiento
   loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
+<<<<<<< Updated upstream
+=======
+  backupDB: backupDB, restoreDB: restoreDB,
+  // Catálogo de sedes
+  saveSedesCatalog: saveSedesCatalog, openSedesManager: openSedesManager,
+>>>>>>> Stashed changes
   // Utilidades
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
   // Rutas de Aprendizaje

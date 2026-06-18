@@ -76,6 +76,12 @@ var __ACTIONS = {
   'lr-save-route': function(b){ _lrSaveRoute(b.dataset.espId); },
   'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId); },
   'restore-default-routes': function(){ restoreDefaultRoutes(function(){ renderEditor(); }); },
+<<<<<<< Updated upstream
+=======
+  'backup-db': function(){ backupDB(); },
+  'restore-db': function(){ document.getElementById('restore-input').click(); },
+  'manage-sedes': function(){ openSedesManager(); },
+>>>>>>> Stashed changes
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
