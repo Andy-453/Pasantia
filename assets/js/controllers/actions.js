@@ -76,18 +76,25 @@ var __ACTIONS = {
   'lr-save-route': function(b){ _lrSaveRoute(b.dataset.espId); },
   'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId); },
   'restore-default-routes': function(){ restoreDefaultRoutes(function(){ renderEditor(); }); },
-<<<<<<< Updated upstream
-=======
   'backup-db': function(){ backupDB(); },
   'restore-db': function(){ document.getElementById('restore-input').click(); },
   'manage-sedes': function(){ openSedesManager(); },
->>>>>>> Stashed changes
+  'download-admin-html': function(){ downloadAdminHTML(); },
+  'toggle-tools-menu': function(){
+    var m=document.getElementById('tools-menu');
+    if(m) m.classList.toggle('show');
+  },
 };
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-action]');
   if(!b) return;
   var fn = __ACTIONS[b.getAttribute('data-action')];
   if(fn) fn(b);
+});
+document.addEventListener('click', function(e){
+  var menu=document.getElementById('tools-menu');
+  if(!menu||!menu.classList.contains('show')) return;
+  if(!e.target.closest('.tools-toggle')) menu.classList.remove('show');
 });
 var __CHANGE = {
   'apply-filters': function(){ applyFilters(); },

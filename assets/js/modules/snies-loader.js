@@ -43,29 +43,37 @@ function mergeSNIES(existingSD, incomingPrograms) {
     return { programs: incomingPrograms };
   }
 
-  // Indexar programas entrantes por name
-  var incomingMap = {};
+  // Indexar entrantes por codigoSnies (prioridad) y name (fallback)
+  var incomingByCode = {};
+  var incomingByName = {};
   for (var i = 0; i < incomingPrograms.length; i++) {
-    incomingMap[incomingPrograms[i].name] = incomingPrograms[i];
+    var p = incomingPrograms[i];
+    if (p.codigoSnies != null) incomingByCode[p.codigoSnies] = p;
+    incomingByName[p.name] = p;
   }
 
   var merged = [];
-  var seen = {};
+  var usedNames = {};
 
-  // 1. Recorrer existentes: reemplazar si hay match, conservar si no
+  // 1. Match existentes: codigoSnies > name, cada incoming una sola vez
   for (var j = 0; j < existingSD.programs.length; j++) {
     var existing = existingSD.programs[j];
-    if (incomingMap[existing.name]) {
-      merged.push(incomingMap[existing.name]);
-      seen[existing.name] = true;
+    var match =
+      existing.codigoSnies != null && incomingByCode[existing.codigoSnies]
+      ? incomingByCode[existing.codigoSnies]
+      : (!usedNames[existing.name] ? incomingByName[existing.name] : null);
+
+    if (match) {
+      merged.push(match);
+      usedNames[match.name] = true;
     } else {
       merged.push(existing);
     }
   }
 
-  // 2. Agregar programas entrantes que no existían
+  // 2. Agregar entrantes no matcheados
   for (var k = 0; k < incomingPrograms.length; k++) {
-    if (!seen[incomingPrograms[k].name]) {
+    if (!usedNames[incomingPrograms[k].name]) {
       merged.push(incomingPrograms[k]);
     }
   }

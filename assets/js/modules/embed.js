@@ -56,6 +56,60 @@ window.__EMBED = {
   },
 
   /**
+   * Construye HTML standalone editable (admin mode):
+   * - Mismo proceso que buildStandalone pero SIN _adminHide
+   * - Inyecta __UDEC_ADMIN_EXPORT__=true
+   * - Seedea localStorage con DB para persistencia (no usa __EMBEDDED_DB)
+   * @see buildStandalone
+   */
+  buildStandaloneAdmin: function() {
+    var self = this;
+    var html = document.documentElement.outerHTML;
+    var cssText = this.collectCSS();
+    html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
+    var _dbStr = JSON.stringify(window.DB).replace(/<\//g, '<\\/');
+    var _lrStr = JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/');
+    var _sdStr = JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/');
+    var _rcStr = JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/');
+    var _embedded = '<script>' +
+      'window.__UDEC_ADMIN_EXPORT__=true;' +
+      'window.__EMBEDDED_LR=' + _lrStr + ';' +
+      'window.__EMBEDDED_SD=' + _sdStr + ';' +
+      'window.__EMBEDDED_RC=' + _rcStr + ';' +
+      '(function(){var _db=' + _dbStr + ';try{var _x=localStorage.getItem("udec_rutas_db");if(!_x||!JSON.parse(_x).length)localStorage.setItem("udec_rutas_db",JSON.stringify(_db));}catch(_e){}})();' +
+      '<\/script>';
+    html = html.replace('</head>', _embedded + '<style>' + cssText + '</style></head>');
+    var scriptSrcs = [];
+    html = html.replace(/<script[^>]+src="([^"]*)"[^>]*><\/script>/gi, function(m, src) {
+      scriptSrcs.push(src);
+      return '';
+    });
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('img'));
+    return Promise.all([
+      Promise.all(imgs.map(function(img) { return self.imageToDataURI(img); })),
+      Promise.all(scriptSrcs.map(function(src) { return self.fetchJS(src).then(function(c) { return c; }, function() { return ''; }); }))
+    ]).then(function(results) {
+      var dataURIs = results[0];
+      var jsCodes = results[1];
+      imgs.forEach(function(img, i) {
+        if (dataURIs[i]) {
+          var oldSrc = img.getAttribute('src');
+          if (oldSrc) {
+            html = html.split(oldSrc).join(dataURIs[i]);
+            try { html = html.split(new URL(oldSrc, location.href).href).join(dataURIs[i]); } catch(e) {}
+          }
+        }
+      });
+      var inlineScripts = scriptSrcs.map(function(s, i) {
+        if (jsCodes[i]) return '<script>' + jsCodes[i] + '<\/script>';
+        return '<script src="' + s + '"><\/script>';
+      }).join('\n');
+      html = html.replace('</body>', inlineScripts + '\n</body>');
+      return html;
+    });
+  },
+
+  /**
    * Construye HTML standalone: CSS, JS, imágenes inline.
    * Retorna Promise que resuelve el string HTML.
    */
@@ -76,7 +130,12 @@ window.__EMBED = {
       'window.__EMBEDDED_RC=' + _rcStr + ';' +
       '<\/script>';
     var _adminHide = '/* UDEC EXPORT MODE - READ ONLY */' +
+      '.tools-dropdown{display:none!important}' +
       '#panel-editor,#tb-editor,.edit-node-btn,.toast{display:none!important}' +
+      'button.btn-upload,' +
+      'button[onclick*="restoreRCDefaults"],' +
+      'button[onclick*="_sniesImportClick"],button[onclick*="_sniesResetClick"],' +
+      'button[onclick*="removeSniesProgram"],' +
       'a[data-action="reset-db"],button[data-action="download-html"],' +
       'button[data-action="reset-db"],' +
       'button[data-action="show-tab"][data-tab="editor"],' +

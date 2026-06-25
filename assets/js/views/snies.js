@@ -42,11 +42,11 @@ if (_dev) {
     var y24=prog.years&&prog.years['2024']||{},y23=prog.years&&prog.years['2023']||{};
     var nivCol={'Especialización':'#3aaa72','Maestría':'#C8A43A','Doctorado':'#0d3d22'};
     var _isImported = prog._source === 'imported';
-    var _isInInline = _isImported && AppState.snies.defaultSD && AppState.snies.defaultSD.programs && AppState.snies.defaultSD.programs.some(function(p){return p.name===prog.name;});
+    var _isInInline = AppState.snies.defaultSD && AppState.snies.defaultSD.programs && AppState.snies.defaultSD.programs.some(function(p){return p.name===prog.name;});
     var _actLabel = _isInInline ? 'Restaurar original' : 'Eliminar programa';
     var _actColor = _isInInline ? '#d4a017' : '#c0392b';
     h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+prog.name+'</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+prog.nivel+'</span>'+
-      (_dev && _isImported?'<button onclick="App.removeSniesProgram(\''+prog.name.replace(/"/g,'&quot;')+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
+      (_dev ?'<button onclick="App.removeSniesProgram(\''+prog.name.replace(/"/g,'&quot;')+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
     '</div></div>';
     h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">';
     var kpis=[['Matriculados 2024',fmt(y24.mat),'vs '+fmt(y23.mat)+' en 2023',fc],['Graduados 2024',fmt(y24.grad),'vs '+fmt(y23.grad)+' en 2023','#C8A43A'],['Inscritos 2024',fmt(y24.ins),'vs '+fmt(y23.ins)+' en 2023','#185FA5'],['Admitidos 2024',fmt(y24.adm),'vs '+fmt(y23.adm)+' en 2023','#0891b2']];
