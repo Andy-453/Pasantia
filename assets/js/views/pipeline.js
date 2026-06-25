@@ -20,7 +20,7 @@ function renderPipeline(){
   function getTri(mes){if(!mes)return null;if(mes<=3)return 'T1';if(mes<=6)return 'T2';if(mes<=9)return 'T3';return 'T4';}
   function getTriLabel(t){return {T1:'I Trimestre (Ene\u2013Mar)',T2:'II Trimestre (Abr\u2013Jun)',T3:'III Trimestre (Jul\u2013Sep)',T4:'IV Trimestre (Oct\u2013Dic)'}[t]||'';}
   function fsn(name){return name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim();}
-  function estCol(e){var k=(e||'').toLowerCase();if(k.includes('obtención')||k.includes('registro'))return G;if(k.includes('radicado')||k.includes('radicación'))return BL;if(k.includes('en construcción'))return AM;if(k.includes('por construir')||k.includes('proyección'))return OR;if(k.includes('negado'))return RD;return '#888';}
+  function estCol(e){var k=(e||'').toLowerCase();if(k.includes('obtención')||k.includes('registro'))return G;if(k.includes('radicado')||k.includes('radicación'))return BL;if(k.includes('en construcción'))return AM;if(k.includes('por construir')||k.includes('proyección'))return OR;if(k.includes('negado'))return RD;if(k.includes('reclamación')||k.includes('renovación'))return '#dc2626';return '#888';}
   var all=[];
   AppData.getFacultades().forEach(function(fac){
     fac.progs.forEach(function(p){
@@ -29,15 +29,20 @@ function renderPipeline(){
     });
     if(fac.doc) all.push({fac:fsn(fac.name),nivel:'Doctorado',nombre:fac.doc.n,estado:fac.doc.e||'',oferta:fac.doc.o,resp:fac.doc.resp||'',mes:fac.doc.mes||null,ano:fac.doc.ano||null});
   });
-  function grp(items,test){return items.filter(function(x){return test((x.estado||'').toLowerCase());});}
-  var grupos={
-    construccion:grp(all,function(e){return e.includes('en construcción');}),
-    porConstruir:grp(all,function(e){return e.includes('por construir')||e.includes('proyección')||e.includes('nueva propuesta')||e.includes('resignificación');}),
-    radicado:grp(all,function(e){return e.includes('radicado')||e.includes('radicación')||e.includes('entregado');}),
-    vigente:grp(all,function(e){return e.includes('obtención')||e.includes('registro')||e.includes('oferta');}),
-    negado:grp(all,function(e){return e.includes('negado');}),
-    reclamacion:grp(all,function(e){return e.includes('reclamación')||e.includes('renovación');}),
-  };
+  // Clasificación mutuamente excluyente: cada programa pertenece a UN solo grupo.
+  // Prioridad (mayor a menor): Negado > Reclamación > Vigente > Radicado > Construcción > Por construir.
+  // Esto evita doble conteo en estados compuestos como "Obtención-resignificación"
+  // (contiene "obtención" Y "resignificación" — la prioridad lo asigna a Vigente).
+  var grupos={construccion:[],porConstruir:[],radicado:[],vigente:[],negado:[],reclamacion:[]};
+  all.forEach(function(x){
+    var e=(x.estado||'').toLowerCase();
+    if(e.includes('negado')) grupos.negado.push(x);
+    else if(e.includes('reclamación')||e.includes('renovación')) grupos.reclamacion.push(x);
+    else if(e.includes('obtención')||e.includes('registro')||e.includes('oferta')) grupos.vigente.push(x);
+    else if(e.includes('radicado')||e.includes('radicación')||e.includes('entregado')) grupos.radicado.push(x);
+    else if(e.includes('en construcción')) grupos.construccion.push(x);
+    else if(e.includes('por construir')||e.includes('proyección')||e.includes('nueva propuesta')||e.includes('resignificación')) grupos.porConstruir.push(x);
+  });
   function kpi(ic,lbl,cnt,col){return '<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;border-left:4px solid '+col+';padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">'+ic+'</div><div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999">'+lbl+'</div><div style="font-size:24px;font-weight:800;color:'+col+';font-family:monospace">'+cnt+'</div></div></div>';}
   var nivCol={Especialización:G,Maestría:OR,Doctorado:'#0d3d22'};
   function nivBadge(n){return '<span style="background:'+(nivCol[n]||'#888')+';color:#fff;padding:2px 8px;border-radius:7px;font-size:9px;font-weight:700">'+n+'</span>';}
