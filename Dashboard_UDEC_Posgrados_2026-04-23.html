@@ -26,14 +26,21 @@
     <h1>Rutas de Formación Académica</h1>
     <p>Oferta vigente y proyectada · Líneas de profundización · Especializaciones · Maestrías · Doctorados</p>
     <div class="header-btns no-print" style="margin-top:6px">
-      <button class="btn-white" data-action="show-tab" data-tab="editor">✎ Editar / Agregar datos</button>
-      <button class="btn-white" onclick="downloadDB()" title="Descarga la base de datos en CSV">⬇ Descargar CSV</button>
+      <button class="btn-white" data-action="show-tab" data-tab="editor">✏️ Editar / Agregar datos</button>
       <button class="btn-gold" data-action="download-html" title="Descarga el dashboard completo con todos los datos actuales guardados dentro">💾 Guardar dashboard</button>
       <button class="btn-white" data-action="print">🖨 PDF</button>
-      <button class="btn-white" data-action="backup-db" title="Descarga respaldo completo en JSON">⬇ Respaldo JSON</button>
-      <button class="btn-white" data-action="restore-db" title="Restaurar datos desde un archivo de respaldo">⬆ Restaurar</button>
+      <div class="tools-dropdown">
+        <button class="btn-white tools-toggle" data-action="toggle-tools-menu">⚙️ Herramientas ▾</button>
+        <div class="tools-menu" id="tools-menu">
+          <button class="btn-white" onclick="downloadDB()" title="Descarga la base de datos en CSV">⬇ Descargar CSV</button>
+          <button class="btn-white" data-action="download-admin-html" title="Descarga versión editable con herramientas administrativas">🛠 Exportar Administrador</button>
+          <button class="btn-white" data-action="backup-db" title="Descarga respaldo completo en JSON">⬇ Respaldo JSON</button>
+          <button class="btn-white" data-action="restore-db" title="Restaurar datos desde un archivo de respaldo">⬆ Restaurar</button>
+          <button class="btn-white" data-action="manage-sedes" title="Administrar catálogo de sedes">⚙️ Gestionar Sedes</button>
+          <button class="btn-white" data-action="reset-db" title="Borra los datos guardados y recarga los datos originales" style="font-size:10px;opacity:.8">↺ Restablecer datos</button>
+        </div>
+      </div>
       <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreDB(this.files[0]);this.value=''">
-      <button class="btn-white" data-action="reset-db" title="Borra los datos guardados y recarga los datos originales" style="font-size:10px;opacity:.8">↺ Restablecer datos</button>
     </div>
   </div>
 
@@ -1206,6 +1213,7 @@
 <script src="assets/js/data/rc-data.js"></script>
 <script src="assets/js/views/rc.js"></script>
 <script src="assets/js/controllers/navigation.js"></script>
+<script src="assets/js/views/sedes-mgr.js"></script>
 <script src="assets/js/controllers/actions.js"></script>
 <script src="assets/js/app.js"></script>
 </body></html>

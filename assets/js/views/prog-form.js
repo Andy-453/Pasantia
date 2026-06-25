@@ -28,8 +28,9 @@ function renderProgForm(){
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+l.id+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
       +'<div class="field"><label>👤 Responsable</label><input id="lresp'+l.id+'" value="'+(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="lmes'+l.id+'">'+mo(l.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
-      +'</div>';
++'<div class="field"><label>📅 Año</label><select id="lano'+l.id+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+l.id+'" value="'+(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
++'<div style="margin-top:6px"><label style="font-size:10px;font-weight:700;color:#555;display:block;margin-bottom:3px">📍 Sedes</label><div style="display:flex;flex-wrap:wrap;gap:4px">'+ALL_SEDES.map(function(s){return '<label style="display:flex;align-items:center;gap:2px;font-size:9px;cursor:pointer;padding:2px 6px;border-radius:4px;background:'+((l.sedes||[]).indexOf(s)>-1?'#e6f2eb':'#f5f5f5')+'"><input type="checkbox" id="lse_'+l.id+'_'+s+'" '+((l.sedes||[]).indexOf(s)>-1?'checked':'')+' style="margin:0"> '+s+'</label>';}).join('')+'</div></div>'
++'</div>';
   }).join('');
   var mH=tmpMaes.map(function(m){
     return '<div class="linea-card" id="mc'+m.id+'">'
@@ -39,8 +40,9 @@ function renderProgForm(){
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="mo'+m.id+'"><option value="V"'+(m.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(m.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
       +'<div class="field"><label>👤 Responsable</label><input id="mresp'+m.id+'" value="'+(m.resp||'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="mmes'+m.id+'">'+mo(m.mes)+'</select></div>'
-      +'<div class="field"><label>📅 Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="menlace'+m.id+'" value="'+(m.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
-      +'</div>';
++'<div class="field"><label>📅 Año</label><select id="mano'+m.id+'">'+ao(m.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="menlace'+m.id+'" value="'+(m.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
++'<div style="margin-top:6px"><label style="font-size:10px;font-weight:700;color:#555;display:block;margin-bottom:3px">📍 Sedes</label><div style="display:flex;flex-wrap:wrap;gap:4px">'+ALL_SEDES.map(function(s){return '<label style="display:flex;align-items:center;gap:2px;font-size:9px;cursor:pointer;padding:2px 6px;border-radius:4px;background:'+((m.sedes||[]).indexOf(s)>-1?'#e6f2eb':'#f5f5f5')+'"><input type="checkbox" id="mse_'+m.id+'_'+s+'" '+((m.sedes||[]).indexOf(s)>-1?'checked':'')+' style="margin:0"> '+s+'</label>';}).join('')+'</div></div>'
++'</div>';
   }).join('');
   var h='<div class="modal-overlay"><div class="modal">'
     +'<div class="modal-title"><span>'+(isNew?'🆕':'✏️')+'</span>'+(isNew?'Nuevo programa':'Editar — '+p.n)+'</div>'

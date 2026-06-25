@@ -97,6 +97,44 @@ function _downloadBlob(html,filename){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+/**
+ * Descarga HTML standalone editable (admin mode):
+ * - Full CRUD visible (editor, backup, sedes)
+ * - Persistencia via localStorage
+ * - Usa buildStandaloneAdmin() de __EMBED
+ */
+function downloadAdminHTML(){
+  var hoy=new Date();
+  var fecha=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+  var filename='Dashboard_UDEC_Posgrados_ADMIN_'+fecha+'.html';
+  if(!window.__EMBED){
+    var html=document.documentElement.outerHTML;
+    html=html.replace('</title>','</title>'+_makeAdminEmbedded());
+    _downloadBlob(html,filename);
+    return;
+  }
+  var toastEl=document.getElementById('toast');
+  if(toastEl){toastEl.textContent='⏳ Empaquetando dashboard administrativo...';toastEl.style.display='block';}
+  window.__EMBED.buildStandaloneAdmin().then(function(html){
+    _downloadBlob(html,filename);
+    if(toastEl){toastEl.textContent='✅ Dashboard administrativo guardado';setTimeout(function(){toastEl.style.display='none';},2500);}
+  }).catch(function(err){
+    console.error('admin embed error:',err);
+    var html=document.documentElement.outerHTML;
+    html=html.replace('</title>','</title>'+_makeAdminEmbedded());
+    _downloadBlob(html,filename);
+    if(toastEl){toastEl.textContent='✅ Dashboard administrativo guardado (sin recursos embebidos)';setTimeout(function(){toastEl.style.display='none';},2500);}
+  });
+}
+function _makeAdminEmbedded(){
+  return '<script>' +
+    'window.__UDEC_ADMIN_EXPORT__=true;' +
+    '(function(){var _db=' + JSON.stringify(window.DB).replace(/<\//g, '<\\/') + ';try{var _x=localStorage.getItem("udec_rutas_db");if(!_x||!JSON.parse(_x).length)localStorage.setItem("udec_rutas_db",JSON.stringify(_db));}catch(_e){}})();' +
+    'window.__EMBEDDED_LR=' + JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_SD=' + JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_RC=' + JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/') + ';' +
+    '<\/script>';
+}
 function _downloadJSON(obj,filename){
   var json=JSON.stringify(obj,null,2);
   var blob=new Blob([json],{type:'application/json;charset=utf-8;'});
@@ -114,7 +152,8 @@ function backupDB(){
     db:window.DB,
     learningRoutes:window.__LEARNING_ROUTES||{},
     sniesSD:window.AppState?window.AppState.snies.SD||null:null,
-    rcRaw:window.__rcRaw||null
+    rcRaw:window.__rcRaw||null,
+    sedesCatalog:window.AppState?window.AppState.staticData.ALL_SEDES.slice():null
   };
   var now=new Date();
   var y=now.getFullYear();
@@ -140,6 +179,7 @@ function restoreDB(file){
       saveDB();
       saveLearningRoutes();
       if(typeof _saveSniesLocal==='function'&&AppState.snies.SD) _saveSniesLocal(AppState.snies.SD);
+      if(payload.sedesCatalog&&Array.isArray(payload.sedesCatalog)&&typeof saveSedesCatalog==='function') saveSedesCatalog(payload.sedesCatalog);
       if(typeof _tagDefaultPrograms==='function') _tagDefaultPrograms();
       if(typeof __refreshAll==='function') __refreshAll();
       if(typeof renderSNIES==='function') renderSNIES();

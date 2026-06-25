@@ -74,6 +74,10 @@ window.App = {
   // Almacenamiento
   loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
   backupDB: backupDB, restoreDB: restoreDB,
+  // Catálogo de sedes
+  saveSedesCatalog: saveSedesCatalog, openSedesManager: openSedesManager,
+  // Exportación administrativa
+  downloadAdminHTML: downloadAdminHTML,
   // Utilidades
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
   // Rutas de Aprendizaje
