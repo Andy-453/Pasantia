@@ -172,7 +172,7 @@ function _lrEditRoute(progId, prefill){
   var e=lr[progId];
   var isNew=!e;
   var route=isNew
-    ? { espName:(prefill&&prefill.name)||'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
+    ? { espName:(prefill&&prefill.name)||'', version:'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
     : JSON.parse(JSON.stringify(e));
   var type=route.type||'especializacion';
   var h='<div style="padding:1rem">';
@@ -182,8 +182,9 @@ function _lrEditRoute(progId, prefill){
   h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'">';
   h+='<div class="grid2" style="margin-bottom:12px">';
   h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
-  h+='<div class="field"><label>ID</label><div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666">'+progId+'</div></div>';
+  h+='<div class="field"><label>Versi\u00f3n (opcional)</label><input id="lr-version" value="'+(route.version||'')+'" placeholder="Ej: V2.1, 2026-2, 1.0" style="width:100%"></div>';
   h+='</div>';
+  h+='<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666;margin-bottom:12px">ID: '+progId+'</div>';
   var tc=0; (route.semesters||[]).forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
   h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
     +'<span style="font-weight:700;color:#006633">Total cr\u00e9ditos: <span id="lr-total-credits">'+tc+'</span></span>'
@@ -208,6 +209,7 @@ function _lrEditRoute(progId, prefill){
       h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px">'
         +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
+        +'<input class="lr-subj-version" value="'+(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
         +'<input class="lr-subj-url" type="url" value="'+(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<button data-action="lr-delete-subject" data-si="'+si+'" data-ji="'+ji+'" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px" title="Eliminar materia">\u00d7</button>'
@@ -235,6 +237,7 @@ function _lrCollectFormData(){
   var type=c.dataset.progType||'especializacion';
   var espName=document.getElementById('lr-esp-name')?.value.trim();
   if(!espName){ toast('Escribe el nombre del programa'); return null; }
+  var version=document.getElementById('lr-version')?.value.trim()||'';
   var sems=[]; var totalCr=0;
   document.querySelectorAll('.lr-semester').forEach(function(el){
     var t=el.querySelector('.lr-sem-title')?.value.trim()||'';
@@ -244,14 +247,15 @@ function _lrCollectFormData(){
       var st=s.querySelector('.lr-subj-name')?.value.trim()||'';
       var sc=parseInt(s.querySelector('.lr-subj-credits')?.value)||0;
       var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
+      var sv=s.querySelector('.lr-subj-version')?.value.trim()||'';
       var su=s.querySelector('.lr-subj-url')?.value.trim()||'';
-      if(st) subs.push({title:st,credits:sc,homologa:sh,resourceUrl:su||undefined});
+      if(st) subs.push({title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined});
     });
     var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
     sems.push({title:t,type:tp,credits:cr,subjects:subs});
     totalCr+=cr;
   });
-  return {espName:espName,espId:espId,type:type,credits:totalCr,semesters:sems};
+  return {espName:espName,version:version,espId:espId,type:type,credits:totalCr,semesters:sems};
 }
 
 function _lrRecalcCredits(){
@@ -264,7 +268,7 @@ function _lrSaveRoute(espId){
   var id=data.espId;
   window.__LEARNING_ROUTES[id]={
     id:'lr-'+id.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:id, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
+    espId:id, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
     toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); __refreshAll();
 }
@@ -308,7 +312,7 @@ function _lrDeleteSubject(si,ji){
 function _rerenderForm(data,espId){
   window.__LEARNING_ROUTES[espId]={
     id:'lr-'+espId.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:espId, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
+    espId:espId, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
   _lrEditRoute(espId);
 }
@@ -319,6 +323,6 @@ function _lrPreviewRoute(espId){
     openLearningRouteModal(espId);
   } else {
     var data=_lrCollectFormData(); if(!data) return;
-    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
+    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,version:data.version||'',type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
   }
 }

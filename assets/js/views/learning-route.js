@@ -24,7 +24,7 @@ function renderLearningRouteHTML(route){
     + '<div class="node-label">'+typeLabel+'</div>'
     + '<div class="node-title" style="font-size:11px">'+route.espName+'</div>'
     + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
-    + totalCredits+' créditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
+    + (route.version ? 'Versi\u00f3n: '+route.version+' &middot; ' : '')+totalCredits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
     + '</div></div></div>';
 
   var connectorHtml = '<div class="route-connector"><div class="connector-line"></div><div class="connector-dot"></div><div class="connector-bar"></div></div>';
@@ -52,6 +52,7 @@ function renderLearningRouteHTML(route){
           ? '<a href="'+subj.resourceUrl+'" target="_blank" rel="noopener noreferrer" style="color:#185FA5;text-decoration:underline;cursor:pointer">'+subj.title+'</a>'
           : subj.title)+'</div>'
         + '<div class="subj-meta">'
+        + (subj.version ? '<span class="pill" style="background:#f0f0f0;color:#555;border:1px solid #ddd;margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.version+'</span>' : '')
         + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
         + homoBadge
         + '</div></div></div>';
