@@ -14,8 +14,8 @@ function renderTree(){
   function sortBlocks(arr){
     return (arr||[]).slice().sort(function(a,b){
       function key(x){
-        var m=String(x.l||'').match(/Profundizaci\u00f3n\s+(\d+)/i);
-        if(m) return {t:0,n:parseInt(m[1],10),s:''};
+        var m=String(x.t||'').match(/Profundizaci\u00f3n\s+(\d+)/i);
+        if(m) return {t:0,n:parseInt(m[1],10),s:String(x.l||'')};
         return {t:1,n:0,s:String(x.l||'')};
       }
       var ka=key(a), kb=key(b);
