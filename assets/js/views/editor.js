@@ -8,6 +8,7 @@ function renderEditor(){
   var f=AppData.getFacultad(AppState.navigation.curFac);if(!f)return;
   function cbs(items){var v=0,p=0,c=0;items.forEach(function(x){var e=(x.e||'').toLowerCase();if(e.includes('obtención')||e.includes('registro')||e.includes('oferta'))v++;else if(e.includes('construcción')||e.includes('radicado')||e.includes('radicación'))c++;else p++;});return{v:v,p:p,c:c};}
   var _tab=window._lrEditorTab||'programas';
+  var _cy=new Date().getFullYear(),_years=Array.from({length:10},function(_,i){return _cy+i;});
   var h='<div style="padding:1rem">';
   h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px"><div style="font-size:14px;font-weight:700;color:#006633;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Editor de datos</div><div style="display:flex;gap:6px;flex-wrap:wrap">'+(_tab==='rutas'?'<!-- Crear ruta desde secci\u00f3n Sin ruta -->':'<button class="btn-green" data-action="open-new-prog">+ Nuevo programa</button><button data-action="open-edit-fac">\u270f\ufe0f Editar facultad</button><button data-action="open-new-fac">+ Nueva facultad</button>')+'</div></div>';
   h+='<div style="display:flex;gap:0;margin-bottom:1rem;border-bottom:2px solid #e0ece4"><button data-action="lr-set-tab" data-tab="programas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='programas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='programas'?'#006633':'transparent')+';margin-bottom:-2px">\ud83d\udccb Programas</button><button data-action="lr-set-tab" data-tab="rutas" style="padding:8px 16px;font-size:11px;font-weight:700;border:none;background:none;cursor:pointer;color:'+(_tab==='rutas'?'#006633':'#999')+';border-bottom:2px solid '+(_tab==='rutas'?'#006633':'transparent')+';margin-bottom:-2px">\ud83d\uddfa\ufe0f Rutas de aprendizaje</button></div>';
@@ -46,7 +47,7 @@ function renderEditor(){
     +'<div id="doc-form-body" style="padding:16px;display:none">'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Nombre del doctorado</label><input id="doc-name" value="'+(f.doc?f.doc.n:'')+'" placeholder="Nombre del doctorado"></div><div class="field"><label>Estado actual</label><input id="doc-estado" value="'+(f.doc?f.doc.e:'')+'" placeholder="Ej: En construcci\u00f3n"></div></div>'
       +'<div class="grid2" style="margin-bottom:10px"><div class="field"><label>Tipo de oferta</label><select id="doc-oferta"><option value="V" '+(f.doc&&f.doc.o==='V'?'selected':'')+'>Vigente</option><option value="P" '+(!f.doc||f.doc.o==='P'?'selected':'')+'>Proyectada</option></select></div><div class="field"><label>\ud83d\udc64 Responsable</label><input id="doc-resp" value="'+(f.doc&&f.doc.resp?f.doc.resp:'')+'" placeholder="Docente o equipo"></div></div>'
-      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>\ud83d\udcc5 Mes inicio</label><select id="doc-mes"><option value="">\u2014 Mes \u2014</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>\ud83d\udcc5 A\u00f1o inicio</label><select id="doc-ano"><option value="">\u2014 A\u00f1o \u2014</option>'+[2024,2025,2026,2027,2028].map(function(y){return '<option value="'+y+'" '+(f.doc&&f.doc.ano===y?'selected':'')+'>'+y+'</option>';}).join('')+'</select></div></div>'
+      +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>\ud83d\udcc5 Mes inicio</label><select id="doc-mes"><option value="">\u2014 Mes \u2014</option>'+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map(function(m,i){return '<option value="'+(i+1)+'" '+(f.doc&&f.doc.mes===(i+1)?'selected':'')+'>'+m+'</option>';}).join('')+'</select></div><div class="field"><label>\ud83d\udcc5 A\u00f1o inicio</label><select id="doc-ano"><option value="">\u2014 A\u00f1o \u2014</option>'+(function(v){var a=_years.slice();if(v!=null&&a.indexOf(v)===-1)a.push(v);a.sort(function(x,y){return x-y;});return a.map(function(y){return '<option value="'+y+'" '+(v===y?'selected':'')+'>'+y+'</option>';}).join('');})(f.doc&&f.doc.ano)+'</select></div></div>'
       +'<div class="grid2" style="margin-bottom:12px"><div class="field"><label>\ud83d\udd17 Enlace</label><input type="url" id="doc-enlace" value="'+(f.doc&&f.doc.enlaceObtencion?f.doc.enlaceObtencion:'')+'" placeholder="URL del programa"></div><div class="field"></div></div>'
       +'<div style="margin-bottom:12px"><label style="font-size:10px;font-weight:700;color:#555;display:block;margin-bottom:3px">\ud83d\udccd Sedes</label><div style="display:flex;flex-wrap:wrap;gap:4px">'+ALL_SEDES.map(function(s){return '<label style="display:flex;align-items:center;gap:2px;font-size:9px;cursor:pointer;padding:2px 6px;border-radius:4px;background:'+((f.doc&&f.doc.sedes&&f.doc.sedes.indexOf(s)>-1)?'#e6f2eb':'#f5f5f5')+'"><input type="checkbox" id="dse_'+s+'" '+((f.doc&&f.doc.sedes&&f.doc.sedes.indexOf(s)>-1)?'checked':'')+' style="margin:0"> '+s+'</label>';}).join('')+'</div></div>'
       +'<button class="btn-green" data-action="save-doc">\ud83d\udcbe Guardar doctorado</button>'
@@ -171,7 +172,7 @@ function _lrEditRoute(progId, prefill){
   var e=lr[progId];
   var isNew=!e;
   var route=isNew
-    ? { espName:(prefill&&prefill.name)||'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
+    ? { espName:(prefill&&prefill.name)||'', version:'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
     : JSON.parse(JSON.stringify(e));
   var type=route.type||'especializacion';
   var h='<div style="padding:1rem">';
@@ -181,8 +182,9 @@ function _lrEditRoute(progId, prefill){
   h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'">';
   h+='<div class="grid2" style="margin-bottom:12px">';
   h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
-  h+='<div class="field"><label>ID</label><div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666">'+progId+'</div></div>';
+  h+='<div class="field"><label>Versi\u00f3n (opcional)</label><input id="lr-version" value="'+(route.version||'')+'" placeholder="Ej: V2.1, 2026-2, 1.0" style="width:100%"></div>';
   h+='</div>';
+  h+='<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666;margin-bottom:12px">ID: '+progId+'</div>';
   var tc=0; (route.semesters||[]).forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
   h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
     +'<span style="font-weight:700;color:#006633">Total cr\u00e9ditos: <span id="lr-total-credits">'+tc+'</span></span>'
@@ -207,6 +209,7 @@ function _lrEditRoute(progId, prefill){
       h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px">'
         +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
+        +'<input class="lr-subj-version" value="'+(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
         +'<input class="lr-subj-url" type="url" value="'+(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<button data-action="lr-delete-subject" data-si="'+si+'" data-ji="'+ji+'" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px" title="Eliminar materia">\u00d7</button>'
@@ -234,6 +237,7 @@ function _lrCollectFormData(){
   var type=c.dataset.progType||'especializacion';
   var espName=document.getElementById('lr-esp-name')?.value.trim();
   if(!espName){ toast('Escribe el nombre del programa'); return null; }
+  var version=document.getElementById('lr-version')?.value.trim()||'';
   var sems=[]; var totalCr=0;
   document.querySelectorAll('.lr-semester').forEach(function(el){
     var t=el.querySelector('.lr-sem-title')?.value.trim()||'';
@@ -243,14 +247,15 @@ function _lrCollectFormData(){
       var st=s.querySelector('.lr-subj-name')?.value.trim()||'';
       var sc=parseInt(s.querySelector('.lr-subj-credits')?.value)||0;
       var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
+      var sv=s.querySelector('.lr-subj-version')?.value.trim()||'';
       var su=s.querySelector('.lr-subj-url')?.value.trim()||'';
-      if(st) subs.push({title:st,credits:sc,homologa:sh,resourceUrl:su||undefined});
+      if(st) subs.push({title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined});
     });
     var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
     sems.push({title:t,type:tp,credits:cr,subjects:subs});
     totalCr+=cr;
   });
-  return {espName:espName,espId:espId,type:type,credits:totalCr,semesters:sems};
+  return {espName:espName,version:version,espId:espId,type:type,credits:totalCr,semesters:sems};
 }
 
 function _lrRecalcCredits(){
@@ -263,7 +268,7 @@ function _lrSaveRoute(espId){
   var id=data.espId;
   window.__LEARNING_ROUTES[id]={
     id:'lr-'+id.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:id, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
+    espId:id, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
     toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); __refreshAll();
 }
@@ -307,7 +312,7 @@ function _lrDeleteSubject(si,ji){
 function _rerenderForm(data,espId){
   window.__LEARNING_ROUTES[espId]={
     id:'lr-'+espId.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:espId, espName:data.espName, type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
+    espId:espId, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
   };
   _lrEditRoute(espId);
 }
@@ -318,6 +323,6 @@ function _lrPreviewRoute(espId){
     openLearningRouteModal(espId);
   } else {
     var data=_lrCollectFormData(); if(!data) return;
-    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
+    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,version:data.version||'',type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
   }
 }

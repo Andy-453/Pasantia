@@ -25,6 +25,10 @@ function showTab(id){
     document.getElementById('panel-'+t).classList.toggle('act',t===id);
     document.getElementById('tb-'+t).classList.toggle('act',t===id);
   });
+  var _f=document.querySelector('.filters'),_k=document.getElementById('kpis');
+  var _show=id==='arbol'||id==='tabla'||id==='sede';
+  if(_f)_f.style.display=_show?'':'none';
+  if(_k)_k.style.display=_show?'':'none';
   if(id==='editor') renderEditor();
   if(id==='indicadores') renderIndicadores();
   if(id==='snies') renderSNIES();

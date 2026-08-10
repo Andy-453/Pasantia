@@ -14,10 +14,10 @@ function renderProgForm(){
   }
   var ES=['','Con registro Calificado','En oferta','Obtención','Radicado MEN','En radicación','Entregado para radicar','En construcción','Por construir','En proyección','Nueva Propuesta de la Facultad','En reclamación  MEN','Renovación','Renovación y modificación de la denominación','Negado MEN'];
   var MS=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var AS=[2024,2025,2026,2027,2028];
+  var _cy=new Date().getFullYear(),AS=Array.from({length:10},function(_,i){return _cy+i;});
   function eo(c){return ES.map(function(e){return '<option value="'+e+'"'+(e===c?' selected':'')+'>'+( e||'— Sin estado —')+'</option>';}).join('');}
   function mo(c){return '<option value="">— Mes —</option>'+MS.slice(1).map(function(m,i){return '<option value="'+(i+1)+'"'+((i+1)===c?' selected':'')+'>'+m+'</option>';}).join('');}
-  function ao(c){return '<option value="">— Año —</option>'+AS.map(function(y){return '<option value="'+y+'"'+(y===c?' selected':'')+'>'+y+'</option>';}).join('');}
+  function ao(c){var a=AS.slice();if(c!=null&&a.indexOf(c)===-1)a.push(c);a.sort(function(x,y){return x-y;});return '<option value="">— Año —</option>'+a.map(function(y){return '<option value="'+y+'"'+(y===c?' selected':'')+'>'+y+'</option>';}).join('');}
   var lH=tmpLineas.map(function(l){
     return '<div class="linea-card" id="lc'+l.id+'">'
       +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">🗑️ Quitar</button>'

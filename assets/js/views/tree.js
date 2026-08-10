@@ -11,6 +11,20 @@ function renderTree(){
   if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
   const singlePregrado = filtPregrado !== 'ALL';
 
+  function sortBlocks(arr){
+    return (arr||[]).slice().sort(function(a,b){
+      function key(x){
+        var m=String(x.t||'').match(/Profundizaci\u00f3n\s+(\d+)/i);
+        if(m) return {t:0,n:parseInt(m[1],10),s:String(x.l||'')};
+        return {t:1,n:0,s:String(x.l||'')};
+      }
+      var ka=key(a), kb=key(b);
+      if(ka.t!==kb.t) return ka.t-kb.t;
+      if(ka.t===0) return ka.n-kb.n;
+      return ka.s.localeCompare(kb.s,'es');
+    });
+  }
+
   function vline(h){
     return `<div class="vl" style="height:${h}px"></div>`;
   }
@@ -49,7 +63,7 @@ function renderTree(){
 
   if(singlePregrado){
     const p = visProgs[0];
-    const vL = (Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec'));
+    const vL = sortBlocks((Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec')));
     const vM = (Array.isArray(p.mae)?p.mae:[]).filter(m=>itemMatch(m,'mae'));
 
     h+=`
@@ -174,7 +188,7 @@ function renderTree(){
   } else {
     h+=`<div class="progs-row">`;
     visProgs.forEach(p=>{
-      const vL=(Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec'));
+      const vL=sortBlocks((Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec')));
       const vM=(Array.isArray(p.mae)?p.mae:[]).filter(m=>itemMatch(m,'mae'));
       h+=`<div class="pcol">
         ${vline(14)}
