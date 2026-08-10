@@ -78,7 +78,7 @@ window.__EMBED = {
       'window.__EMBEDDED_RC=' + _rcStr + ';' +
       '(function(){var _db=' + _dbStr + ';try{var _x=localStorage.getItem("udec_rutas_db");if(!_x||!JSON.parse(_x).length)localStorage.setItem("udec_rutas_db",JSON.stringify(_db));}catch(_e){}})();' +
       '<\/script>';
-    html = html.replace('</head>', _embedded + '<style>' + cssText + '</style></head>');
+    html = html.replace('</head>', function() { return _embedded + '<style>' + cssText + '</style></head>'; });
     var scriptSrcs = [];
     html = html.replace(/<script[^>]+src="([^"]*)"[^>]*><\/script>/gi, function(m, src) {
       scriptSrcs.push(src);
@@ -104,7 +104,7 @@ window.__EMBED = {
         if (jsCodes[i]) return '<script>' + jsCodes[i] + '<\/script>';
         return '<script src="' + s + '"><\/script>';
       }).join('\n');
-      html = html.replace('</body>', inlineScripts + '\n</body>');
+      html = html.replace('</body>', function() { return inlineScripts + '\n</body>'; });
       return html;
     });
   },
@@ -141,7 +141,7 @@ window.__EMBED = {
       'button[data-action="show-tab"][data-tab="editor"],' +
       'button[data-action="edit-lr-from-modal"],' +
       'button[onclick*="downloadDB"]{display:none!important}';
-    html = html.replace('</head>', _embedded + '<style>' + cssText + _adminHide + '</style></head>');
+    html = html.replace('</head>', function() { return _embedded + '<style>' + cssText + _adminHide + '</style></head>'; });
 
     var scriptSrcs = [];
     html = html.replace(/<script[^>]+src="([^"]*)"[^>]*><\/script>/gi, function(m, src) {
@@ -174,7 +174,7 @@ window.__EMBED = {
         return '<script src="' + s + '"><\/script>';
       }).join('\n');
 
-      html = html.replace('</body>', inlineScripts + '\n</body>');
+      html = html.replace('</body>', function() { return inlineScripts + '\n</body>'; });
       return html;
     });
   }
