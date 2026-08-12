@@ -47,6 +47,9 @@ var __ACTIONS = {
   'show-learning-route': function(b){
     openLearningRouteModal(b.dataset.espId);
   },
+  'toggle-sedes-list': function(b){ toggleSedesList(b.getAttribute('data-pid')); },
+  'select-sede-prog': function(b){ setSedeProg(b.getAttribute('data-pid'), b.getAttribute('data-sede')); },
+  'toggle-mae': function(b){ toggleMaeNode(b.getAttribute('data-key')); },
   'close-lr-modal': function(){
     var o = document.getElementById('lr-modal-overlay');
     if(o) document.body.removeChild(o);
