@@ -14,13 +14,18 @@
 
 function renderSedeView(){
   const f=AppData.getFacultad(AppState.navigation.curFac);const sm={};if(!f)return;
+  const filtSedeActive=window.filtSede&&window.filtSede!=='ALL';
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     [...(p.lineas||[]).filter(l=>itemMatch(l,'espec')),...(p.mae||[]).filter(m=>itemMatch(m,'mae'))].forEach(item=>{
-      (item.sedes||[]).forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o,enlaceObtencion:item.enlaceObtencion});});
+      const target=filtSedeActive?[window.filtSede]:(item.sedes||[]);
+      target.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o,enlaceObtencion:item.enlaceObtencion});});
     });
   });
-  if(f.doc&&itemMatch(f.doc,'doc')) (f.doc.sedes||[]).forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:'Todos',nivel:f.doc.n,e:f.doc.e,o:f.doc.o});});
+  if(f.doc&&itemMatch(f.doc,'doc')) {
+    const dSedes=(f.doc.sedes&&f.doc.sedes.length)?f.doc.sedes:['Todos los pregrados'];
+    dSedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:'Todos',nivel:f.doc.n,e:f.doc.e,o:f.doc.o});});
+  }
   const sedes=Object.keys(sm).sort();
   if(!sedes.length){document.getElementById('sede-content').innerHTML='<div class="empty-msg">Sin resultados</div>';return;}
   let h='';
