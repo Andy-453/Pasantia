@@ -152,8 +152,8 @@ function renderTree(){
           <div class="sedes-ramas">`:''
         }
         ${sEff?(()=>{
-          const sL=vL.filter(l=>(l.sedes||[]).indexOf(sEff)>-1);
-          const sM=vM.filter(m=>(m.sedes||[]).indexOf(sEff)>-1);
+          const sL=vL.filter(l=>(l.sedes&&l.sedes.length?l.sedes:p.sedes).indexOf(sEff)>-1);
+          const sM=vM.filter(m=>(m.sedes&&m.sedes.length?m.sedes:p.sedes).indexOf(sEff)>-1);
           const mOpen=!!(AppState.ui.maeOpen&&AppState.ui.maeOpen[p.id]);
           let r='';
           if(!sL.length&&!sM.length){
