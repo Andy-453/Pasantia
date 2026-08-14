@@ -90,7 +90,7 @@ function renderLearningRouteHTML(route){
     legendHtml = '<div class="lr-legend">';
     if(hasVersion) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#9e9e9e"></span>Versión</span>';
     if(hasCredits) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#1a5cb0"></span>Créditos</span>';
-    if(hasHomologa) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#006633"></span>Se homologa</span>';
+    if(hasHomologa) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#006633"></span>Homologacion</span>';
     if(hasHomo) legendHtml += '<span class="lr-legend-item"><span class="lr-homo-dot"></span>Asignatura de pregrado</span>';
     legendHtml += '</div>';
   }
