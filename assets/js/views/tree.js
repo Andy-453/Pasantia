@@ -148,8 +148,7 @@ function renderTree(){
               <div class="node-label">Sede seleccionada</div>
               <div class="node-title">${sEff}</div>
             </div>
-          </div>
-          <div class="sedes-ramas">`:''
+          </div>`:''
         }
         ${sEff?(()=>{
           const sL=vL.filter(l=>(l.sedes&&l.sedes.length?l.sedes:p.sedes).indexOf(sEff)>-1);
@@ -159,7 +158,10 @@ function renderTree(){
           if(!sL.length&&!sM.length){
             r+=`<div class="sede-empty">Sin oferta de posgrado en esta sede</div>`;
           }
-          sL.forEach(l=>{
+          if(sL.length){
+            r+=`
+          <div class="sedes-ramas">`;
+            sL.forEach(l=>{
             r+=`
           <div class="prof-row">
             <div class="node node-linea">
@@ -181,7 +183,10 @@ function renderTree(){
               </div>
             </div>
           </div>`;
-          });
+            });
+            r+=`
+          </div>`;
+          }
           if(sM.length){
             r+=`
           <div class="mae-row">
@@ -219,7 +224,6 @@ function renderTree(){
           return r;
         })():''}
         ${sEff?`
-          </div>
         </div>`:''}
       </div>
     </div>`;

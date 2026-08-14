@@ -161,9 +161,9 @@ button:active{transform:scale(.98)}
 .node-espec .node-title{font-size:10px;font-weight:600;color:#1a3a2a;line-height:1.35}
 .sede-empty{font-size:9px;color:#999;padding:8px 4px;max-width:160px;text-align:center}
 
-/* ===== MAESTRÍAS (rama colapsable de la sede) ===== */
-.mae-row{display:flex;flex-direction:row;align-items:flex-start;gap:26px;position:relative}
-.mae-row::before{content:'';position:absolute;left:-34px;top:16px;width:34px;height:2px;background:#c0d8c8}
+/* ===== MAESTRÍAS (columna propia a la derecha de Especializaciones) ===== */
+.mae-row{display:flex;flex-direction:row;align-items:flex-start;gap:26px;position:relative;margin-left:-26px;padding-left:26px}
+.mae-row::before{content:'';position:absolute;left:0;top:50%;width:26px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
 .node-mae-hub{min-width:150px;max-width:180px;background:#fff;box-shadow:0 2px 8px rgba(200,164,58,0.14);border:1px solid #efe2b8;display:flex;align-items:center;gap:8px;padding:8px 12px;text-align:left;position:relative;overflow:visible;cursor:pointer}
 .node-mae-hub:hover{background:#fdf8e6;border-color:#e2cf8a}
 .node-mae-hub.open{background:#fdf8e6;border-color:var(--udec-gold);box-shadow:0 2px 8px rgba(200,164,58,0.2)}
@@ -295,7 +295,9 @@ button:active{transform:scale(.98)}
   .edit-node-btn{display:none!important}
   .trunk{padding-left:18px!important}
   .prog-row,.sede-control,.sede-content,.prof-row,.mae-row{gap:12px!important}
-  .prog-row::before,.prof-row::before,.mae-row::before,.node-root::after,.node-pregrado::after,.node-sede-selected::after{width:18px!important;left:-18px!important}
+  .prog-row::before,.prof-row::before,.node-root::after,.node-pregrado::after,.node-sede-selected::after{width:18px!important;left:-18px!important}
+  .mae-row{margin-left:-12px!important;padding-left:12px!important}
+  .mae-row::before{width:12px!important;left:0!important;top:50%!important}
   .plink{width:12px!important}
   .doc-col{padding-left:22px!important}
   .sedes-list{display:none!important}
