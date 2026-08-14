@@ -90,3 +90,24 @@ function _getAllAcademicPrograms(){
   return list;
 }
 
+// ===== HOMOLOGACIÓN DESDE PREGRADO (por materia) =====
+/**
+ * Devuelve el nombre de la materia de pregrado asociada a una materia,
+ * o null si no debe mostrarse la cápsula "🟣 Desde pregrado".
+ *
+ * Reglas:
+ *   - homologa !== true            → null (la materia no es homologable)
+ *   - sj.homo.materia vacío/ausente → null (no hay materia de pregrado asociada)
+ *   - en caso contrario            → el texto de sj.homo.materia
+ *
+ * @param {Object} subj  - subject {homologa, homo?}
+ * @param {Object} route - ruta (sin uso en esta simplificación; se mantiene por firma)
+ * @returns {string|null} nombre de la materia de pregrado o null
+ */
+function _lrHomologacion(subj, route){
+  if(!subj || subj.homologa !== true) return null;
+  var materia = subj.homo && subj.homo.materia;
+  if(typeof materia !== 'string' || !materia.trim()) return null;
+  return materia.trim();
+}
+

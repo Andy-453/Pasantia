@@ -166,6 +166,8 @@ function _lrRenderList(){
   return h;
 }
 
+function _lrEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
 function _lrEditRoute(progId, prefill){
   _lrEditingId=progId; renderEditor();
   var lr=window.__LEARNING_ROUTES||{};
@@ -206,11 +208,13 @@ function _lrEditRoute(progId, prefill){
     h+='<div class="field" style="margin-bottom:8px"><label>Cr\u00e9ditos del semestre</label><span class="lr-sem-credits-display" style="display:inline-block;padding:6px 10px;background:#f0f7f2;border-radius:6px;font-size:11px;color:#006633;font-weight:600">'+semInitCr+'</span><span style="font-size:10px;color:#999;margin-left:6px">calculado autom\u00e1ticamente</span></div>';
     h+='<div class="lr-subjects" data-si="'+si+'" style="margin-bottom:6px">';
     sem.subjects.forEach(function(subj,ji){
-      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px">'
+      var shomoMateria = (subj.homo && subj.homo.materia) || '';
+      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">'
         +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
         +'<input class="lr-subj-version" value="'+(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
-        +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
+        +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" data-action="lr-touch-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
+        +'<input class="lr-subj-homo" type="text" value="'+_lrEsc(shomoMateria)+'" placeholder="Materia homologada desde pregrado" title="Materia homologada desde pregrado" '+(subj.homologa?'':'disabled')+' style="max-width:190px;min-width:120px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-url" type="url" value="'+(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<button data-action="lr-delete-subject" data-si="'+si+'" data-ji="'+ji+'" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px" title="Eliminar materia">\u00d7</button>'
         +'</div>';
@@ -249,7 +253,13 @@ function _lrCollectFormData(){
       var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
       var sv=s.querySelector('.lr-subj-version')?.value.trim()||'';
       var su=s.querySelector('.lr-subj-url')?.value.trim()||'';
-      if(st) subs.push({title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined});
+      if(!st) return;
+      var subj={title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined};
+      if(sh){
+        var shm=(s.querySelector('.lr-subj-homo')?.value||'').trim();
+        if(shm) subj.homo={materia:shm};
+      }
+      subs.push(subj);
     });
     var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
     sems.push({title:t,type:tp,credits:cr,subjects:subs});

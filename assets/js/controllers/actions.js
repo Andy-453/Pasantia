@@ -110,6 +110,13 @@ var __CHANGE = {
     if(display) display.textContent = total;
     _lrRecalcCredits();
   },
+  'lr-touch-homologa': function(b){
+    var subject = b.closest('.lr-subject');
+    if(!subject) return;
+    var inp = subject.querySelector('.lr-subj-homo');
+    if(!inp) return;
+    inp.disabled = !b.checked;
+  },
 };
 document.addEventListener('change', function(e){
   var b = e.target.closest('[data-action]');
