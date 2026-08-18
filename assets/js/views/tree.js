@@ -162,8 +162,10 @@ function renderTree(){
             r+=`
           <div class="sedes-ramas">`;
             sL.forEach(l=>{
+              const isProf=/^Profundizaci[oó]n\s+\d+$/i.test(l.t||'');
             r+=`
-          <div class="prof-row">
+          <div class="prof-row${isProf?'':' no-linea'}">`
+            +(isProf?`
             <div class="node node-linea">
               <div class="node-stripe"></div>
               <div class="node-body">
@@ -172,7 +174,16 @@ function renderTree(){
                 <div class="node-title">${l.l}</div>
               </div>
             </div>
-            <div class="plink"></div>
+            <div class="plink"></div>`:`
+            <div class="node node-linea node-semestre">
+              <div class="node-stripe"></div>
+              <div class="node-body">
+                <div class="tipo-tag">${l.t}</div>
+                <div class="node-title">${l.motivo||'SEMESTRE AVANZADO'}</div>
+              </div>
+            </div>
+            <div class="plink"></div>`)
+            +`
             <div class="node node-espec">
               <div class="node-stripe"></div>
               <div class="node-body">

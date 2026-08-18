@@ -154,6 +154,9 @@ button:active{transform:scale(.98)}
 .node-linea .node-stripe{background:#2e8b57;height:5px}
 .node-linea .node-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1a6040;margin-bottom:3px}
 .node-linea .node-title{font-size:11px;font-weight:700;color:#0d3d22;line-height:1.35}
+.node-linea.node-semestre{background:#f1f6f3;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.node-linea.node-semestre .node-stripe{background:#8aa99a}
+.node-linea.node-semestre .node-title{color:#3a5548}
 .plink{width:26px;height:2px;background:#c0d8c8;flex-shrink:0}
 .node-espec{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 8px rgba(0,102,51,0.08);position:relative}
 .node-espec .node-stripe{background:#4aaa72}

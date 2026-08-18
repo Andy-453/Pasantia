@@ -117,6 +117,19 @@ var __CHANGE = {
     if(!inp) return;
     inp.disabled = !b.checked;
   },
+  'prog-linea-tipo': function(b){
+    var lid = b.id.slice(2);
+    var box = document.getElementById('llbox'+lid);
+    var inp = document.getElementById('ll'+lid);
+    var mbox = document.getElementById('lmbox'+lid);
+    var minp = document.getElementById('lm'+lid);
+    if(!box || !inp || !mbox || !minp) return;
+    var hide = (b.value === TIPO_SIN_LINEA);
+    box.style.display = hide ? 'none' : '';
+    inp.disabled = hide;
+    mbox.style.display = hide ? '' : 'none';
+    minp.disabled = !hide;
+  },
 };
 document.addEventListener('change', function(e){
   var b = e.target.closest('[data-action]');

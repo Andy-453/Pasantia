@@ -1112,7 +1112,8 @@ Programa {
 Linea {
   id: string,          // uid()
   l: string,           // nombre de línea
-  t: string,           // tipo: "Profundización 1" | "Profundización 2"
+  t: string,           // tipo: "Profundización 1" | "Profundización 2" | "Profundización 3" | "Sin línea de profundización"
+  motivo?: string,     // motivo/modalidad (solo cuando t === "Sin línea de profundización")
   esp: string,         // nombre de especialización
   e: string,           // estado (texto libre, ~20 variantes)
   o: string,           // oferta: "V" | "P"

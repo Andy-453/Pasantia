@@ -4,6 +4,8 @@
  *   uid (global), document.getElementById
  */
 
+var TIPO_SIN_LINEA='Sin línea de profundización';
+
 function renderProgForm(){
   var f=AppData.getFacultad(AppState.navigation.curFac),isNew=editingProgId==='__new__';if(!f)return;
   var p=isNew?{id:uid(),n:'',sedes:[],lineas:[{id:uid(),l:'',t:'Profundización 1',esp:'',e:'',o:'V',sedes:[],resp:'',mes:null,ano:null}],mae:[{id:uid(),n:'',e:'',o:'P',sedes:[],resp:'',mes:null,ano:null}]}:f.progs.find(function(x){return x.id===editingProgId;});
@@ -21,8 +23,9 @@ function renderProgForm(){
   var lH=tmpLineas.map(function(l){
     return '<div class="linea-card" id="lc'+l.id+'">'
       +'<button class="del-btn" data-action="del-linea" data-linea-id="'+l.id+'">🗑️ Quitar</button>'
-      +'<div class="grid2"><div class="field"><label>Línea</label><input id="ll'+l.id+'" value="'+(l.l||'')+'" placeholder="Nombre de la línea"></div>'
-      +'<div class="field"><label>Tipo</label><select id="lt'+l.id+'"><option'+(l.t==='Profundización 1'?' selected':'')+'>Profundización 1</option><option'+(l.t==='Profundización 2'?' selected':'')+'>Profundización 2</option></select></div></div>'
++'<div class="grid2"><div class="field" id="llbox'+l.id+'"'+(l.t===TIPO_SIN_LINEA?' style="display:none"':'')+'><label>Línea</label><input id="ll'+l.id+'"'+(l.t===TIPO_SIN_LINEA?' disabled':'')+' value="'+(l.l||'')+'" placeholder="Nombre de la línea"></div>'
++'<div class="field" id="lmbox'+l.id+'"'+(l.t===TIPO_SIN_LINEA?'':' style="display:none"')+'><label>Motivo / modalidad</label><input id="lm'+l.id+'"'+(l.t===TIPO_SIN_LINEA?'':' disabled')+' value="'+(l.motivo||'')+'" placeholder="Ej: Semestre avanzado"></div>'
++'<div class="field"><label>Tipo</label><select id="lt'+l.id+'" data-action="prog-linea-tipo"><option'+(l.t==='Profundización 1'?' selected':'')+'>Profundización 1</option><option'+(l.t==='Profundización 2'?' selected':'')+'>Profundización 2</option><option'+(l.t==='Profundización 3'?' selected':'')+'>Profundización 3</option><option'+(l.t===TIPO_SIN_LINEA?' selected':'')+'>'+TIPO_SIN_LINEA+'</option></select></div></div>'
       +'<div class="grid2"><div class="field"><label>Especialización</label><input id="le'+l.id+'" value="'+(l.esp||'')+'" placeholder="Nombre"></div>'
       +'<div class="field"><label>Estado</label><select id="les'+l.id+'">'+eo(l.e)+'</select></div></div>'
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+l.id+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
