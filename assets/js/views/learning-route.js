@@ -45,6 +45,10 @@ function renderLearningRouteHTML(route){
       var homoBadge = subj.homologa
         ? '<span class="badge" style="background:#e6f2eb;color:#006633;border:1px solid #b0d4be;padding:1px 5px;font-size:7px;margin-top:0">\u2713 Homologa</span>'
         : '';
+      var homoCtx = _lrHomologacion(subj, route);
+      var homoPill = homoCtx
+        ? '<span class="pill lr-homo-pill" title="Homologa: '+homoCtx+'"><span class="lr-homo-dot"></span>'+homoCtx+'</span>'
+        : '';
       return '<div class="subj-card">'
         + '<div class="subj-stripe"></div>'
         + '<div class="subj-body">'
@@ -55,6 +59,7 @@ function renderLearningRouteHTML(route){
         + (subj.version ? '<span class="pill" style="background:#f0f0f0;color:#555;border:1px solid #ddd;margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.version+'</span>' : '')
         + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
         + homoBadge
+        + homoPill
         + '</div></div></div>';
     }).join('<div style="width:2px;height:6px;background:#e0ece4;flex-shrink:0;align-self:center"></div>');
 
@@ -71,6 +76,25 @@ function renderLearningRouteHTML(route){
     ? '<button data-action="edit-lr-from-modal" style="background:none;border:1px solid #d0e4d8;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;color:#006633;display:flex;align-items:center;gap:4px;white-space:nowrap;margin-left:auto" title="Editar esta ruta">\u270f\ufe0f Editar</button>'
     : '';
 
+  var hasVersion=false, hasCredits=false, hasHomologa=false, hasHomo=false;
+  sems.forEach(function(sem){
+    (sem.subjects||[]).forEach(function(subj){
+      if(subj.version) hasVersion=true;
+      hasCredits=true;
+      if(subj.homologa===true) hasHomologa=true;
+      if(_lrHomologacion(subj, route)) hasHomo=true;
+    });
+  });
+  var legendHtml='';
+  if(hasVersion||hasCredits||hasHomologa||hasHomo){
+    legendHtml = '<div class="lr-legend">';
+    if(hasVersion) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#9e9e9e"></span>Versión</span>';
+    if(hasCredits) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#1a5cb0"></span>Créditos</span>';
+    if(hasHomologa) legendHtml += '<span class="lr-legend-item"><span class="lr-legend-dot" style="background:#006633"></span>Homologacion</span>';
+    if(hasHomo) legendHtml += '<span class="lr-legend-item"><span class="lr-homo-dot"></span>Asignatura de pregrado</span>';
+    legendHtml += '</div>';
+  }
+
   return '<div class="modal" style="max-width:960px">'
     + '<div class="modal-title" style="display:flex;align-items:center">'
     + '<span>\uD83D\uDCCB</span><span style="flex:1">Ruta de Aprendizaje</span>'
@@ -83,6 +107,7 @@ function renderLearningRouteHTML(route){
     + '<div class="semesters-grid">'
     + semCols
     + '</div></div></div>'
+    + legendHtml
     + '<div class="modal-actions"><button data-action="close-lr-modal">Cerrar</button></div>'
     + '</div>';
 }

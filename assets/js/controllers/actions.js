@@ -47,6 +47,9 @@ var __ACTIONS = {
   'show-learning-route': function(b){
     openLearningRouteModal(b.dataset.espId);
   },
+  'toggle-sedes-list': function(b){ toggleSedesList(b.getAttribute('data-pid')); },
+  'select-sede-prog': function(b){ setSedeProg(b.getAttribute('data-pid'), b.getAttribute('data-sede')); },
+  'toggle-mae': function(b){ toggleMaeNode(b.getAttribute('data-key')); },
   'close-lr-modal': function(){
     var o = document.getElementById('lr-modal-overlay');
     if(o) document.body.removeChild(o);
@@ -106,6 +109,26 @@ var __CHANGE = {
     var display = sem.querySelector('.lr-sem-credits-display');
     if(display) display.textContent = total;
     _lrRecalcCredits();
+  },
+  'lr-touch-homologa': function(b){
+    var subject = b.closest('.lr-subject');
+    if(!subject) return;
+    var inp = subject.querySelector('.lr-subj-homo');
+    if(!inp) return;
+    inp.disabled = !b.checked;
+  },
+  'prog-linea-tipo': function(b){
+    var lid = b.id.slice(2);
+    var box = document.getElementById('llbox'+lid);
+    var inp = document.getElementById('ll'+lid);
+    var mbox = document.getElementById('lmbox'+lid);
+    var minp = document.getElementById('lm'+lid);
+    if(!box || !inp || !mbox || !minp) return;
+    var hide = (b.value === TIPO_SIN_LINEA);
+    box.style.display = hide ? 'none' : '';
+    inp.disabled = hide;
+    mbox.style.display = hide ? '' : 'none';
+    minp.disabled = !hide;
   },
 };
 document.addEventListener('change', function(e){

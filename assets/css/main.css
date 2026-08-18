@@ -81,17 +81,9 @@ button:active{transform:scale(.98)}
 .tb.act .tb-desc{color:#006633;font-weight:500}
 .panel{display:none}.panel.act{display:block}
 
-/* ===== ÁRBOL — Tarjetas corporativas ===== */
+/* ===== ÁRBOL — Flujo horizontal izquierda → derecha ===== */
 .scroll{overflow-x:auto;padding:2rem 1.5rem;background:#f4f6f4;border-radius:0 0 12px 12px;border:1px solid var(--udec-border);border-top:none}
-.tree{display:inline-flex;flex-direction:column;align-items:center;min-width:max-content;padding:.5rem 1rem;gap:0}
-
-/* Conectores verticales */
-.vl{width:24px;flex-shrink:0;position:relative;display:flex;justify-content:center}
-.vl::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:#c0d8c8;transform:translateX(-50%)}
-
-/* Barra de expansión horizontal */
-.progs-row{display:flex;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:nowrap}
-.pcol{display:flex;flex-direction:column;align-items:center}
+.tree{display:inline-flex;flex-direction:row;align-items:center;min-width:max-content;padding:.5rem 1rem;gap:0}
 
 /* Card base */
 .node{border-radius:10px;text-align:center;position:relative;transition:box-shadow .18s,transform .18s;cursor:default;overflow:hidden}
@@ -103,39 +95,94 @@ button:active{transform:scale(.98)}
 /* Cuerpo de card */
 .node-body{padding:10px 14px 11px}
 
-/* ===== RAÍZ — Facultad ===== */
-.node-root{min-width:280px;max-width:420px;background:#006633;box-shadow:0 4px 18px rgba(0,102,51,0.30),0 1px 4px rgba(0,0,0,0.10)}
+/* ===== Tronco principal (a la derecha de la Facultad) ===== */
+.trunk{display:flex;flex-direction:column;align-items:flex-start;position:relative;padding-left:34px;row-gap:22px}
+.trunk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:#c0d8c8}
+
+/* Conector Facultad → tronco */
+.node-root{min-width:220px;max-width:320px;background:#006633;box-shadow:0 4px 18px rgba(0,102,51,0.30),0 1px 4px rgba(0,0,0,0.10);position:relative;overflow:visible}
 .node-root .node-body{padding:14px 22px}
 .node-root .node-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px}
 .node-root .node-title{font-size:13px;font-weight:700;color:#fff;line-height:1.3}
+.node-root::after{content:'';position:absolute;left:100%;top:50%;width:34px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
 
-/* ===== PREGRADO ===== */
-.node-pregrado{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 10px rgba(0,102,51,0.10),0 1px 3px rgba(0,0,0,0.06)}
+/* ===== PROGRAMA (rama colgando del tronco) ===== */
+.prog-row{display:flex;flex-direction:row;align-items:center;gap:26px;position:relative}
+.prog-row::before{content:'';position:absolute;left:-34px;top:50%;width:34px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
+.node-pregrado{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 10px rgba(0,102,51,0.10),0 1px 3px rgba(0,0,0,0.06);position:relative;overflow:visible}
+.node-pregrado::after{content:'';position:absolute;left:100%;top:50%;width:26px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
 .node-pregrado .node-stripe{background:#006633}
 .node-pregrado .node-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#006633;margin-bottom:3px}
 .node-pregrado .node-title{font-size:11px;font-weight:700;color:#1a2e1a;line-height:1.3}
 .node-pregrado .sede-chip{background:#006633;border-color:#006633;color:#fff;font-size:9px;font-weight:600;padding:3px 9px;margin-top:6px;border-radius:10px}
 
-/* ===== LÍNEA ===== */
-.node-linea{min-width:175px;max-width:205px;background:#e8f5ee;box-shadow:0 4px 14px rgba(46,139,87,0.22),0 1px 4px rgba(0,0,0,0.08)}
+/* ===== CONTROL DE SEDES (selector único por programa) ===== */
+.sede-control{display:flex;flex-direction:row;align-items:center;gap:26px;position:relative}
+.sede-control::before{content:'';position:absolute;left:0;top:50%;width:0;height:0}
+
+.sedes-btn-box{display:flex;flex-direction:column;align-items:flex-start;position:relative}
+.sedes-btn{min-width:150px;max-width:200px;background:#fff;box-shadow:0 2px 8px rgba(0,102,51,0.08);border:1px solid #e0ece4;display:flex;align-items:center;gap:8px;padding:8px 12px;text-align:left;cursor:pointer;position:relative;overflow:visible;border-radius:10px;transition:box-shadow .18s,background .18s}
+.sedes-btn:hover{background:var(--udec-green-light);border-color:#b0d4be}
+.sedes-btn.open{background:#e8f5ee;border-color:var(--udec-green);box-shadow:0 2px 8px rgba(0,102,51,0.16)}
+.sedes-btn.disabled{background:#f5f7f5;border-color:#e0ece4;cursor:default}
+.sedes-btn.disabled:hover{background:#f5f7f5;border-color:#e0ece4;box-shadow:none}
+.sedes-btn-label{font-size:11px;font-weight:700;color:#1a2e1a;flex:1;line-height:1.25}
+.sede-arrow{font-size:10px;color:var(--udec-green);width:12px;flex-shrink:0;text-align:center}
+.sede-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sede-count{font-size:8px;color:var(--udec-green);background:#eef6f0;display:inline-block;padding:1px 6px;border-radius:8px;font-weight:600;margin-top:3px}
+
+/* Listado desplegable de sedes */
+.sedes-list{display:flex;flex-direction:column;background:#fff;border:1px solid var(--udec-border);border-radius:10px;box-shadow:0 6px 18px rgba(0,40,0,.14);padding:4px;position:absolute;top:calc(100% + 8px);left:0;z-index:5;min-width:180px;max-height:240px;overflow-y:auto}
+.sede-option{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-size:11px;font-weight:600;color:#1a2e1a;cursor:pointer;white-space:nowrap}
+.sede-option:hover{background:var(--udec-green-pale)}
+.sede-option-check{margin-left:auto;color:var(--udec-green);font-weight:700}
+
+/* ===== CONTENIDO DE LA SEDE SELECCIONADA ===== */
+.sede-content{display:flex;flex-direction:row;align-items:center;gap:26px;position:relative}
+.node-sede-selected{min-width:150px;max-width:180px;background:#e8f5ee;border:1px solid var(--udec-green);box-shadow:0 2px 8px rgba(0,102,51,0.16);position:relative;overflow:visible}
+.node-sede-selected::after{content:'';position:absolute;left:100%;top:50%;width:26px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
+.node-sede-selected .node-body{padding:8px 12px}
+.node-sede-selected .node-label{font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--udec-green);margin-bottom:2px}
+.node-sede-selected .node-title{font-size:11px;font-weight:700;color:#1a2e1a;line-height:1.25}
+
+/* Ramas de la sede (profundizaciones + maestrías) */
+.sedes-ramas{display:flex;flex-direction:column;align-items:flex-start;gap:10px;position:relative;padding-left:34px}
+.sedes-ramas::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:#c0d8c8}
+.prof-row{display:flex;flex-direction:row;align-items:center;gap:26px;position:relative}
+.prof-row::before{content:'';position:absolute;left:-34px;top:50%;width:34px;height:2px;background:#c0d8c8}
+.node-linea{min-width:175px;max-width:205px;background:#e8f5ee;box-shadow:0 4px 14px rgba(46,139,87,0.22),0 1px 4px rgba(0,0,0,0.08);position:relative}
 .node-linea .node-stripe{background:#2e8b57;height:5px}
 .node-linea .node-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1a6040;margin-bottom:3px}
 .node-linea .node-title{font-size:11px;font-weight:700;color:#0d3d22;line-height:1.35}
-
-/* ===== ESPECIALIZACIÓN ===== */
-.node-espec{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 8px rgba(0,102,51,0.08)}
+.node-linea.node-semestre{background:#f1f6f3;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.node-linea.node-semestre .node-stripe{background:#8aa99a}
+.node-linea.node-semestre .node-title{color:#3a5548}
+.plink{width:26px;height:2px;background:#c0d8c8;flex-shrink:0}
+.node-espec{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 8px rgba(0,102,51,0.08);position:relative}
 .node-espec .node-stripe{background:#4aaa72}
 .node-espec .node-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#3a8a5a;margin-bottom:3px}
 .node-espec .node-title{font-size:10px;font-weight:600;color:#1a3a2a;line-height:1.35}
+.sede-empty{font-size:9px;color:#999;padding:8px 4px;max-width:160px;text-align:center}
 
-/* ===== MAESTRÍA ===== */
-.node-mae{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 10px rgba(200,164,58,0.14)}
+/* ===== MAESTRÍAS (columna propia a la derecha de Especializaciones) ===== */
+.mae-row{display:flex;flex-direction:row;align-items:flex-start;gap:26px;position:relative;margin-left:-26px;padding-left:26px}
+.mae-row::before{content:'';position:absolute;left:0;top:50%;width:26px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
+.node-mae-hub{min-width:150px;max-width:180px;background:#fff;box-shadow:0 2px 8px rgba(200,164,58,0.14);border:1px solid #efe2b8;display:flex;align-items:center;gap:8px;padding:8px 12px;text-align:left;position:relative;overflow:visible;cursor:pointer}
+.node-mae-hub:hover{background:#fdf8e6;border-color:#e2cf8a}
+.node-mae-hub.open{background:#fdf8e6;border-color:var(--udec-gold);box-shadow:0 2px 8px rgba(200,164,58,0.2)}
+.node-mae-hub .node-body{padding:0;flex:1}
+.node-mae-hub .node-label{font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a7c1a;margin-bottom:2px}
+.node-mae-hub .node-title{font-size:11px;font-weight:700;color:#3a2e00;line-height:1.25}
+.maes-col{display:flex;flex-direction:row;align-items:flex-start;gap:8px}
+.node-mae{min-width:175px;max-width:205px;background:#fff;box-shadow:0 2px 10px rgba(200,164,58,0.14);position:relative}
 .node-mae .node-stripe{background:#C8A43A}
 .node-mae .node-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a7c1a;margin-bottom:3px}
 .node-mae .node-title{font-size:10px;font-weight:600;color:#3a2e00;line-height:1.35}
 
-/* ===== DOCTORADO ===== */
-.node-doc{min-width:300px;max-width:640px;background:#0d2b0d;box-shadow:0 4px 18px rgba(0,40,0,0.30),0 1px 4px rgba(0,0,0,0.15)}
+/* ===== DOCTORADO (columna final a la derecha) ===== */
+.doc-col{display:flex;flex-direction:column;align-items:flex-start;position:relative;padding-left:40px;align-self:center}
+.doc-col::before{content:'';position:absolute;left:0;top:50%;width:40px;height:2px;background:#c0d8c8;transform:translateY(-50%)}
+.node-doc{min-width:300px;max-width:640px;background:#0d2b0d;box-shadow:0 4px 18px rgba(0,40,0,0.30),0 1px 4px rgba(0,0,0,0.15);position:relative}
 .node-doc .node-body{padding:14px 22px}
 .node-doc .node-label{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,164,58,0.8);margin-bottom:4px}
 .node-doc .node-title{font-size:12px;font-weight:700;color:#fff;line-height:1.3}
@@ -144,6 +191,7 @@ button:active{transform:scale(.98)}
 .pill{display:inline-block;font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
 .pv{background:#e6f2eb;color:#006633;border:1px solid #b0d4be}
 .pp{background:#e8f0fb;color:#1a5cb0;border:1px solid #b0c8e8}
+.tipo-tag{display:inline-block;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:#e8f5ee;color:#1a6040;border:1px solid #c3e0cf;padding:2px 8px;border-radius:10px;margin-bottom:4px}
 
 /* ===== CHIPS DE SEDE ===== */
 .sede-chip{display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:2px 7px;border-radius:8px;background:#f5f7f5;border:1px solid #d8e8dc;color:#555;margin-top:4px;line-height:1.4}
@@ -245,10 +293,17 @@ button:active{transform:scale(.98)}
   .node-root{min-width:180px!important;max-width:240px!important}
   .node-pregrado,.node-linea,.node-espec,.node-mae{min-width:130px!important;max-width:160px!important}
   .node-doc{min-width:200px!important;max-width:360px!important}
-  .vl::after{background:#b0c8b8!important}
+  .trunk::before,.sedes-ramas::before,.prog-row::before,.prof-row::before,.mae-row::before,.node-root::after,.node-pregrado::after,.node-sede-selected::after,.plink,.doc-col::before{background:#b0c8b8!important}
   .pill,.badge,.sede-chip,.tipo-tag{-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-inside:avoid;break-inside:avoid}
   .edit-node-btn{display:none!important}
-  .progs-row{gap:10px!important}
+  .trunk{padding-left:18px!important}
+  .prog-row,.sede-control,.sede-content,.prof-row,.mae-row{gap:12px!important}
+  .prog-row::before,.prof-row::before,.node-root::after,.node-pregrado::after,.node-sede-selected::after{width:18px!important;left:-18px!important}
+  .mae-row{margin-left:-12px!important;padding-left:12px!important}
+  .mae-row::before{width:12px!important;left:0!important;top:50%!important}
+  .plink{width:12px!important}
+  .doc-col{padding-left:22px!important}
+  .sedes-list{display:none!important}
 
   /* ── Card de nodo compacta ── */
   .node-body{padding:3px 6px 4px!important}
@@ -260,6 +315,22 @@ button:active{transform:scale(.98)}
   .node-label,.tipo-tag{font-size:6px!important}
   .node-stripe{height:2px!important}
   .pill,.badge,.sede-chip{font-size:7px!important;padding:1px 4px!important}
+
+  /* ── Sede (selector + contenido) ── */
+  .sedes-btn{min-width:100px!important;max-width:130px!important;padding:3px 6px!important;gap:4px!important}
+  .sedes-btn-label{font-size:8px!important;line-height:1.2!important}
+  .node-sede-selected{min-width:100px!important;max-width:130px!important;padding:3px 6px!important}
+  .node-sede-selected .node-body{padding:3px 6px!important}
+  .node-sede-selected .node-label{font-size:6px!important}
+  .node-sede-selected .node-title{font-size:8px!important;line-height:1.2!important}
+  .sede-arrow,.sede-count{font-size:7px!important}
+  .sede-dot{width:7px!important;height:7px!important}
+  .mae-row,.prog-row,.prof-row,.sede-control,.sede-content{page-break-inside:avoid;break-inside:avoid}
+  .sede-empty{font-size:7px!important}
+  .node-mae-hub{min-width:100px!important;max-width:130px!important;padding:3px 6px!important;gap:4px!important}
+  .node-mae-hub .node-label{font-size:6px!important}
+  .node-mae-hub .node-title{font-size:8px!important;line-height:1.2!important}
+  .maes-col{gap:4px!important}
 
   /* ── TABLA ── */
   .tbl-wrap{overflow:visible!important;max-height:none!important;border:1px solid #ccc!important}
