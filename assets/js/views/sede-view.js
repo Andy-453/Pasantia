@@ -19,12 +19,12 @@ function renderSedeView(){
     if(!pregradoMatch(p.n)) return;
     [...(p.lineas||[]).filter(l=>itemMatch(l,'espec')),...(p.mae||[]).filter(m=>itemMatch(m,'mae'))].forEach(item=>{
       const target=filtSedeActive?[window.filtSede]:(item.sedes||[]);
-      target.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,nivel:item.esp||item.n,e:item.e,o:item.o,enlaceObtencion:item.enlaceObtencion});});
+      target.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:p.n,id:item.id,nivel:item.esp||item.n,e:item.e,o:item.o,enlaceObtencion:item.enlaceObtencion});});
     });
   });
   if(f.doc&&itemMatch(f.doc,'doc')) {
     const dSedes=(f.doc.sedes&&f.doc.sedes.length)?f.doc.sedes:['Todos los pregrados'];
-    dSedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:'Todos',nivel:f.doc.n,e:f.doc.e,o:f.doc.o});});
+    dSedes.forEach(s=>{if(!sm[s])sm[s]=[];sm[s].push({prog:'Todos',id:'doc-'+f.id,nivel:f.doc.n,e:f.doc.e,o:f.doc.o});});
   }
   const sedes=Object.keys(sm).sort();
   if(!sedes.length){document.getElementById('sede-content').innerHTML='<div class="empty-msg">Sin resultados</div>';return;}
@@ -35,7 +35,8 @@ function renderSedeView(){
       const st=getSt(it.e);const os=it.o==='V'?'#006633':'#1a5cb0';
       var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
       if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+bUrl+'" role="button" tabindex="0" style="cursor:pointer"';}
-      h+=`<div class="sede-item"><div style="flex:1;font-size:10px;line-height:1.3">${it.nivel}</div>
+      var rBtn=_getLearningRoute(it.id,s)?'<span class="route-link" data-action="show-learning-route" data-esp-id="'+it.id+'" data-sede="'+s+'" role="button" tabindex="0">Ruta</span>':'';
+      h+=`<div class="sede-item"><div style="flex:1;font-size:10px;line-height:1.3">${it.nivel}${rBtn?'<div style="margin-top:3px">'+rBtn+'</div>':''}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${it.o==='V'?'#e6f2eb':'#e8f0fb'};color:${os};border:1px solid ${os}">${it.o==='V'?'Vig.':'Proy.'}</span>
           <span style="font-size:8px;padding:1px 4px;border-radius:4px;background:${st.bg};color:${st.tx}"${bAttrs}>${it.e||'—'}</span>

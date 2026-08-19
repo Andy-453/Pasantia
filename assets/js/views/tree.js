@@ -2,7 +2,7 @@
  * Vista: Árbol jerárquico de programas
  * Dependencias runtime: AppData, AppState, ALL_SEDES (app-state.js),
  *   filtPregrado, itemMatch, pregradoMatch (filters.js),
- *   getSt, _getObtencionUrl, _hasLR, pll (utils.js helpers),
+ *   getSt, _getObtencionUrl, _getLearningRoute, pll (utils.js helpers),
  *   document.getElementById
  *
  * Jerarquía (flujo horizontal izquierda → derecha):
@@ -57,6 +57,10 @@ function renderTree(){
       return '<div class="badge clickable" data-action="open-program-link" data-url="'+url+'" role="button" tabindex="0" style="background:'+s.bg+';color:'+s.tx+';cursor:pointer"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
     }
     return '<div class="badge" style="background:'+s.bg+';color:'+s.tx+'"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
+  }
+
+  function routeLinkCls(id, sede){
+    return _getLearningRoute(id, sede) ? ' route-link" data-action="show-learning-route" data-esp-id="'+id+'" data-sede="'+sede : '';
   }
 
   if(!AppState.ui) AppState.ui={};
@@ -189,7 +193,7 @@ function renderTree(){
               <div class="node-body">
                 ${pll(l.o)}
                 <div class="node-label">Especialización</div>
-                <div class="node-title${_hasLR(l.id)?' route-link" data-action="show-learning-route" data-esp-id="'+l.id:''}">${l.esp}</div>
+                <div class="node-title${routeLinkCls(l.id, sEff)}">${l.esp}</div>
                 ${stBadge(l.e, l)}
               </div>
             </div>
@@ -220,7 +224,7 @@ function renderTree(){
                 <div class="node-body">
                   ${pll(m.o)}
                   <div class="node-label">Maestría</div>
-                  <div class="node-title${_hasLR(m.id)?' route-link" data-action="show-learning-route" data-esp-id="'+m.id:''}">${m.n}</div>
+                  <div class="node-title${routeLinkCls(m.id, sEff)}">${m.n}</div>
                   <div class="sede-chip">📍 ${(m.sedes||[]).join(' · ')}</div>
                   ${stBadge(m.e, m)}
                 </div>
@@ -243,13 +247,14 @@ function renderTree(){
 
   if(f.doc&&itemMatch(f.doc,'doc')){
     var docId='doc-'+f.id;
+    var docSede = filtSedeActive ? window.filtSede : 'ALL';
     h+=`
     <div class="doc-col">
       <div class="node node-doc">
         <div class="node-body">
           <div style="margin-bottom:5px">${pll(f.doc.o)}</div>
           <div class="node-label">Doctorado</div>
-          <div class="node-title${_hasLR(docId)?' route-link" data-action="show-learning-route" data-esp-id="'+docId:''}">${f.doc.n}</div>
+          <div class="node-title${routeLinkCls(docId, docSede)}">${f.doc.n}</div>
           <div class="sede-chip sede-chip-dark">📍 ${f.doc.sedes.join(' · ')}</div>
           ${stBadge(f.doc.e, f.doc)}
         </div>

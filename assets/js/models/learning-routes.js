@@ -3,12 +3,11 @@
 var LR_STORAGE_KEY = 'udec_learning_routes';
 
 function loadLearningRoutes(){
-  // Guardar defaults originales la primera vez
-  if(!window.__LEARNING_ROUTES_DEFAULT && window.__LEARNING_ROUTES){
-    window.__LEARNING_ROUTES_DEFAULT = JSON.parse(JSON.stringify(window.__LEARNING_ROUTES));
+  if(!window.__LEARNING_ROUTES_DEFAULT){
+    window.__LEARNING_ROUTES_DEFAULT = _normalizeRoutes(window.__LEARNING_ROUTES || {});
   }
   if(window.__EMBEDDED_LR){
-    window.__LEARNING_ROUTES = JSON.parse(JSON.stringify(window.__EMBEDDED_LR));
+    window.__LEARNING_ROUTES = _normalizeRoutes(window.__EMBEDDED_LR);
     return;
   }
   var stored = localStorage.getItem(LR_STORAGE_KEY);
@@ -16,11 +15,14 @@ function loadLearningRoutes(){
     try {
       var parsed = JSON.parse(stored);
       if(parsed && typeof parsed === 'object'){
-        window.__LEARNING_ROUTES = parsed;
+        var legacy = _hasFlatRoute(parsed);
+        window.__LEARNING_ROUTES = _normalizeRoutes(parsed);
+        if(legacy) saveLearningRoutes();
         return;
       }
     } catch(e){}
   }
+  window.__LEARNING_ROUTES = JSON.parse(JSON.stringify(window.__LEARNING_ROUTES_DEFAULT));
 }
 
 function saveLearningRoutes(){

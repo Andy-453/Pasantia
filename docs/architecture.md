@@ -1512,3 +1512,273 @@ Este commit marca el baseline arquitectónico estable de Fase 4.
 Todos los consumidores de datos (renderers, writes, filtros) pasan
 por AppData. Persistencia (storage.js) y export (embed.js) son
 los únicos módulos con acceso directo a `window.DB`.
+
+---
+
+## 20. Rutas de Aprendizaje por Sede (Fases F1–F5)
+
+> **Hito**: 2026-08-18 — Arquitectura de rutas de aprendizaje parametrizadas por sede,
+> implementada y validada en las fases F1–F5. Este documento describe el diseño final.
+> Código relacionado: `utils.js`, `models/learning-routes.js`, `modules/storage.js`,
+> `controllers/navigation.js`, `controllers/actions.js`, `views/editor.js`,
+> `views/tree.js`, `views/sede-view.js`, `views/learning-route.js`.
+
+### 20.1. Estructura de datos
+
+La fuente de verdad en memoria es `window.__LEARNING_ROUTES`, un mapa
+**anidado por programa y luego por sede**:
+
+```js
+window.__LEARNING_ROUTES = {
+  [espId]: {
+    'ALL':       ruta,   // ruta GLOBAL (base / fallback)
+    'Fusagasugá': ruta,  // ruta ESPECÍFICA de la sede
+    'Soacha':     ruta,  // ...
+  }
+}
+```
+
+Donde cada `ruta` tiene la forma:
+
+```js
+{
+  id:      'lr-<espId>-all',      // _lrMakeId(espId, sede)
+  espId:   'idXXX',               // id del programa académico
+  sede:    'ALL' | 'Fusagasugá' | ...,
+  espName: 'Esp. en ...',         // nombre del programa
+  version: 'V2.1',                // opcional
+  type:    'especializacion' | 'maestria' | 'doctorado',
+  credits: 20,                    // suma de créditos de materias
+  semesters: [
+    {
+      id:    'sem1',
+      title: 'Semestre 1',
+      type:  'Fundamentación' | 'Profundización',
+      credits: 10,
+      subjects: [
+        {
+          id:          'subj1',
+          title:       'Economía rural...',
+          version:     '1.0',              // opcional
+          credits:     2,
+          homologa:    true,
+          resourceUrl: 'https://...',      // opcional
+          homo:        { materia: 'Pregrado X' } // opcional, solo si homologa
+        }
+      ]
+    }
+  ]
+}
+```
+
+- Clave `ALL` = **ruta global**: aplica a todas las sedes cuando no existe una específica.
+- Clave de sede (ej. `'Fusagasugá'`) = **ruta específica**: solo aplica a esa sede.
+- `_lrMakeId(espId, sede)` (utils.js:92) genera el id: `lr-<espId>-all` para `ALL`,
+  `lr-<espId>-<sede-slug>` para una sede específica (slug en minúsculas, sin caracteres especiales).
+
+### 20.2. Significado de `ALL` como ruta global
+
+`ALL` es la ruta por defecto de un programa. Reglas:
+
+1. Una ruta `ALL` **es la base de referencia**: el editor permite crear una ruta de sede
+   **copiando la ruta ALL** (`copyFrom:'ALL'`), conservando semestres, materias e ids.
+2. `ALL` actúa como **fallback** de resolución: si se solicita la ruta de una sede sin
+   ruta específica, se abre la ruta `ALL`.
+3. Al eliminar una ruta de sede específica, `ALL` **permanece intacta**.
+4. La ruta `ALL` **no se mezcla ni se modifica** al crear/editar rutas específicas;
+   cada ruta por sede es un objeto independiente (copia profunda en la creación).
+
+### 20.3. Resolución específica → ALL → null
+
+El orden de resolución de una ruta es:
+
+```
+sede específica (m[sede])  →  ALL (m.ALL)  →  null
+```
+
+- Si `sede` no se indica, se usa `'ALL'`.
+- La **sede usada para abrir el modal es la de la ruta resuelta**, no la solicitada:
+  `overlay.dataset.sede = route.sede || 'ALL'` (navigation.js:61). Así, al abrir
+  'Soacha' sin ruta específica, el modal identifica que la ruta abierta es `ALL`.
+
+### 20.4. API del modelo (utils.js)
+
+| Función | Firma | Comportamiento |
+|---|---|---|
+| `_getLearningRoute` | `(espId, sede)` → ruta\|null | Resolución específica → ALL → null (utils.js:64) |
+| `_hasLR` | `(id)` → boolean | `true` si el programa tiene al menos una ruta (utils.js:60) |
+| `_hasFlatRoute` | `(obj)` → boolean | Detecta estructura legacy plana (utils.js:71) |
+| `_normalizeRoutes` | `(obj)` → mapa anidado | Normaliza legacy a `[espId][sede]` (utils.js:78) |
+| `_lrMakeId` | `(espId, sede)` → string | Genera el id canónico de la ruta (utils.js:92) |
+| `_lrHomologacion` | `(subj, route)` → string\|null | Nombre de materia de pregrado si `homologa===true` y `homo.materia` no vacío (utils.js:143) |
+
+### 20.5. Normalización de rutas legacy planas
+
+El formato **legacy (v1)** era plano:
+
+```js
+{ [espId]: ruta }   // ruta con prop `semesters` (array)
+```
+
+El formato **actual (v2)** es anidado:
+
+```js
+{ [espId]: { [sede]: ruta } }
+```
+
+`_normalizeRoutes(obj)` convierte:
+
+- Entrada con `Array.isArray(v.semesters)` → `out[k] = { ALL: v }` (envuelve en `ALL`).
+- Entrada ya anidada (valores sin `semesters` a nivel superior) → se conserva tal cual.
+- Entradas malformadas / no-objeto → se descartan.
+
+La normalización **no muta el origen** y nunca lanza.
+
+### 20.6. Carga y migración de localStorage
+
+`loadLearningRoutes()` (models/learning-routes.js:5), key `udec_learning_routes`:
+
+1. **Primera llamada**: congela los defaults en `__LEARNING_ROUTES_DEFAULT =
+   _normalizeRoutes(window.__LEARNING_ROUTES)` (snapshot de los datos embebidos).
+2. **Modo standalone** (`__EMBEDDED_LR`): usa los datos embebidos normalizados;
+   ignora localStorage (no escribe).
+3. **Con dato en localStorage**: parsea; si es legacy plano (`_hasFlatRoute`),
+   normaliza en memoria y **escribe una sola vez** `saveLearningRoutes()` (migración
+   única); si ya es anidado, no reescribe.
+4. **Sin dato**: deep-copy de `__LEARNING_ROUTES_DEFAULT`.
+
+`saveLearningRoutes()` (learning-routes.js:28) persiste el mapa completo como JSON;
+es no-op en modo embedded. `restoreDefaultRoutes(onDone)` (learning-routes.js:35)
+borra la key, restaura los defaults normalizados y re-renderiza.
+
+### 20.7. Backup / restore — compatibilidad v1 y v2
+
+`backupDB()` (storage.js:148) genera un JSON:
+
+```js
+{ version: 2, date, db, learningRoutes, sniesSD, rcRaw, sedesCatalog }
+```
+
+`restoreDB(file)` (storage.js:167) lee el archivo con `FileReader` y `JSON.parse`:
+
+- **Acepta `version === 1` o `version === 2`**.
+- `learningRoutes` se pasa siempre por `_normalizeRoutes` (v1 plano → anidado;
+  v2 anidado → se conserva).
+- Versión distinta → toast `'❌ Archivo de respaldo no compatible'` y **no muta nada**.
+- Error de parseo → toast `'❌ Archivo inválido'`.
+- Tras restaurar: `saveDB()`, `saveLearningRoutes()`, sincroniza SNIES, catálogo de
+  sedes, etiquetas de programas por defecto, y refresca todas las vistas.
+
+### 20.8. Persistencia de IDs de semestres y materias
+
+El editor conserva los `id` de semestres y materias al guardar:
+
+- `_lrCollectFormData` (editor.js:276) lee `dataset.semId` / `dataset.subjId` y los
+  reutiliza; solo genera `uid()` para elementos nuevos (`_lrAddSemester`,
+  `_lrAddSubject`).
+- Se preservan además `homo.materia`, `version`, `resourceUrl`, `credits` y `homologa`.
+- Esto garantiza estabilidad de referencias entre ediciones y en restore v2.
+
+### 20.9. Creación de rutas específicas copiando ALL
+
+Acción `lr-create-sede-route` (actions.js:75): el usuario elige una sede en el listado
+de rutas (solo se ofrecen sedes del programa o `ALL_SEDES` aún sin ruta) y se abre
+`_lrEditRoute(progId, sede, { copyFrom:'ALL', name, type })`.
+
+En `_lrEditRoute` (editor.js:202): si no existe ruta para la sede y hay `copyFrom`,
+se hace **copia profunda** de `_getLearningRoute(progId,'ALL')`, se asigna nuevo id
+con `_lrMakeId` y `sede` de destino. La ruta ALL original queda intacta.
+
+Para programas sin ruta, `create-route-for-prog` (actions.js:72) abre el editor de la
+ruta `ALL` con plantilla vacía (espName/type precargados).
+
+### 20.10. Independencia entre rutas por sede
+
+- Cada ruta por sede se guarda en `__LEARNING_ROUTES[espId][sede]` como objeto propio.
+- Modificar la ruta de una sede **no altera** `ALL` ni las demás sedes
+  (verificado en F5: cambios en Fusa no tocan Soacha ni ALL y viceversa).
+- La ruta ALL solo se usa como *template* al momento de crear una específica (copia
+  profunda), nunca como referencia compartida mutable.
+
+### 20.11. Comportamiento del Árbol (tree.js)
+
+- Helper `routeLinkCls(id, sede)` (tree.js:62): si `_getLearningRoute(id, sede)` existe,
+  emite `class="route-link" data-action="show-learning-route" data-esp-id="<id>"
+  data-sede="<sede>"`; si no, string vacío (sin enlace).
+- Las especializaciones (`l.id`) y maestrías (`m.id`) **solo se renderizan cuando hay
+  sede efectiva** (`sEff = filtSede ? filtSede : AppState.ui.sedeSel[p.id]`) — diseño
+  auditado del árbol.
+- El **doctorado siempre se renderiza**; `docSede = filtSede ? filtSede : 'ALL'`
+  (tree.js:250). El enlace de ruta del doctorado usa el id `doc-<facId>`.
+- Un clic en el nodo dispara `openLearningRouteModal(espId, sede)` (acciones
+  `show-learning-route`).
+
+### 20.12. Comportamiento de Vista Sede (sede-view.js)
+
+- Los items llevan `id:item.id` (especialización `l.id`, maestría `m.id`,
+  doctorado `'doc-'+f.id`).
+- Para cada sede destino se muestra el botón **"Ruta"** solo si
+  `_getLearningRoute(it.id, s)` existe (sede-view.js:38):
+  `<span class="route-link" data-action="show-learning-route" data-esp-id="..." data-sede="...">`.
+- Con `filtSede` activo, solo se consideran las sedes del filtro; si el programa no
+  ofrece la sede, no aparece card ni botón.
+
+### 20.13. Comportamiento del editor (editor.js)
+
+El editor tiene dos pestañas (`_lrEditorTab`, editor.js:5): **Programas** y
+**Rutas de aprendizaje**.
+
+- `_lrRenderList` (editor.js:118): separa programas **con ruta** (`_hasLR`) y **sin
+  ruta** (vía `_getAllAcademicPrograms`, utils.js:111). Por cada ruta existente lista
+  la sede (`ALL` → "ruta global", específica → "sede específica") con botones
+  **Editar / Vista previa / Eliminar**, y el selector "➕ Crear ruta para sede" (solo
+  si existe `ALL`). Botón "Restaurar por defecto" (`restore-default-routes`).
+- `_lrEditRoute(progId, sede, prefill)` (editor.js:194): abre el formulario en
+  `#editor-content` con `#lr-form-container` (`data-esp-id`, `data-prog-type`,
+  `data-sede`), `#lr-sede` (select), nombre/versión, total de créditos, semestres y
+  materias. Recupera la ruta existente o la crea (copia de ALL / plantilla nueva).
+- `_lrCollectFormData` (editor.js:276): recolecta el formulario; nombre obligatorio
+  (toast si vacío); materias sin título se omiten; créditos recalculados.
+- `_lrSaveRoute` (editor.js:318): construye y persiste
+  `__LEARNING_ROUTES[espId][sede]` (id canónico, `saveLearningRoutes()`), toast
+  "Ruta guardada", re-renderiza.
+- `_rerenderForm` (editor.js:372): guarda un **borrador en memoria**
+  (`__LEARNING_ROUTES`) **sin persistir** (phantom) para operaciones de agregar /
+  eliminar semestre o materia; solo el guardado explícito persiste.
+- `_lrPreviewRoute` (editor.js:382): abre modal con la ruta guardada, o con el
+  borrador del formulario si aún no se guardó.
+- Acción `edit-lr-from-modal` (actions.js:57): desde el modal, valida
+  `_getLearningRoute(espId, sede)` (toast "Ruta no disponible para edición" si no),
+  cierra el overlay, cambia a la pestaña "rutas" y edita **la ruta realmente abierta**
+  (la que el modal reporta en `dataset.sede`).
+
+### 20.14. Modal de ruta — apertura y fallback
+
+`openLearningRouteModal(espId, sede)` (navigation.js:46):
+
+- Acepta `(espId, sede)` **o un objeto ruta** (vista previa de borrador).
+- Con `(espId, sede)`: `usedSede = sede || 'ALL'`; resuelve con `_getLearningRoute`.
+- **Si no hay ruta ni ALL**: toast `'Ruta no disponible'` y **no abre overlay**.
+- Overlay: `dataset.espId = espId`, `dataset.sede = route.sede || 'ALL'`.
+- Cierre: clic fuera, `Escape`, o `close-lr-modal`.
+
+### 20.15. Eliminación de ALL y rutas específicas
+
+`_lrDeleteRoute(espId, sede)` (editor.js:330):
+
+- Confirma con `showConfirm` mostrando la sede y `espName`.
+- `delete m[sd]`; si el mapa queda vacío, elimina también la entrada del programa.
+- Persiste, toast "Ruta eliminada", re-renderiza.
+- **Eliminar una sede específica no afecta `ALL`**; eliminar `ALL` deja intactas las
+  sedes específicas.
+
+### 20.16. Compatibilidad con las 18 rutas actuales
+
+- `assets/js/data/learning-routes.js` sigue en **formato plano (v1)**: 18 programas
+  con `id`, `espId`, `espName`, `type`, `credits`, `semesters` (con homologaciones).
+- Al primer arranque, `loadLearningRoutes` normaliza las 18 → todas quedan como
+  **rutas `ALL`** y se persisten anidadas; el archivo de datos **no se modifica**.
+- La exportación standalone embebe el mapa (anidado) como `__EMBEDDED_LR`
+  (storage.js:44, embed.js:76) y lo restaura normalizado.
+- Validación F5 (G1–G6): 18 rutas, todas disponibles como ALL, con espName,
+  semesters y homologaciones íntegros, `espId` coherente.

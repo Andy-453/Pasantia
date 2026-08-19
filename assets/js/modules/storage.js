@@ -147,7 +147,7 @@ function _downloadJSON(obj,filename){
 }
 function backupDB(){
   var payload={
-    version:1,
+    version:2,
     date:new Date().toISOString(),
     db:window.DB,
     learningRoutes:window.__LEARNING_ROUTES||{},
@@ -171,9 +171,9 @@ function restoreDB(file){
   reader.onload=function(e){
     try{
       var payload=JSON.parse(e.target.result);
-      if(!payload||payload.version!==1){toast('❌ Archivo de respaldo no compatible');return;}
+      if(!payload||(payload.version!==1&&payload.version!==2)){toast('❌ Archivo de respaldo no compatible');return;}
       window.DB=payload.db;
-      window.__LEARNING_ROUTES=payload.learningRoutes||{};
+      window.__LEARNING_ROUTES=_normalizeRoutes(payload.learningRoutes||{});
       if(window.AppState) AppState.snies.SD=payload.sniesSD||AppState.snies.SD;
       window.__rcRaw=payload.rcRaw||null;
       saveDB();

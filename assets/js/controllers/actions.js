@@ -45,7 +45,7 @@ var __ACTIONS = {
     if(url) window.open(url, '_blank', 'noopener,noreferrer');
   },
   'show-learning-route': function(b){
-    openLearningRouteModal(b.dataset.espId);
+    openLearningRouteModal(b.dataset.espId, b.dataset.sede);
   },
   'toggle-sedes-list': function(b){ toggleSedesList(b.getAttribute('data-pid')); },
   'select-sede-prog': function(b){ setSedeProg(b.getAttribute('data-pid'), b.getAttribute('data-sede')); },
@@ -58,26 +58,33 @@ var __ACTIONS = {
     var overlay = document.getElementById('lr-modal-overlay');
     if(!overlay) return;
     var espId = overlay.dataset.espId;
-    if(!espId || !window.__LEARNING_ROUTES[espId]){ toast('Ruta no disponible para edición'); return; }
+    var sede = overlay.dataset.sede || 'ALL';
+    if(!espId || !_getLearningRoute(espId, sede)){ toast('Ruta no disponible para edición'); return; }
     document.body.removeChild(overlay);
     showTab('editor');
     _lrSetTab('rutas');
-    _lrEditRoute(espId);
+    _lrEditRoute(espId, sede);
   },
   // ===== Editor de rutas =====
   'lr-set-tab': function(b){ _lrSetTab(b.dataset.tab); },
-  'lr-edit-route': function(b){ _lrEditRoute(b.dataset.espId); },
-  'lr-delete-route': function(b){ _lrDeleteRoute(b.dataset.espId); },
+  'lr-edit-route': function(b){ _lrEditRoute(b.dataset.espId, b.dataset.sede); },
+  'lr-delete-route': function(b){ _lrDeleteRoute(b.dataset.espId, b.dataset.sede); },
   'create-route-for-prog': function(b){
-    _lrEditRoute(b.dataset.progId, {name:b.dataset.progName, type:b.dataset.progType});
+    _lrEditRoute(b.dataset.progId, 'ALL', {name:b.dataset.progName, type:b.dataset.progType});
+  },
+  'lr-create-sede-route': function(b){
+    var sel=document.getElementById('lr-new-sede-'+b.dataset.progId);
+    var sede=sel?sel.value:'';
+    if(!sede){ toast('Selecciona una sede'); return; }
+    _lrEditRoute(b.dataset.progId, sede, {copyFrom:'ALL', name:b.dataset.progName, type:b.dataset.progType});
   },
   'lr-back-to-list': function(){ _lrEditingId=null;renderEditor(); },
   'lr-add-semester': function(){ _lrAddSemester(); },
   'lr-delete-semester': function(b){ _lrDeleteSemester(parseInt(b.dataset.si,10)); },
   'lr-add-subject': function(b){ _lrAddSubject(parseInt(b.dataset.si,10)); },
   'lr-delete-subject': function(b){ _lrDeleteSubject(parseInt(b.dataset.si,10),parseInt(b.dataset.ji,10)); },
-  'lr-save-route': function(b){ _lrSaveRoute(b.dataset.espId); },
-  'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId); },
+  'lr-save-route': function(b){ _lrSaveRoute(b.dataset.espId, b.dataset.sede); },
+  'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId, b.dataset.sede); },
   'restore-default-routes': function(){ restoreDefaultRoutes(function(){ renderEditor(); }); },
   'backup-db': function(){ backupDB(); },
   'restore-db': function(){ document.getElementById('restore-input').click(); },

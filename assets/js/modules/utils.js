@@ -58,7 +58,43 @@ function _getObtencionUrl(e, item){
   return url;
 }
 function _hasLR(id){
-  return !!(window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id]);
+  var m = window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[id];
+  return !!(m && typeof m === 'object' && Object.keys(m).length);
+}
+function _getLearningRoute(espId, sede){
+  var m = window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[espId];
+  if(!m || typeof m !== 'object') return null;
+  if(sede && m[sede]) return m[sede];
+  if(m.ALL) return m.ALL;
+  return null;
+}
+function _hasFlatRoute(obj){
+  if(!obj || typeof obj !== 'object') return false;
+  return Object.keys(obj).some(function(k){
+    var v = obj[k];
+    return !!(v && typeof v === 'object' && Array.isArray(v.semesters));
+  });
+}
+function _normalizeRoutes(obj){
+  if(!obj || typeof obj !== 'object') return {};
+  var out = {};
+  Object.keys(obj).forEach(function(k){
+    var v = obj[k];
+    if(!v || typeof v !== 'object') return;
+    if(Array.isArray(v.semesters)){
+      out[k] = { ALL: v };
+    } else {
+      out[k] = v;
+    }
+  });
+  return out;
+}
+function _lrMakeId(espId, sede){
+  var base = 'lr-' + String(espId || 'prog').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+  if(sede && sede !== 'ALL'){
+    return base + '-' + String(sede).replace(/[^a-zA-Z0-9]/g, '-').replace(/^-+|-+$/g, '').toLowerCase();
+  }
+  return base + '-all';
 }
 
 function _getTypeLabel(type){

@@ -43,14 +43,22 @@ function toggleSec(id){var el=document.getElementById(id),ic=document.getElement
 function snSetFac(f){_snFac=f;_snProg=null;renderSNIES();}
 function snSetProg(p){_snProg=p;renderSNIES();}
 
-function openLearningRouteModal(espId){
-  var route = (typeof espId === 'object' && espId) ? espId : (window.__LEARNING_ROUTES && window.__LEARNING_ROUTES[espId]);
+function openLearningRouteModal(espId, sede){
+  var route, usedSede;
+  if(typeof espId === 'object' && espId){
+    route = espId;
+    usedSede = espId.sede || 'ALL';
+  } else {
+    usedSede = sede || 'ALL';
+    route = _getLearningRoute(espId, usedSede);
+  }
   if(!route){ toast('Ruta no disponible'); return; }
   var overlay = document.createElement('div');
   overlay.id = 'lr-modal-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto';
   overlay.innerHTML = '<div class="modal-overlay" style="background:none;min-height:auto;padding:0;width:100%;max-width:960px">' + renderLearningRouteHTML(route) + '</div>';
   overlay.dataset.espId = typeof espId === 'string' ? espId : (espId.espId || '');
+  overlay.dataset.sede = route.sede || 'ALL';
   document.body.appendChild(overlay);
   function _closeLR(){
     if(overlay.parentNode) document.body.removeChild(overlay);
