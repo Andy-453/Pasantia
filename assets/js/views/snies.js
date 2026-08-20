@@ -15,12 +15,16 @@ function renderSNIES(){
   var n=function(v){return isNaN(+v)?0:+v;};
   var fmt=function(v){return Math.round(n(v)).toLocaleString('es-CO');};
   var fmtP=function(v){return n(v).toFixed(1)+'%';};
-  var progs=_snFac==='TODAS'?(SD&&SD.programs||[]):(SD&&SD.programs||[]).filter(function(p){return FAC_MP[p.name]===_snFac;});
+  var facOf=function(p){var f=p&&p.facultad&&String(p.facultad).trim();return f||FAC_MP[p.name];};
+  var extraFacs=[];
+  (SD&&SD.programs||[]).forEach(function(p){var f=facOf(p);if(f&&facs.indexOf(f)===-1&&extraFacs.indexOf(f)===-1)extraFacs.push(f);});
+  var facsAll=facs.concat(extraFacs);
+  var progs=_snFac==='TODAS'?(SD&&SD.programs||[]):(SD&&SD.programs||[]).filter(function(p){return facOf(p)===_snFac;});
   if(!_snProg||!progs.find(function(p){return p.name===_snProg;})) _snProg=progs.length?progs[0].name:null;
   var prog=_snProg?(SD&&SD.programs||[]).find(function(p){return p.name===_snProg;}):null;
   var fc=_snFac==='TODAS'?'#006633':(FAC_COL[_snFac]||'#006633');
-  var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+f.replace(/"/g,'&quot;')+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
-  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
+  var facBtns=facsAll.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+f.replace(/"/g,'&quot;')+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
+  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[facOf(p)]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Análisis SNIES · Posgrados 2020–2024</div>';
 if (_dev) {
