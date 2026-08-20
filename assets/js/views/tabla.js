@@ -4,6 +4,7 @@
  */
 
 function renderTabla(){
+  function _tblEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   const f=AppData.getFacultad(AppState.navigation.curFac);let rows='';if(!f)return;
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
@@ -15,12 +16,12 @@ function renderTabla(){
       const st=getSt(it.e);
       const os=it.o==='V'?'background:#e6f2eb;color:#006633;border:1px solid #006633':'background:#e8f0fb;color:#1a5cb0;border:1px solid #378ADD';
       var bUrl=_getObtencionUrl(it.e,it),bAttrs='';
-      if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+bUrl+'" role="button" tabindex="0" style="cursor:pointer"';}
-      rows+=`<tr>${i===0?`<td rowspan="${items.length}" style="font-weight:700;vertical-align:top;color:#006633">${p.n}<div style="font-size:9px;color:#666;font-style:italic">${(p.sedes||[]).join(', ')}</div></td>`:''}
+      if(bUrl){bAttrs=' data-action="open-program-link" data-url="'+_tblEsc(bUrl)+'" role="button" tabindex="0" style="cursor:pointer"';}
+      rows+=`<tr>${i===0?`<td rowspan="${items.length}" style="font-weight:700;vertical-align:top;color:#006633">${_tblEsc(p.n)}<div style="font-size:9px;color:#666;font-style:italic">${(p.sedes||[]).map(_tblEsc).join(', ')}</div></td>`:''}
         <td><span style="font-size:9px;padding:1px 5px;border-radius:5px;${os}">${it.o==='V'?'Vigente':'Proyectada'}</span></td>
-        <td style="font-weight:700">${it.nivel}</td><td style="color:#555">${it.linea}</td>
-        <td>${it.nombre}</td><td style="font-size:9px">${it.sedes.join(', ')}</td>
-        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"${bAttrs}><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${it.e||'—'}</span></td>
+        <td style="font-weight:700">${it.nivel}</td><td style="color:#555">${_tblEsc(it.linea)}</td>
+        <td>${_tblEsc(it.nombre)}</td><td style="font-size:9px">${it.sedes.map(_tblEsc).join(', ')}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"${bAttrs}><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${_tblEsc(it.e)||'—'}</span></td>
       </tr>`;
     });
   });
@@ -28,9 +29,9 @@ function renderTabla(){
     const st=getSt(f.doc.e);const os=f.doc.o==='V'?'background:#e6f2eb;color:#006633;border:1px solid #006633':'background:#e8f0fb;color:#1a5cb0;border:1px solid #378ADD';
     rows+=`<tr style="background:#1a2e1a20"><td style="font-weight:700;color:#006633">Todos los pregrados</td>
       <td><span style="font-size:9px;padding:1px 5px;border-radius:5px;${os}">${f.doc.o==='V'?'Vigente':'Proyectada'}</span></td>
-      <td style="font-weight:700">Doctorado</td><td>—</td><td>${f.doc.n}</td>
-      <td style="font-size:9px">${(f.doc.sedes||[]).join(', ')}</td>
-      <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${f.doc.e}</span></td>
+      <td style="font-weight:700">Doctorado</td><td>—</td><td>${_tblEsc(f.doc.n)}</td>
+      <td style="font-size:9px">${(f.doc.sedes||[]).map(_tblEsc).join(', ')}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:600;background:${st.bg};color:${st.tx}"><span style="width:5px;height:5px;border-radius:50%;background:${st.dot};display:inline-block"></span>${_tblEsc(f.doc.e)}</span></td>
     </tr>`;
   }
   document.getElementById('tabla').innerHTML=rows

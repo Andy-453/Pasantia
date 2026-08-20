@@ -32,6 +32,7 @@
 
 function renderTree(){
   try{
+  function _trEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   const f=AppData.getFacultad(AppState.navigation.curFac);
   if(!f||!Array.isArray(f.progs)){document.getElementById('tree').innerHTML='<div class="empty-msg">Error cargando datos. <a href="#" data-action="reset-db" style="color:#006633">Recargar datos por defecto</a></div>';return;}
 
@@ -54,13 +55,13 @@ function renderTree(){
     const s=getSt(e);
     var url = _getObtencionUrl(e, item);
     if(url){
-      return '<div class="badge clickable" data-action="open-program-link" data-url="'+url+'" role="button" tabindex="0" style="background:'+s.bg+';color:'+s.tx+';cursor:pointer"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
+      return '<div class="badge clickable" data-action="open-program-link" data-url="'+_trEsc(url)+'" role="button" tabindex="0" style="background:'+s.bg+';color:'+s.tx+';cursor:pointer"><div class="bdot" style="background:'+s.dot+'"></div>'+_trEsc(e)+'</div>';
     }
-    return '<div class="badge" style="background:'+s.bg+';color:'+s.tx+'"><div class="bdot" style="background:'+s.dot+'"></div>'+e+'</div>';
+    return '<div class="badge" style="background:'+s.bg+';color:'+s.tx+'"><div class="bdot" style="background:'+s.dot+'"></div>'+_trEsc(e)+'</div>';
   }
 
   function routeLinkCls(id, sede){
-    return _getLearningRoute(id, sede) ? ' route-link" data-action="show-learning-route" data-esp-id="'+id+'" data-sede="'+sede : '';
+    return _getLearningRoute(id, sede) ? ' route-link" data-action="show-learning-route" data-esp-id="'+_trEsc(id)+'" data-sede="'+_trEsc(sede) : '';
   }
 
   if(!AppState.ui) AppState.ui={};
@@ -87,7 +88,7 @@ function renderTree(){
   <div class="node node-root">
     <div class="node-body">
       <div class="node-label">Facultad</div>
-      <div class="node-title">${f.name}</div>
+      <div class="node-title">${_trEsc(f.name)}</div>
     </div>
   </div>`;
 
@@ -125,7 +126,7 @@ function renderTree(){
         <div class="node-stripe"></div>
         <div class="node-body">
           <div class="node-label">Programa de pregrado</div>
-          <div class="node-title">${p.n}</div>
+          <div class="node-title">${_trEsc(p.n)}</div>
         </div>
       </div>
       <div class="sede-control">
@@ -133,14 +134,14 @@ function renderTree(){
           <div class="sedes-btn${btnDisabled?' disabled':''}${listOpen?' open':''}"${btnDisabled?'':' data-action="toggle-sedes-list" data-pid="'+p.id+'" role="button" tabindex="0"'}>
             <span class="sede-arrow">${listOpen?'▾':'▸'}</span>
             <span class="sede-dot" style="background:${sEff?sedeColor(sEff):'#999'}"></span>
-            <span class="sedes-btn-label">${sEff?sEff:'SEDES'}</span>
+            <span class="sedes-btn-label">${sEff?_trEsc(sEff):'SEDES'}</span>
           </div>
           ${listOpen&&sedes.length?`
           <div class="sedes-list">
             ${sedes.map(s=>`
-            <div class="sede-option" data-action="select-sede-prog" data-pid="${p.id}" data-sede="${s}" role="button" tabindex="0">
+            <div class="sede-option" data-action="select-sede-prog" data-pid="${p.id}" data-sede="${_trEsc(s)}" role="button" tabindex="0">
               <span class="sede-dot" style="background:${sedeColor(s)}"></span>
-              <span>${s}</span>
+              <span>${_trEsc(s)}</span>
               ${s===sEff?'<span class="sede-option-check">✓</span>':''}
             </div>`).join('')}
           </div>`:''}
@@ -150,7 +151,7 @@ function renderTree(){
           <div class="node node-sede-selected">
             <div class="node-body">
               <div class="node-label">Sede seleccionada</div>
-              <div class="node-title">${sEff}</div>
+              <div class="node-title">${_trEsc(sEff)}</div>
             </div>
           </div>`:''
         }
@@ -173,17 +174,17 @@ function renderTree(){
             <div class="node node-linea">
               <div class="node-stripe"></div>
               <div class="node-body">
-                <div class="tipo-tag">${l.t}</div>
+                <div class="tipo-tag">${_trEsc(l.t)}</div>
                 <div class="node-label">Línea de profundización</div>
-                <div class="node-title">${l.l}</div>
+                <div class="node-title">${_trEsc(l.l)}</div>
               </div>
             </div>
             <div class="plink"></div>`:`
             <div class="node node-linea node-semestre">
               <div class="node-stripe"></div>
               <div class="node-body">
-                <div class="tipo-tag">${l.t}</div>
-                <div class="node-title">${l.motivo||'SEMESTRE AVANZADO'}</div>
+                <div class="tipo-tag">${_trEsc(l.t)}</div>
+                <div class="node-title">${_trEsc(l.motivo)||'SEMESTRE AVANZADO'}</div>
               </div>
             </div>
             <div class="plink"></div>`)
@@ -193,7 +194,7 @@ function renderTree(){
               <div class="node-body">
                 ${pll(l.o)}
                 <div class="node-label">Especialización</div>
-                <div class="node-title${routeLinkCls(l.id, sEff)}">${l.esp}</div>
+                <div class="node-title${routeLinkCls(l.id, sEff)}">${_trEsc(l.esp)}</div>
                 ${stBadge(l.e, l)}
               </div>
             </div>
@@ -224,8 +225,8 @@ function renderTree(){
                 <div class="node-body">
                   ${pll(m.o)}
                   <div class="node-label">Maestría</div>
-                  <div class="node-title${routeLinkCls(m.id, sEff)}">${m.n}</div>
-                  <div class="sede-chip">📍 ${(m.sedes||[]).join(' · ')}</div>
+                  <div class="node-title${routeLinkCls(m.id, sEff)}">${_trEsc(m.n)}</div>
+                  <div class="sede-chip">📍 ${(m.sedes||[]).map(_trEsc).join(' · ')}</div>
                   ${stBadge(m.e, m)}
                 </div>
               </div>`;
@@ -254,8 +255,8 @@ function renderTree(){
         <div class="node-body">
           <div style="margin-bottom:5px">${pll(f.doc.o)}</div>
           <div class="node-label">Doctorado</div>
-          <div class="node-title${routeLinkCls(docId, docSede)}">${f.doc.n}</div>
-          <div class="sede-chip sede-chip-dark">📍 ${f.doc.sedes.join(' · ')}</div>
+          <div class="node-title${routeLinkCls(docId, docSede)}">${_trEsc(f.doc.n)}</div>
+          <div class="sede-chip sede-chip-dark">📍 ${f.doc.sedes.map(_trEsc).join(' · ')}</div>
           ${stBadge(f.doc.e, f.doc)}
         </div>
       </div>
