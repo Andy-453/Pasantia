@@ -16,7 +16,7 @@
 const C = {vOsc:'#00482B', vMed:'#007B3E', vLim:'#79C000', vCla:'#91C256', teal:'#00A99D',
            dor:'#DAAA00', ama:'#FBE122', nar:'#F7931E', gris:'#4D4D4D', rojo:'#C62828'};
 
-const addM = (d,m)=>{const x=new Date(d);x.setMonth(x.getMonth()+m);return x};
+const addM = (d,m)=>{const x=new Date(d);const day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+m);const last=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(day,last));return x};
 const fmt = d=>d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
 const fmtCorto = d=>d.toLocaleDateString('es-CO',{month:'short',year:'numeric'});
 const dias = (d, hoy)=>Math.round((d-hoy)/864e5);
