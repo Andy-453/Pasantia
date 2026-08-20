@@ -345,6 +345,7 @@ let fEstado='all', fNivel='all', fTexto='';
 
 
 /* ================== Chart.js defaults + datalabels ================== */
+if(typeof Chart!=='undefined' && typeof ChartDataLabels!=='undefined'){
 Chart.register(ChartDataLabels);
 Chart.defaults.font.family='Montserrat';
 Chart.defaults.font.weight=600;
@@ -354,6 +355,7 @@ Chart.defaults.plugins.datalabels.display = ctx => {
   const v = ctx.dataset.data[ctx.dataIndex];
   return v !== 0 && v !== null && v !== undefined;
 };
+}
 const tt={backgroundColor:C.vOsc,borderColor:C.vLim,borderWidth:1,titleFont:{weight:'800',size:11},bodyFont:{size:11,weight:'500'},padding:10};
 const dlBar = {color:'#fff', font:{weight:'900', size:12}, anchor:'center', align:'center'};
 const dlTop = {color:C.vOsc, font:{weight:'900', size:12}, anchor:'end', align:'top', offset:-2};

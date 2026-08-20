@@ -83,11 +83,13 @@ function rcRenderKPIs(S, P, hoy){
 
 /* ================== DESTRUIR GRÁFICOS ================== */
 function rcDestroyCharts(){
+  if(typeof Chart!=='function'){return;}
   [chSemI,chVencI,chAEI,chRadI,chNivelI,chLineaI].forEach(c=>c&&c.destroy());
 }
 
 /* ================== GRÁFICOS CHART.JS ================== */
 function rcRenderCharts(S, aniosSel, vencPorAnioSel, kCounts, hoy){
+  if(typeof Chart!=='function'){return;}
   const { kVenc, k12, k16, k18, kOk } = kCounts;
 
   chSemI = new Chart(document.getElementById('chSem'),{type:'doughnut',data:{
