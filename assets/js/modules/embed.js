@@ -59,7 +59,10 @@ window.__EMBED = {
    * Construye HTML standalone editable (admin mode):
    * - Mismo proceso que buildStandalone pero SIN _adminHide
    * - Inyecta __UDEC_ADMIN_EXPORT__=true
-   * - Seedea localStorage con DB para persistencia (no usa __EMBEDDED_DB)
+   * - Embebe __EMBEDDED_DB/__EMBEDDED_LR (snapshot inicial del export) y ejecuta
+   *   una hidratación por token: siembra localStorage solo si está ausente/inválido
+   *   o si no fue sembrado por ESTE export; si fue sembrado por este export,
+   *   conserva las ediciones del usuario. El Admin sigue siendo editable.
    * @see buildStandalone
    */
   buildStandaloneAdmin: function() {
@@ -67,16 +70,17 @@ window.__EMBED = {
     var html = document.documentElement.outerHTML;
     var cssText = this.collectCSS();
     html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
-    var _dbStr = JSON.stringify(window.DB).replace(/<\//g, '<\\/');
-    var _lrStr = JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/');
+    var _dbStr = JSON.stringify(_freshSourceDB()).replace(/<\//g, '<\\/');
+    var _lrStr = JSON.stringify(_freshSourceLR()).replace(/<\//g, '<\\/');
     var _sdStr = JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/');
     var _rcStr = JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/');
     var _embedded = '<script>' +
       'window.__UDEC_ADMIN_EXPORT__=true;' +
+      'window.__EMBEDDED_DB=' + _dbStr + ';' +
       'window.__EMBEDDED_LR=' + _lrStr + ';' +
+      _adminHydrationJS(_exportToken()) +
       'window.__EMBEDDED_SD=' + _sdStr + ';' +
       'window.__EMBEDDED_RC=' + _rcStr + ';' +
-      '(function(){var _db=' + _dbStr + ';try{var _x=localStorage.getItem("udec_rutas_db");if(!_x||!JSON.parse(_x).length)localStorage.setItem("udec_rutas_db",JSON.stringify(_db));}catch(_e){}})();' +
       '<\/script>';
     html = html.replace('</head>', function() { return _embedded + '<style>' + cssText + '</style></head>'; });
     var scriptSrcs = [];
@@ -119,8 +123,8 @@ window.__EMBED = {
     var cssText = this.collectCSS();
 
     html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/gi, '');
-    var _dbStr   = JSON.stringify(window.DB).replace(/<\//g, '<\\/');
-    var _lrStr   = JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/');
+    var _dbStr   = JSON.stringify(_freshSourceDB()).replace(/<\//g, '<\\/');
+    var _lrStr   = JSON.stringify(_freshSourceLR()).replace(/<\//g, '<\\/');
     var _sdStr   = JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/');
     var _rcStr   = JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/');
     var _embedded = '<script>' +

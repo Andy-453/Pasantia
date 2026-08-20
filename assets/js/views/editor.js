@@ -3,6 +3,10 @@
 
 var _lrEditingId;
 var _lrEditorTab = 'programas';
+// === R3: borrador separado del mapa vivo ===
+var __LR_DRAFT = null;      // copia profunda de la ruta en edición
+var _lrDraftMeta = null;    // { espId, sede, isNew }
+var _lrDraftSrc = null;     // { sems:{}, subs:{} } ids presentes en la ruta guardada
 
 function renderEditor(){
   var f=AppData.getFacultad(AppState.navigation.curFac);if(!f)return;
@@ -120,31 +124,58 @@ function _lrRenderList(){
   var allProgs=_getAllAcademicPrograms();if(!allProgs) return '';
   var withRoute=[], withoutRoute=[];
   allProgs.forEach(function(p){
-    if(lr[p.id]) withRoute.push(p);
+    if(_hasLR(p.id)) withRoute.push(p);
     else withoutRoute.push(p);
   });
+  var hasPrevBackup=false;
+  try{ hasPrevBackup=!!localStorage.getItem(LR_PRE_RESTORE_KEY); }catch(e){}
   var h='';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">'
-    +'<div><div style="font-size:12px;font-weight:700;color:#333">'+withRoute.length+' rutas activas</div>'
+    +'<div><div style="font-size:12px;font-weight:700;color:#333">'+withRoute.length+' programa(s) con ruta</div>'
     +'<div style="font-size:10px;color:#999;margin-top:2px">'+withoutRoute.length+' programa(s) sin ruta</div></div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
     +'<button data-action="restore-default-routes" style="background:none;border:1px solid #e0ece4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">Restaurar por defecto</button>'
-    +'</div>';
+    +(hasPrevBackup?'<button data-action="restore-lr-backup" style="background:none;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;color:#006633;white-space:nowrap">↩️ Recuperar respaldo previo</button>':'')
+    +'</div></div>';
   if(withRoute.length){
     h+='<div style="font-size:11px;font-weight:700;color:#006633;margin-bottom:8px;padding:0 4px">\u25a0 CON RUTA ('+withRoute.length+')</div>';
-    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">';
+    h+='<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">';
     withRoute.forEach(function(p){
-      var e=lr[p.id];
-      var lrCred=(e.semesters||[]).reduce(function(t,s){return t+(s.subjects||[]).reduce(function(tt,sj){return tt+(sj.credits||0);},0);},0);
-      var ts=(e.semesters||[]).reduce(function(t,s){return t+(s.subjects||[]).length;},0);
-      var type=e.type||p.type||'especializacion';
-      h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">'
-        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+e.espName+'</div>'
-        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+p.id+' \u00b7 '+e.semesters.length+' semestre(s) \u00b7 '+lrCred+' cr\u00e9ditos \u00b7 '+ts+' materia(s)</div></div>'
-        +'<div style="display:flex;gap:6px;flex-shrink:0">'
-        +'<button data-action="lr-edit-route" data-esp-id="'+p.id+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\u270e Editar</button>'
-        +'<button data-action="lr-preview-route" data-esp-id="'+p.id+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
-        +'<button data-action="lr-delete-route" data-esp-id="'+p.id+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer">\ud83d\uddd1</button></div>'
+      var m=lr[p.id]||{};
+      var keys=Object.keys(m);
+      var type=(m.ALL&&m.ALL.type)||p.type||'especializacion';
+      h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+p.name+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+p.id+' \u00b7 '+keys.length+' ruta(s)</div></div>'
         +'</div>';
+      keys.forEach(function(k){
+        var e=m[k];
+        var lrCred=(e.semesters||[]).reduce(function(t,s){return t+(s.subjects||[]).reduce(function(tt,sj){return tt+(sj.credits||0);},0);},0);
+        var ts=(e.semesters||[]).reduce(function(t,s){return t+(s.subjects||[]).length;},0);
+        h+='<div style="background:#fafcfa;border:1px solid #e8f0ec;border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:11px;font-weight:700;color:#333">'+(k==='ALL'?'\ud83c\udf10 Todas las sedes':'🏫 '+_lrEsc(k))+(k==='ALL'?' <span style="font-size:9px;color:#999;font-weight:400">(ruta global)</span>':' <span style="font-size:9px;color:#999;font-weight:400">(sede espec\u00edfica)</span>')+'</div>'
+            +'<div style="font-size:9px;color:#999;margin-top:2px">'+e.semesters.length+' semestre(s) \u00b7 '+lrCred+' cr\u00e9ditos \u00b7 '+ts+' materia(s)'+(e.version?' \u00b7 v'+e.version:'')+'</div>'
+          +'</div>'
+          +'<div style="display:flex;gap:5px;flex-shrink:0">'
+          +'<button data-action="lr-edit-route" data-esp-id="'+p.id+'" data-sede="'+_lrEsc(k)+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\u270e Editar</button>'
+          +'<button data-action="lr-preview-route" data-esp-id="'+p.id+'" data-sede="'+_lrEsc(k)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+          +'<button data-action="lr-delete-route" data-esp-id="'+p.id+'" data-sede="'+_lrEsc(k)+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\ud83d\uddd1</button>'
+          +'</div></div>';
+      });
+      if(m.ALL){
+        var candidates=(p.sedes&&p.sedes.length?p.sedes:ALL_SEDES).filter(function(s){return keys.indexOf(s)===-1;});
+        if(candidates.length){
+          h+='<div style="display:flex;gap:6px;align-items:center;margin-top:4px">'
+            +'<select id="lr-new-sede-'+p.id+'" style="flex:1;max-width:220px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:10px"><option value="">\u2014 Sede \u2014</option>'
+            +candidates.map(function(s){return '<option value="'+_lrEsc(s)+'">'+_lrEsc(s)+'</option>';}).join('')
+            +'</select>'
+            +'<button data-action="lr-create-sede-route" data-prog-id="'+p.id+'" data-prog-name="'+_lrEsc(p.name)+'" data-prog-type="'+p.type+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta para sede</button>'
+            +'</div>';
+        }
+      }
+      h+='</div>';
     });
     h+='</div>';
   }
@@ -155,8 +186,33 @@ function _lrRenderList(){
       h+='<div style="background:#fafcfa;border-radius:10px;border:1px solid #e8f0ec;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:0.85">'
         +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555">'+_getTypeBadge(p.type)+p.name+'</div>'
         +'<div style="font-size:10px;color:#999;margin-top:2px">'+p.facName+(p.progName?' \u00b7 '+p.progName:'')+'</div></div>'
-        +'<button data-action="create-route-for-prog" data-prog-id="'+p.id+'" data-prog-name="'+p.name.replace(/"/g,'&quot;')+'" data-prog-type="'+p.type+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta</button>'
+        +'<button data-action="create-route-for-prog" data-prog-id="'+p.id+'" data-prog-name="'+_lrEsc(p.name)+'" data-prog-type="'+p.type+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta</button>'
         +'</div>';
+    });
+    h+='</div>';
+  }
+  var orphans=getOrphanRoutes();
+  if(orphans.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#B45309;margin-bottom:8px;padding:0 4px">⚠️ RUTAS HU\u00c9RFANAS (SIN PROGRAMA) ('+orphans.length+')</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">';
+    var progOpts=_getAllAcademicPrograms().map(function(p){
+      return '<option value="'+_lrEsc(p.id)+'">'+_lrEsc(_getTypeLabel(p.type))+' \u00b7 '+_lrEsc(p.name)+'</option>';
+    }).join('');
+    orphans.forEach(function(espId){
+      var m=lr[espId]||{};
+      var keys=Object.keys(m);
+      var first=m[keys[0]]||{};
+      h+='<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 16px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#92400E">'+(first.espName||'Ruta sin nombre')+'</div>'
+        +'<div style="font-size:10px;color:#B45309;margin-top:2px">ID: '+_lrEsc(espId)+' \u00b7 '+keys.length+' ruta(s) \u00b7 sedes: '+keys.map(_lrEsc).join(', ')+'</div></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+        +'<select id="lr-reassign-'+_lrEsc(espId)+'" style="flex:1;min-width:180px;max-width:340px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:10px"><option value="">\u2014 Programa destino \u2014</option>'+progOpts+'</select>'
+        +'<button data-action="lr-reassign-route" data-orphan-id="'+_lrEsc(espId)+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u21aa\ufe0f Reasignar</button>'
+        +'<button data-action="lr-keep-orphan" data-orphan-id="'+_lrEsc(espId)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\ud83d\udcbe Conservar/Exportar</button>'
+        +'<button data-action="lr-delete-orphan" data-orphan-id="'+_lrEsc(espId)+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\ud83d\uddd1\ufe0f Eliminar</button>'
+        +'</div></div>';
     });
     h+='</div>';
   }
@@ -168,25 +224,116 @@ function _lrRenderList(){
 
 function _lrEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function _lrEditRoute(progId, prefill){
+function _lrDraftCopy(o){
+  try{ return JSON.parse(JSON.stringify(o==null?{}:o)); }catch(e){ return {}; }
+}
+
+function _lrCollectSourceIds(route){
+  var src={ sems:{}, subs:{} };
+  (route.semesters||[]).forEach(function(s){
+    if(s.id) src.sems[s.id]=true;
+    (s.subjects||[]).forEach(function(sj){ if(sj.id) src.subs[sj.id]=true; });
+  });
+  return src;
+}
+
+// === R3 (E16): fusión conservadora. Parte de una copia profunda de la fuente y
+// solo modifica los campos representados por el formulario. Preserva campos no
+// representados, version/resourceUrl/homo.materia, materias existentes con título
+// vacío y los IDs. Descarta únicamente filas NUEVAS completamente vacías. ===
+function _lrMergeFormIntoRoute(src, form){
+  var out=_lrDraftCopy(src);
+  out.espName=form.espName;
+  out.version=form.version||'';
+  out.type=form.type||out.type||'especializacion';
+  out.credits=form.credits;
+  out.sede=form.sede;
+  out.espId=form.espId;
+  out.id=_lrMakeId(form.espId, form.sede);
+  var byId={};
+  (out.semesters||[]).forEach(function(s){ if(s.id) byId[s.id]=s; });
+  var sems=[];
+  form.semesters.forEach(function(fs){
+    var ex=fs.id?byId[fs.id]:null;
+    if(ex){
+      ex.title=fs.title;
+      ex.type=fs.type;
+      ex.credits=fs.credits;
+      var sbyId={};
+      (ex.subjects||[]).forEach(function(sj){ if(sj.id) sbyId[sj.id]=sj; });
+      var subs=[];
+      fs.subjects.forEach(function(fsj){
+        var exsj=fsj.id?sbyId[fsj.id]:null;
+        if(exsj){
+          exsj.title=fsj.title;
+          exsj.version=fsj.version;
+          exsj.credits=fsj.credits;
+          exsj.homologa=fsj.homologa;
+          exsj.resourceUrl=fsj.resourceUrl;
+          if(fsj.homo && fsj.homo.materia){ exsj.homo={materia:fsj.homo.materia}; }
+          else if(exsj.homo){ delete exsj.homo; }
+          subs.push(exsj);
+        } else {
+          subs.push(fsj);
+        }
+      });
+      ex.subjects=subs;
+      sems.push(ex);
+    } else {
+      sems.push(fs);
+    }
+  });
+  out.semesters=sems;
+  return out;
+}
+
+function _lrCancelDraft(){
+  __LR_DRAFT=null; _lrDraftMeta=null; _lrDraftSrc=null; _lrEditingId=null;
+}
+
+function _lrEditRoute(progId, sede, prefill){
   _lrEditingId=progId; renderEditor();
+  var sd=sede||'ALL';
   var lr=window.__LEARNING_ROUTES||{};
-  var e=lr[progId];
+  var e=(lr[progId]||{})[sd];
   var isNew=!e;
-  var route=isNew
-    ? { espName:(prefill&&prefill.name)||'', version:'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{title:'',credits:2,homologa:false},{title:'',credits:2,homologa:false}]}] }
-    : JSON.parse(JSON.stringify(e));
+  var route;
+  if(isNew){
+    var src=(prefill && prefill.copyFrom) ? _getLearningRoute(progId,'ALL') : null;
+    if(src){
+      route=JSON.parse(JSON.stringify(src));
+      route.id=_lrMakeId(progId,sd);
+      route.sede=sd;
+      route.espId=progId;
+    } else {
+      route={ id:_lrMakeId(progId,sd), espId:progId, sede:sd, espName:(prefill&&prefill.name)||'', version:'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{id:uid(),title:'Semestre 1',type:'Fundamentación',credits:10,subjects:[{id:uid(),title:'',credits:2,homologa:false},{id:uid(),title:'',credits:2,homologa:false}]}] };
+    }
+  } else {
+    route=JSON.parse(JSON.stringify(e));
+    if(!route.sede) route.sede=sd;
+  }
+  // === R3: el formulario trabaja sobre un borrador separado del mapa vivo ===
+  __LR_DRAFT = route;
+  _lrDraftMeta = { espId:progId, sede:sd, isNew:isNew };
+  _lrDraftSrc = _lrCollectSourceIds(route);
+  _lrRenderRouteForm(route, _lrDraftMeta);
+}
+
+function _lrRenderRouteForm(route, meta){
+  var progId=meta.espId, sd=meta.sede, isNew=meta.isNew;
   var type=route.type||'especializacion';
+  var sedesOpts=['<option value="ALL"'+(route.sede==='ALL'?' selected':'')+'>Todas las sedes</option>'].concat(ALL_SEDES.map(function(s){return '<option value="'+_lrEsc(s)+'"'+(route.sede===s?' selected':'')+'>'+s+'</option>';})).join('');
   var h='<div style="padding:1rem">';
   h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">'
     +'<button data-action="lr-back-to-list" style="background:none;border:none;font-size:16px;cursor:pointer;color:#666">\u2190</button>'
     +_getTypeBadge(type)+'<div style="font-size:14px;font-weight:700;color:#006633">'+(isNew?'Nueva ruta':'Editar ruta')+'</div></div>';
-  h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'">';
+  h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'" data-sede="'+sd+'">';
   h+='<div class="grid2" style="margin-bottom:12px">';
   h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
   h+='<div class="field"><label>Versi\u00f3n (opcional)</label><input id="lr-version" value="'+(route.version||'')+'" placeholder="Ej: V2.1, 2026-2, 1.0" style="width:100%"></div>';
   h+='</div>';
   h+='<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666;margin-bottom:12px">ID: '+progId+'</div>';
+  h+='<div class="field" style="margin-bottom:12px"><label>🏫 Sede</label><select id="lr-sede" style="width:100%;max-width:280px">'+sedesOpts+'</select></div>';
   var tc=0; (route.semesters||[]).forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
   h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
     +'<span style="font-weight:700;color:#006633">Total cr\u00e9ditos: <span id="lr-total-credits">'+tc+'</span></span>'
@@ -194,7 +341,7 @@ function _lrEditRoute(progId, prefill){
     +'<span style="color:#666"><span id="lr-sem-count">'+route.semesters.length+'</span> semestre(s)</span></div>';
   h+='<div id="lr-semesters">';
   route.semesters.forEach(function(sem,si){
-    h+='<div class="lr-semester" data-si="'+si+'">';
+    h+='<div class="lr-semester" data-si="'+si+'" data-sem-id="'+(sem.id||'')+'">';
     h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
       +'<span style="font-size:12px;font-weight:700;color:#333">Semestre '+(si+1)+'</span>'
       +'<div style="flex:1"></div>'
@@ -209,7 +356,7 @@ function _lrEditRoute(progId, prefill){
     h+='<div class="lr-subjects" data-si="'+si+'" style="margin-bottom:6px">';
     sem.subjects.forEach(function(subj,ji){
       var shomoMateria = (subj.homo && subj.homo.materia) || '';
-      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">'
+      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" data-subj-id="'+(subj.id||'')+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">'
         +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
         +'<input class="lr-subj-version" value="'+(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
@@ -226,8 +373,8 @@ function _lrEditRoute(progId, prefill){
   h+='</div>';
   h+='<button data-action="lr-add-semester" style="width:100%;padding:10px;background:#f5f5f5;border:1px dashed #ccc;border-radius:8px;cursor:pointer;font-size:11px;color:#666;margin-bottom:1rem">+ Agregar semestre</button>';
   h+='<div style="display:flex;gap:8px">'
-    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+progId+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
-    +'<button data-action="lr-preview-route" data-esp-id="'+progId+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+progId+'" data-sede="'+_lrEsc(sd)+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
+    +'<button data-action="lr-preview-route" data-esp-id="'+progId+'" data-sede="'+_lrEsc(sd)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
     +'<button data-action="lr-back-to-list" style="background:#f5f5f5;color:#666;border:1px solid #ddd;border-radius:8px;padding:8px 16px;font-size:11px;cursor:pointer">Cancelar</button>'
     +'</div>';
   h+='</div></div>';
@@ -239,33 +386,36 @@ function _lrCollectFormData(){
   var c=document.getElementById('lr-form-container'); if(!c) return null;
   var espId=c.dataset.espId;
   var type=c.dataset.progType||'especializacion';
+  var sedeSel=document.getElementById('lr-sede');
+  var sede=(sedeSel? sedeSel.value : (c.dataset.sede||'ALL'))||'ALL';
   var espName=document.getElementById('lr-esp-name')?.value.trim();
   if(!espName){ toast('Escribe el nombre del programa'); return null; }
   var version=document.getElementById('lr-version')?.value.trim()||'';
   var sems=[]; var totalCr=0;
   document.querySelectorAll('.lr-semester').forEach(function(el){
+    var semId=el.dataset.semId||uid();
     var t=el.querySelector('.lr-sem-title')?.value.trim()||'';
     var tp=el.querySelector('.lr-sem-type')?.value||'Fundamentación';
     var subs=[];
     el.querySelectorAll('.lr-subject').forEach(function(s){
+      var sjId=s.dataset.subjId||uid();
       var st=s.querySelector('.lr-subj-name')?.value.trim()||'';
       var sc=parseInt(s.querySelector('.lr-subj-credits')?.value)||0;
       var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
       var sv=s.querySelector('.lr-subj-version')?.value.trim()||'';
       var su=s.querySelector('.lr-subj-url')?.value.trim()||'';
-      if(!st) return;
-      var subj={title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined};
-      if(sh){
-        var shm=(s.querySelector('.lr-subj-homo')?.value||'').trim();
-        if(shm) subj.homo={materia:shm};
-      }
+      var shm=(s.querySelector('.lr-subj-homo')?.value||'').trim();
+      var isNew=!(_lrDraftSrc && _lrDraftSrc.subs[sjId]);
+      if(isNew && !st && !sv && !su && !sh && !shm) return; // fila NUEVA totalmente vacía → descartar
+      var subj={id:sjId,title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined};
+      if(shm) subj.homo={materia:shm}; // R3: conserva homo.materia aunque homologa sea false
       subs.push(subj);
     });
     var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
-    sems.push({title:t,type:tp,credits:cr,subjects:subs});
+    sems.push({id:semId,title:t,type:tp,credits:cr,subjects:subs});
     totalCr+=cr;
   });
-  return {espName:espName,version:version,espId:espId,type:type,credits:totalCr,semesters:sems};
+  return {espName:espName,version:version,espId:espId,sede:sede,type:type,credits:totalCr,semesters:sems};
 }
 
 function _lrRecalcCredits(){
@@ -273,42 +423,56 @@ function _lrRecalcCredits(){
   var el=document.getElementById('lr-total-credits'); if(el) el.textContent=tc;
 }
 
-function _lrSaveRoute(espId){
+function _lrSaveRoute(espId, sede){
   var data=_lrCollectFormData(); if(!data) return;
   var id=data.espId;
-  window.__LEARNING_ROUTES[id]={
-    id:'lr-'+id.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:id, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
-  };
-    toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); __refreshAll();
+  var sd=data.sede||sede||'ALL';
+  var src=null;
+  if(__LR_DRAFT && _lrDraftMeta && _lrDraftMeta.espId===id && _lrDraftMeta.sede===sd){
+    src=__LR_DRAFT;
+  } else {
+    var lr=window.__LEARNING_ROUTES||{};
+    src=(lr[id]||{})[sd];
+  }
+  var merged=_lrMergeFormIntoRoute(src, data);
+  window.__LEARNING_ROUTES[id]=window.__LEARNING_ROUTES[id]||{};
+  window.__LEARNING_ROUTES[id][sd]=merged;
+  toast('Ruta guardada'); _lrCancelDraft();
+  saveLearningRoutes(); renderEditor(); __refreshAll();
 }
 
-function _lrDeleteRoute(espId){
-  if(!window.__LEARNING_ROUTES[espId]){ toast('Ruta no encontrada'); return; }
-  showConfirm('Eliminar ruta','¿Eliminar la ruta de <strong>'+(window.__LEARNING_ROUTES[espId].espName||espId)+'</strong>?',function(){
-    delete window.__LEARNING_ROUTES[espId]; saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); __refreshAll();
+function _lrDeleteRoute(espId, sede){
+  var lr=window.__LEARNING_ROUTES||{};
+  var m=lr[espId];
+  var sd=sede||'ALL';
+  if(!m || !m[sd]){ toast('Ruta no encontrada'); return; }
+  var label=(sd==='ALL')?'Todas las sedes':sd;
+  showConfirm('Eliminar ruta','¿Eliminar la ruta de <strong>'+(m[sd].espName||espId)+'</strong> ('+label+')?',function(){
+    delete m[sd];
+    if(!Object.keys(m).length) delete lr[espId];
+    saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); __refreshAll();
   });
 }
 
 function _lrAddSemester(){
   var data=_lrCollectFormData(); if(!data) return;
   var n=data.semesters.length+1;
-  data.semesters.push({title:'Semestre '+n,type:'Profundización',credits:10,subjects:[{title:'',credits:2,homologa:false}]});
-  _rerenderForm(data,data.espId);
+  data.semesters.push({id:uid(),title:'Semestre '+n,type:'Profundización',credits:10,subjects:[{id:uid(),title:'',credits:2,homologa:false}]});
+  _rerenderForm(data,data.espId,data.sede);
 }
 
 function _lrDeleteSemester(si){
   var data=_lrCollectFormData(); if(!data) return;
   if(data.semesters.length<=1){ toast('Debe haber al menos un semestre'); return; }
   data.semesters.splice(si,1);
-  _rerenderForm(data,data.espId);
+  _rerenderForm(data,data.espId,data.sede);
 }
 
 function _lrAddSubject(si){
   var data=_lrCollectFormData(); if(!data) return;
   if(!data.semesters[si]){ toast('Semestre no encontrado'); return; }
-  data.semesters[si].subjects.push({title:'',credits:2,homologa:false});
-  _rerenderForm(data,data.espId);
+  data.semesters[si].subjects.push({id:uid(),title:'',credits:2,homologa:false});
+  _rerenderForm(data,data.espId,data.sede);
 }
 
 function _lrDeleteSubject(si,ji){
@@ -316,23 +480,66 @@ function _lrDeleteSubject(si,ji){
   if(!data.semesters[si]){ toast('Semestre no encontrado'); return; }
   if(data.semesters[si].subjects.length<=1){ toast('Debe haber al menos una materia'); return; }
   data.semesters[si].subjects.splice(ji,1);
-  _rerenderForm(data,data.espId);
+  _rerenderForm(data,data.espId,data.sede);
 }
 
-function _rerenderForm(data,espId){
-  window.__LEARNING_ROUTES[espId]={
-    id:'lr-'+espId.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase(),
-    espId:espId, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
-  };
-  _lrEditRoute(espId);
+function _rerenderForm(data,espId,sede){
+  var sd=sede||(data&&data.sede)||'ALL';
+  if(!(__LR_DRAFT && _lrDraftMeta && _lrDraftMeta.espId===espId && _lrDraftMeta.sede===sd)){
+    var lr=window.__LEARNING_ROUTES||{};
+    var e=(lr[espId]||{})[sd];
+    __LR_DRAFT = e ? _lrDraftCopy(e) : { id:_lrMakeId(espId,sd), espId:espId, sede:sd, espName:'', version:'', type:'especializacion', credits:0, semesters:[] };
+    _lrDraftMeta = { espId:espId, sede:sd, isNew:!e };
+    _lrDraftSrc = _lrCollectSourceIds(__LR_DRAFT);
+  }
+  __LR_DRAFT = _lrMergeFormIntoRoute(__LR_DRAFT, data);
+  _lrRenderRouteForm(__LR_DRAFT, _lrDraftMeta);
 }
 
-function _lrPreviewRoute(espId){
+function _lrPreviewRoute(espId, sede){
   var lr=window.__LEARNING_ROUTES||{};
-  if(lr[espId]){
-    openLearningRouteModal(espId);
+  var sd=sede||'ALL';
+  var route=(lr[espId]||{})[sd];
+  if(__LR_DRAFT && _lrDraftMeta && _lrDraftMeta.espId===espId && _lrDraftMeta.sede===sd) route=__LR_DRAFT;
+  if(route){
+    openLearningRouteModal(route);
+    var ov=document.getElementById('lr-modal-overlay');
+    if(ov) ov.dataset.sede=sd;
   } else {
     var data=_lrCollectFormData(); if(!data) return;
-    openLearningRouteModal({id:'lr-preview',espId:data.espId||'__preview__',espName:data.espName,version:data.version||'',type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
+    openLearningRouteModal({id:_lrMakeId(data.espId||'__preview__',data.sede||'ALL'),espId:data.espId||'__preview__',sede:data.sede||'ALL',espName:data.espName,version:data.version||'',type:data.type||'especializacion',credits:data.credits,semesters:data.semesters});
+    var ov2=document.getElementById('lr-modal-overlay');
+    if(ov2) ov2.dataset.sede=data.sede||'ALL';
   }
+}
+
+// === R5 (E22): acciones explícitas sobre rutas huérfanas ===
+function _lrReassignRoute(oldEspId, newEspId){
+  if(!oldEspId || !newEspId){ toast('Selecciona un programa destino'); return; }
+  var lr=window.__LEARNING_ROUTES||{};
+  if(!lr[oldEspId]){ toast('Ruta no encontrada'); return; }
+  if(oldEspId===newEspId) return;
+  if(lr[newEspId]){ toast('El programa destino ya tiene rutas'); return; }
+  var out={};
+  Object.keys(lr[oldEspId]).forEach(function(sede){
+    var r=_lrDraftCopy(lr[oldEspId][sede]);
+    r.espId=newEspId;
+    r.sede=sede;
+    r.id=_lrMakeId(newEspId, sede);
+    out[sede]=r;
+  });
+  lr[newEspId]=out;
+  delete lr[oldEspId];
+  saveLearningRoutes(); toast('Ruta reasignada a '+newEspId); renderEditor(); __refreshAll();
+}
+
+function _lrDeleteOrphan(espId){
+  var lr=window.__LEARNING_ROUTES||{};
+  if(!lr[espId]){ toast('Ruta no encontrada'); return; }
+  var m=lr[espId];
+  var first=m[Object.keys(m)[0]]||{};
+  showConfirm('Eliminar ruta huérfana','¿Eliminar la ruta huérfana de <strong>'+(first.espName||espId)+'</strong>? Esta es la única operación que elimina una ruta huérfana.',function(){
+    delete lr[espId];
+    saveLearningRoutes(); toast('Ruta huérfana eliminada'); renderEditor(); __refreshAll();
+  });
 }
