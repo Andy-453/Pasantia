@@ -24,6 +24,10 @@ function countSedeUsage(sede){
     });
     if(f.doc&&f.doc.sedes&&f.doc.sedes.indexOf(sede)>-1) count++;
   });
+  Object.keys(window.__LEARNING_ROUTES||{}).forEach(function(espId){
+    var m=window.__LEARNING_ROUTES[espId];
+    if(m && typeof m==='object' && m[sede] && typeof m[sede]==='object' && Object.keys(m[sede]).length) count++;
+  });
   return count;
 }
 function openSedesManager(){
