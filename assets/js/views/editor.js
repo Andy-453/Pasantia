@@ -3,6 +3,10 @@
 
 var _lrEditingId;
 var _lrEditorTab = 'programas';
+// === R3: borrador separado del mapa vivo ===
+var __LR_DRAFT = null;      // copia profunda de la ruta en edición
+var _lrDraftMeta = null;    // { espId, sede, isNew }
+var _lrDraftSrc = null;     // { sems:{}, subs:{} } ids presentes en la ruta guardada
 
 function renderEditor(){
   var f=AppData.getFacultad(AppState.navigation.curFac);if(!f)return;
@@ -123,12 +127,16 @@ function _lrRenderList(){
     if(_hasLR(p.id)) withRoute.push(p);
     else withoutRoute.push(p);
   });
+  var hasPrevBackup=false;
+  try{ hasPrevBackup=!!localStorage.getItem(LR_PRE_RESTORE_KEY); }catch(e){}
   var h='';
   h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">'
     +'<div><div style="font-size:12px;font-weight:700;color:#333">'+withRoute.length+' programa(s) con ruta</div>'
     +'<div style="font-size:10px;color:#999;margin-top:2px">'+withoutRoute.length+' programa(s) sin ruta</div></div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
     +'<button data-action="restore-default-routes" style="background:none;border:1px solid #e0ece4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;color:#999;white-space:nowrap">Restaurar por defecto</button>'
-    +'</div>';
+    +(hasPrevBackup?'<button data-action="restore-lr-backup" style="background:none;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;color:#006633;white-space:nowrap">↩️ Recuperar respaldo previo</button>':'')
+    +'</div></div>';
   if(withRoute.length){
     h+='<div style="font-size:11px;font-weight:700;color:#006633;margin-bottom:8px;padding:0 4px">\u25a0 CON RUTA ('+withRoute.length+')</div>';
     h+='<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">';
@@ -183,6 +191,31 @@ function _lrRenderList(){
     });
     h+='</div>';
   }
+  var orphans=getOrphanRoutes();
+  if(orphans.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#B45309;margin-bottom:8px;padding:0 4px">⚠️ RUTAS HU\u00c9RFANAS (SIN PROGRAMA) ('+orphans.length+')</div>';
+    h+='<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:1rem">';
+    var progOpts=_getAllAcademicPrograms().map(function(p){
+      return '<option value="'+_lrEsc(p.id)+'">'+_lrEsc(_getTypeLabel(p.type))+' \u00b7 '+_lrEsc(p.name)+'</option>';
+    }).join('');
+    orphans.forEach(function(espId){
+      var m=lr[espId]||{};
+      var keys=Object.keys(m);
+      var first=m[keys[0]]||{};
+      h+='<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 16px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#92400E">'+(first.espName||'Ruta sin nombre')+'</div>'
+        +'<div style="font-size:10px;color:#B45309;margin-top:2px">ID: '+_lrEsc(espId)+' \u00b7 '+keys.length+' ruta(s) \u00b7 sedes: '+keys.map(_lrEsc).join(', ')+'</div></div>'
+        +'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+        +'<select id="lr-reassign-'+_lrEsc(espId)+'" style="flex:1;min-width:180px;max-width:340px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:10px"><option value="">\u2014 Programa destino \u2014</option>'+progOpts+'</select>'
+        +'<button data-action="lr-reassign-route" data-orphan-id="'+_lrEsc(espId)+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u21aa\ufe0f Reasignar</button>'
+        +'<button data-action="lr-keep-orphan" data-orphan-id="'+_lrEsc(espId)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\ud83d\udcbe Conservar/Exportar</button>'
+        +'<button data-action="lr-delete-orphan" data-orphan-id="'+_lrEsc(espId)+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\ud83d\uddd1\ufe0f Eliminar</button>'
+        +'</div></div>';
+    });
+    h+='</div>';
+  }
   if(!withRoute.length && !withoutRoute.length){
     h+='<div style="text-align:center;padding:2rem;color:#999">No hay programas acad\u00e9micos disponibles</div>';
   }
@@ -190,6 +223,73 @@ function _lrRenderList(){
 }
 
 function _lrEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function _lrDraftCopy(o){
+  try{ return JSON.parse(JSON.stringify(o==null?{}:o)); }catch(e){ return {}; }
+}
+
+function _lrCollectSourceIds(route){
+  var src={ sems:{}, subs:{} };
+  (route.semesters||[]).forEach(function(s){
+    if(s.id) src.sems[s.id]=true;
+    (s.subjects||[]).forEach(function(sj){ if(sj.id) src.subs[sj.id]=true; });
+  });
+  return src;
+}
+
+// === R3 (E16): fusión conservadora. Parte de una copia profunda de la fuente y
+// solo modifica los campos representados por el formulario. Preserva campos no
+// representados, version/resourceUrl/homo.materia, materias existentes con título
+// vacío y los IDs. Descarta únicamente filas NUEVAS completamente vacías. ===
+function _lrMergeFormIntoRoute(src, form){
+  var out=_lrDraftCopy(src);
+  out.espName=form.espName;
+  out.version=form.version||'';
+  out.type=form.type||out.type||'especializacion';
+  out.credits=form.credits;
+  out.sede=form.sede;
+  out.espId=form.espId;
+  out.id=_lrMakeId(form.espId, form.sede);
+  var byId={};
+  (out.semesters||[]).forEach(function(s){ if(s.id) byId[s.id]=s; });
+  var sems=[];
+  form.semesters.forEach(function(fs){
+    var ex=fs.id?byId[fs.id]:null;
+    if(ex){
+      ex.title=fs.title;
+      ex.type=fs.type;
+      ex.credits=fs.credits;
+      var sbyId={};
+      (ex.subjects||[]).forEach(function(sj){ if(sj.id) sbyId[sj.id]=sj; });
+      var subs=[];
+      fs.subjects.forEach(function(fsj){
+        var exsj=fsj.id?sbyId[fsj.id]:null;
+        if(exsj){
+          exsj.title=fsj.title;
+          exsj.version=fsj.version;
+          exsj.credits=fsj.credits;
+          exsj.homologa=fsj.homologa;
+          exsj.resourceUrl=fsj.resourceUrl;
+          if(fsj.homo && fsj.homo.materia){ exsj.homo={materia:fsj.homo.materia}; }
+          else if(exsj.homo){ delete exsj.homo; }
+          subs.push(exsj);
+        } else {
+          subs.push(fsj);
+        }
+      });
+      ex.subjects=subs;
+      sems.push(ex);
+    } else {
+      sems.push(fs);
+    }
+  });
+  out.semesters=sems;
+  return out;
+}
+
+function _lrCancelDraft(){
+  __LR_DRAFT=null; _lrDraftMeta=null; _lrDraftSrc=null; _lrEditingId=null;
+}
 
 function _lrEditRoute(progId, sede, prefill){
   _lrEditingId=progId; renderEditor();
@@ -206,12 +306,21 @@ function _lrEditRoute(progId, sede, prefill){
       route.sede=sd;
       route.espId=progId;
     } else {
-      route={ id:_lrMakeId(progId,sd), espId:progId, sede:sd, espName:(prefill&&prefill.name)||'', version:'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{id:uid(),title:'Semestre 1',type:'Fundamentaci\u00f3n',credits:10,subjects:[{id:uid(),title:'',credits:2,homologa:false},{id:uid(),title:'',credits:2,homologa:false}]}] };
+      route={ id:_lrMakeId(progId,sd), espId:progId, sede:sd, espName:(prefill&&prefill.name)||'', version:'', type:(prefill&&prefill.type)||'especializacion', credits:0, semesters:[{id:uid(),title:'Semestre 1',type:'Fundamentación',credits:10,subjects:[{id:uid(),title:'',credits:2,homologa:false},{id:uid(),title:'',credits:2,homologa:false}]}] };
     }
   } else {
     route=JSON.parse(JSON.stringify(e));
     if(!route.sede) route.sede=sd;
   }
+  // === R3: el formulario trabaja sobre un borrador separado del mapa vivo ===
+  __LR_DRAFT = route;
+  _lrDraftMeta = { espId:progId, sede:sd, isNew:isNew };
+  _lrDraftSrc = _lrCollectSourceIds(route);
+  _lrRenderRouteForm(route, _lrDraftMeta);
+}
+
+function _lrRenderRouteForm(route, meta){
+  var progId=meta.espId, sd=meta.sede, isNew=meta.isNew;
   var type=route.type||'especializacion';
   var sedesOpts=['<option value="ALL"'+(route.sede==='ALL'?' selected':'')+'>Todas las sedes</option>'].concat(ALL_SEDES.map(function(s){return '<option value="'+_lrEsc(s)+'"'+(route.sede===s?' selected':'')+'>'+s+'</option>';})).join('');
   var h='<div style="padding:1rem">';
@@ -295,12 +404,11 @@ function _lrCollectFormData(){
       var sh=s.querySelector('.lr-subj-homologa')?.checked||false;
       var sv=s.querySelector('.lr-subj-version')?.value.trim()||'';
       var su=s.querySelector('.lr-subj-url')?.value.trim()||'';
-      if(!st) return;
+      var shm=(s.querySelector('.lr-subj-homo')?.value||'').trim();
+      var isNew=!(_lrDraftSrc && _lrDraftSrc.subs[sjId]);
+      if(isNew && !st && !sv && !su && !sh && !shm) return; // fila NUEVA totalmente vacía → descartar
       var subj={id:sjId,title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined};
-      if(sh){
-        var shm=(s.querySelector('.lr-subj-homo')?.value||'').trim();
-        if(shm) subj.homo={materia:shm};
-      }
+      if(shm) subj.homo={materia:shm}; // R3: conserva homo.materia aunque homologa sea false
       subs.push(subj);
     });
     var cr=subs.reduce(function(t,s){return t+(s.credits||0);},0);
@@ -319,12 +427,18 @@ function _lrSaveRoute(espId, sede){
   var data=_lrCollectFormData(); if(!data) return;
   var id=data.espId;
   var sd=data.sede||sede||'ALL';
+  var src=null;
+  if(__LR_DRAFT && _lrDraftMeta && _lrDraftMeta.espId===id && _lrDraftMeta.sede===sd){
+    src=__LR_DRAFT;
+  } else {
+    var lr=window.__LEARNING_ROUTES||{};
+    src=(lr[id]||{})[sd];
+  }
+  var merged=_lrMergeFormIntoRoute(src, data);
   window.__LEARNING_ROUTES[id]=window.__LEARNING_ROUTES[id]||{};
-  window.__LEARNING_ROUTES[id][sd]={
-    id:_lrMakeId(id,sd),
-    espId:id, sede:sd, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
-  };
-    toast('Ruta guardada'); _lrEditingId=null; saveLearningRoutes(); renderEditor(); __refreshAll();
+  window.__LEARNING_ROUTES[id][sd]=merged;
+  toast('Ruta guardada'); _lrCancelDraft();
+  saveLearningRoutes(); renderEditor(); __refreshAll();
 }
 
 function _lrDeleteRoute(espId, sede){
@@ -371,18 +485,22 @@ function _lrDeleteSubject(si,ji){
 
 function _rerenderForm(data,espId,sede){
   var sd=sede||(data&&data.sede)||'ALL';
-  window.__LEARNING_ROUTES[espId]=window.__LEARNING_ROUTES[espId]||{};
-  window.__LEARNING_ROUTES[espId][sd]={
-    id:_lrMakeId(espId,sd),
-    espId:espId, sede:sd, espName:data.espName, version:data.version||'', type:data.type||'especializacion', credits:data.credits, semesters:data.semesters
-  };
-  _lrEditRoute(espId, sd);
+  if(!(__LR_DRAFT && _lrDraftMeta && _lrDraftMeta.espId===espId && _lrDraftMeta.sede===sd)){
+    var lr=window.__LEARNING_ROUTES||{};
+    var e=(lr[espId]||{})[sd];
+    __LR_DRAFT = e ? _lrDraftCopy(e) : { id:_lrMakeId(espId,sd), espId:espId, sede:sd, espName:'', version:'', type:'especializacion', credits:0, semesters:[] };
+    _lrDraftMeta = { espId:espId, sede:sd, isNew:!e };
+    _lrDraftSrc = _lrCollectSourceIds(__LR_DRAFT);
+  }
+  __LR_DRAFT = _lrMergeFormIntoRoute(__LR_DRAFT, data);
+  _lrRenderRouteForm(__LR_DRAFT, _lrDraftMeta);
 }
 
 function _lrPreviewRoute(espId, sede){
   var lr=window.__LEARNING_ROUTES||{};
   var sd=sede||'ALL';
   var route=(lr[espId]||{})[sd];
+  if(__LR_DRAFT && _lrDraftMeta && _lrDraftMeta.espId===espId && _lrDraftMeta.sede===sd) route=__LR_DRAFT;
   if(route){
     openLearningRouteModal(route);
     var ov=document.getElementById('lr-modal-overlay');
@@ -393,4 +511,35 @@ function _lrPreviewRoute(espId, sede){
     var ov2=document.getElementById('lr-modal-overlay');
     if(ov2) ov2.dataset.sede=data.sede||'ALL';
   }
+}
+
+// === R5 (E22): acciones explícitas sobre rutas huérfanas ===
+function _lrReassignRoute(oldEspId, newEspId){
+  if(!oldEspId || !newEspId){ toast('Selecciona un programa destino'); return; }
+  var lr=window.__LEARNING_ROUTES||{};
+  if(!lr[oldEspId]){ toast('Ruta no encontrada'); return; }
+  if(oldEspId===newEspId) return;
+  if(lr[newEspId]){ toast('El programa destino ya tiene rutas'); return; }
+  var out={};
+  Object.keys(lr[oldEspId]).forEach(function(sede){
+    var r=_lrDraftCopy(lr[oldEspId][sede]);
+    r.espId=newEspId;
+    r.sede=sede;
+    r.id=_lrMakeId(newEspId, sede);
+    out[sede]=r;
+  });
+  lr[newEspId]=out;
+  delete lr[oldEspId];
+  saveLearningRoutes(); toast('Ruta reasignada a '+newEspId); renderEditor(); __refreshAll();
+}
+
+function _lrDeleteOrphan(espId){
+  var lr=window.__LEARNING_ROUTES||{};
+  if(!lr[espId]){ toast('Ruta no encontrada'); return; }
+  var m=lr[espId];
+  var first=m[Object.keys(m)[0]]||{};
+  showConfirm('Eliminar ruta huérfana','¿Eliminar la ruta huérfana de <strong>'+(first.espName||espId)+'</strong>? Esta es la única operación que elimina una ruta huérfana.',function(){
+    delete lr[espId];
+    saveLearningRoutes(); toast('Ruta huérfana eliminada'); renderEditor(); __refreshAll();
+  });
 }

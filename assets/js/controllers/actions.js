@@ -78,7 +78,16 @@ var __ACTIONS = {
     if(!sede){ toast('Selecciona una sede'); return; }
     _lrEditRoute(b.dataset.progId, sede, {copyFrom:'ALL', name:b.dataset.progName, type:b.dataset.progType});
   },
-  'lr-back-to-list': function(){ _lrEditingId=null;renderEditor(); },
+  'lr-back-to-list': function(){ _lrCancelDraft(); renderEditor(); },
+  'lr-reassign-route': function(b){
+    var espId=b.dataset.orphanId;
+    var sel=document.getElementById('lr-reassign-'+espId);
+    var target=sel?sel.value:'';
+    if(!target){ toast('Selecciona un programa destino'); return; }
+    _lrReassignRoute(espId, target);
+  },
+  'lr-keep-orphan': function(){ backupDB(); },
+  'lr-delete-orphan': function(b){ _lrDeleteOrphan(b.dataset.orphanId); },
   'lr-add-semester': function(){ _lrAddSemester(); },
   'lr-delete-semester': function(b){ _lrDeleteSemester(parseInt(b.dataset.si,10)); },
   'lr-add-subject': function(b){ _lrAddSubject(parseInt(b.dataset.si,10)); },
@@ -86,6 +95,7 @@ var __ACTIONS = {
   'lr-save-route': function(b){ _lrSaveRoute(b.dataset.espId, b.dataset.sede); },
   'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId, b.dataset.sede); },
   'restore-default-routes': function(){ restoreDefaultRoutes(function(){ renderEditor(); }); },
+  'restore-lr-backup': function(){ restoreLearningRoutesBackup(function(){ renderEditor(); }); },
   'backup-db': function(){ backupDB(); },
   'restore-db': function(){ document.getElementById('restore-input').click(); },
   'manage-sedes': function(){ openSedesManager(); },

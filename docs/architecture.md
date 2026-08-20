@@ -1782,3 +1782,171 @@ El editor tiene dos pestañas (`_lrEditorTab`, editor.js:5): **Programas** y
   (storage.js:44, embed.js:76) y lo restaura normalizado.
 - Validación F5 (G1–G6): 18 rutas, todas disponibles como ALL, con espName,
   semesters y homologaciones íntegros, `espId` coherente.
+
+## 21. Resiliencia de Rutas de Aprendizaje (R1–R5)
+
+> **Hito**: 2026-08-19 — Resiliencia de rutas de aprendizaje implementada en las
+> fases R1–R5. Este documento describe la arquitectura final de persistencia,
+> recuperación, borradores, restore seguro, huérfanas y metadatos de backup.
+> Código relacionado: `data/learning-routes.js`, `models/learning-routes.js`,
+> `modules/utils.js`, `modules/storage.js`, `modules/embed.js`,
+> `views/editor.js`, `controllers/actions.js`, `app.js`.
+
+Las fases R1–R5 se aplican sobre la arquitectura de rutas por sede de la
+sección §20 (F1–F5) **sin romper** la jerarquía `específica → ALL → null` ni la
+estructura `[espId][sede]` de `__LEARNING_ROUTES`.
+
+### 21.1. Fuentes de datos y claves de persistencia
+
+| Objeto / clave | Tipo | Rol |
+|---|---|---|
+| `window.__LEARNING_ROUTES_BASE_V2` | `data/learning-routes.js` | **Snapshot institucional inmutable** (18 rutas anidadas en `ALL`). Fuente de recuperación (`_lrBaseSource`, learning-routes.js:24). **Nunca se modifica en runtime.** |
+| `window.__LEARNING_ROUTES_DEFAULT` | en memoria | Congelado en la primera llamada a `loadLearningRoutes` (copia profunda normalizada de BASE_V2). Base para `restoreDefaultRoutes` y recuperaciones. |
+| `window.__LEARNING_ROUTES` | en memoria | **Mapa runtime** `[espId][sede]`, la única fuente de verdad mutable. |
+| `udec_learning_routes` | localStorage | Persistencia del mapa runtime (JSON). |
+| `udec_learning_routes_meta` | localStorage | Meta `{ schemaVersion:2, seededAt, lastSavedAt, recovered?, recoveredAt? }`. |
+| `udec_learning_routes_pre_restore` | localStorage | Backup automático previo a `restoreDefaultRoutes` (R4). |
+| `__LR_DRAFT` / `_lrDraftMeta` / `_lrDraftSrc` | en memoria | Borrador de edición separado del mapa vivo (R3). |
+
+### 21.2. Ciclo de carga y recuperación (R1)
+
+`loadLearningRoutes()` (learning-routes.js:55) cubre todos los escenarios:
+
+1. **Export de solo lectura** (`__EMBEDDED_LR` + `__EMBEDDED_DB`): usa el snapshot
+   embebido normalizado; **no escribe** en localStorage.
+2. **Sin dato (`stored === null`)**:
+   - con **meta existente** → pérdida real → `_recoverFromBase` (restaura defaults
+     normalizados, `recovered:true`, toast de recuperación);
+   - **primer arranque** (sin meta) → `_seedFrom` (siembra defaults + meta, **sin toast**).
+3. **`{}`** → el mapa fue vaciado → pérdida real → `_recoverFromBase` con toast.
+4. **JSON corrupto** → `_recoverFromBase` con toast.
+5. **Legacy plano** (`_hasFlatRoute`) → normaliza en memoria y **migra una sola vez**
+   con `saveLearningRoutes()`.
+6. **Anidado válido** → se conserva sin reescritura (solo se crea meta si falta).
+
+`saveLearningRoutes()` (learning-routes.js:98) persiste el mapa completo y actualiza
+`lastSavedAt`; es **no-op en modo embedded** (`__EMBEDDED_DB`).
+
+### 21.3. Seed simétrico del Admin export (R2)
+
+`_makeAdminEmbedded()` (storage.js:129) + `buildStandaloneAdmin()` (embed.js) siembran
+las rutas en un HTML administrativo nuevo:
+
+- Si `udec_learning_routes` **no existe** → se siembra desde `__EMBEDDED_LR`.
+- Si existe un **mapa válido** → **no se pisa** (localStorage gana sobre embedded).
+- Si es `{}` o **JSON corrupto** → **no se siembra silenciosamente**; `loadLearningRoutes`
+  (R1) lo recupera con notificación.
+- El seed usa `Object.keys(...)` (no `.length` de arrays) y es **simétrico** con
+  `udec_rutas_db` (ambas keys se siembran juntas).
+
+### 21.4. Borrador separado del mapa vivo (R3 / E16)
+
+- `_lrEditRoute` (editor.js:294) construye `__LR_DRAFT` a partir de una **copia
+  profunda** (o plantilla), **nunca escribe en el mapa vivo**.
+- `_lrMergeFormIntoRoute` (editor.js:244) es una **fusión conservadora**: parte de la
+  copia profunda y solo toca campos representados por el formulario. Preserva campos
+  no representados, `version`, `resourceUrl`, `homo.materia`, materias existentes con
+  título vacío e IDs; **descarta únicamente filas nuevas totalmente vacías**.
+- `_lrSaveRoute` (editor.js:426) fusiona sobre el borrador/`_lrDraftSrc`, persiste con
+  `saveLearningRoutes()` y llama a `_lrCancelDraft()`.
+- `_lrCancelDraft()` (editor.js:290) limpia borrador y metadatos; se invoca al
+  cancelar (`lr-back-to-list`, actions.js:81), tras guardar y en los restores (R4).
+- **Los borradores jamás contaminan backups/exports**: `backupDB` y `__EMBEDDED_LR`
+  serializan el **mapa guardado**, no `__LR_DRAFT` (verificado: export fallback y
+  `buildStandaloneAdmin` no contienen texto del borrador).
+
+### 21.5. Backup previo y restauración por defecto (R4)
+
+`restoreDefaultRoutes(onDone)` (learning-routes.js:138):
+
+1. `showConfirm` (acción explícita del usuario).
+2. `_lrStorePreRestoreBackup()` → guarda copia profunda exacta
+   `{ savedAt, routes }` en `udec_learning_routes_pre_restore` (learning-routes.js:109).
+3. Borra `udec_learning_routes`, restaura `__LEARNING_ROUTES_DEFAULT`, persiste.
+4. Limpia `__LR_DRAFT`, toast "Rutas restauradas".
+
+`restoreLearningRoutesBackup(onDone)` (learning-routes.js:118): si existe el backup,
+confirma y restaura la **copia exacta** (sin normalizar), consume la key, limpia el
+draft y persiste. **No existe recuperación automática de este backup**: la acción es
+siempre del usuario (botón "↩️ Recuperar respaldo previo").
+
+### 21.6. `restoreDB` conservador (R4)
+
+`restoreDB(file)` (storage.js:172) acepta backups **v1 y v2**:
+
+- Si `learningRoutes` está presente y no vacío (`hadLR`) → se aplica con
+  `_normalizeRoutes` (v1 plano → anidado; v2 → se conserva) + toast
+  "✅ Rutas de aprendizaje restauradas del respaldo".
+- Si **no incluye rutas** → **se conservan las rutas actuales** (nunca se introduce
+  `{}`) + toast "ℹ️ El respaldo no incluía rutas; se conservaron las rutas actuales".
+- Versión inválida → rechazo sin mutar nada; JSON inválido → toast "❌ Archivo inválido".
+- Limpia `__LR_DRAFT` (el borrador no sobrevive al restore).
+- `_normalizeRoutes` nunca devuelve `{}` como destino por ausencia de rutas.
+
+### 21.7. Rutas huérfanas y acciones explícitas (R5 / E22)
+
+**Detección (solo lectura):** `getOrphanRoutes()` (utils.js:139) compara las claves de
+`__LEARNING_ROUTES` contra los `id` de `_getAllAcademicPrograms()` (utils.js:111).
+Devuelve un array de `espId` sin programa. **No muta DB ni mapa, no normaliza, no
+reescribe** y es seguro de llamar repetidamente.
+
+**UI:** `_lrRenderList` (editor.js:122) muestra la sección "⚠️ RUTAS HUÉRFANAS (SIN
+PROGRAMA)" con `espId`, sedes y nombre de cada ruta, y por cada una:
+
+| Acción | data-action | Implementación |
+|---|---|---|
+| Reasignar | `lr-reassign-route` | `_lrReassignRoute` (editor.js:517): cambia únicamente `espId`/`sede`/`id` (vía `_lrDraftCopy` + `_lrMakeId`), **conserva todo el contenido**, guarda, no permite pisar un destino con rutas existentes. |
+| Conservar/Exportar | `lr-keep-orphan` | Reutiliza `backupDB()` (genera respaldo con la huérfana incluida). No elimina ni altera la ruta. |
+| Eliminar | `lr-delete-orphan` | `_lrDeleteOrphan` (editor.js:536) con `showConfirm`; elimina **solo la ruta seleccionada** y persiste. |
+
+**Regla R5:** no existe **ninguna** eliminación automática de rutas huérfanas; borrar
+un programa o una facultad jamás borra sus rutas. La única operación que elimina una
+huérfana es la acción explícita Eliminar.
+
+### 21.8. Backup / export y metadatos de auditoría (R5)
+
+`backupDB()` (storage.js:149) genera `version:2` con:
+
+```js
+{
+  version: 2, date, db,
+  learningRoutes,                       // el mapa guardado (sin borradores)
+  learningRoutesMeta: {                 // R5: auditoría, NO parte de la estructura de rutas
+    totalRoutes,                        // Object.keys(learningRoutes).length
+    orphanCount                         // getOrphanRoutes().length en ese momento
+  },
+  sniesSD, rcRaw, sedesCatalog
+}
+```
+
+- Los metadatos **no modifican** `learningRoutes` y **no contaminan** la estructura
+  de las rutas (nada de `orphanCount` dentro de una ruta).
+- **No rompe v1/v2** y `restoreDB` no necesita los metadatos para funcionar (no se
+  modificó el restore por esta adición).
+- La exportación standalone (`_makeEmbedded`, `_makeAdminEmbedded`) serializa el mapa
+  guardado; los borradores nunca aparecen.
+
+### 21.9. Jerarquía específica > ALL > null (sin cambios)
+
+La resolución sigue siendo (ver §20.3): `m[sede] → m.ALL → null`. R1–R5 la conservan
+intacta; `_getLearningRoute` (utils.js:64) y `_hasLR` (utils.js:60) se usan tal cual en
+árbol, vista sede y modal.
+
+### 21.10. Garantías finales verificadas por los smokes R1–R5
+
+- Las **18 rutas institucionales** permanecen byte/estructuralmente intactas
+  (`data/learning-routes.js` no se modifica).
+- `__LEARNING_ROUTES_BASE_V2` permanece intacta tras cargar, restaurar, reasignar,
+  eliminar, restore v1/v2 y exportar.
+- `específica → ALL → null` intacta (F2/F3/F4 verdes).
+- No hay eliminación automática de rutas (ni de huérfanas).
+- Los borradores no contaminan backups ni exports.
+- Restore v1/v2 compatible; v1 plano se normaliza; v2 se conserva.
+- Las rutas huérfanas solo desaparecen mediante la acción explícita Eliminar.
+- Backup/export/restore mantienen los datos (round-trip idéntico).
+- **No hay pérdida de datos** en ningún escenario (ausencia, `{}`, corrupto, restore
+  sin rutas, borrado de programas/facultades).
+
+Suites de validación: `smoke-lr-resilience.js` (R1), `smoke-lr-r2.js` (R2),
+`smoke-lr-draft.js` (R3), `smoke-lr-restore-safe.js` (R4),
+`smoke-lr-orphans.js` (R5).

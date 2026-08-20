@@ -126,6 +126,29 @@ function _getAllAcademicPrograms(){
   return list;
 }
 
+// ===== R5 (E22): RUTAS HUÉRFANAS =====
+/**
+ * Devuelve los espId de __LEARNING_ROUTES que ya no corresponden a ningún
+ * programa/línea existente en la DB académica actual.
+ *
+ * Solo lectura: NO muta DB, NO muta __LEARNING_ROUTES, no normaliza ni reescribe.
+ * Seguro de llamar repetidamente.
+ *
+ * @returns {string[]} array de espId huérfanos (orden de inserción del mapa)
+ */
+function getOrphanRoutes(){
+  var valid = {};
+  try {
+    _getAllAcademicPrograms().forEach(function(p){ if(p && p.id) valid[p.id] = true; });
+  } catch(e){}
+  var lr = window.__LEARNING_ROUTES || {};
+  var orphans = [];
+  Object.keys(lr).forEach(function(espId){
+    if(!valid[espId]) orphans.push(espId);
+  });
+  return orphans;
+}
+
 // ===== HOMOLOGACIÓN DESDE PREGRADO (por materia) =====
 /**
  * Devuelve el nombre de la materia de pregrado asociada a una materia,
@@ -145,5 +168,89 @@ function _lrHomologacion(subj, route){
   var materia = subj.homo && subj.homo.materia;
   if(typeof materia !== 'string' || !materia.trim()) return null;
   return materia.trim();
+}
+
+// ===== EXPORT-FIX-1 (E23): helpers de exportación =====
+/**
+ * Determina si la página actual es un export standalone de SOLO LECTURA:
+ *   NORMAL + EMBEDDED  → read-only (snapshot autoritativo, sin escrituras)
+ *   ADMIN + EMBEDDED   → editable (snapshot = estado inicial; localStorage hidratado)
+ * @returns {boolean}
+ */
+function _isReadOnlyExport(){
+  return !!(window.__EMBEDDED_DB && !window.__UDEC_ADMIN_EXPORT__);
+}
+
+/**
+ * Fuente fresca y validada de DB para el export.
+ * - Export read-only (Normal embebido): el snapshot embebido es la verdad.
+ * - Live/Admin: la capa de persistencia (localStorage) es la más reciente/confiable:
+ *   AppData persiste tras cada write, así que ante divergencia (p. ej. pestañas
+ *   múltiples o un contexto cuyo window.DB quedó obsoleto), localStorage gana.
+ * No usa timestamps: la capa de persistencia ES la fuente de frescura.
+ * @returns {Array}
+ */
+function _freshSourceDB(){
+  if(window.__EMBEDDED_DB && !window.__UDEC_ADMIN_EXPORT__) return window.DB;
+  try{
+    var d = localStorage.getItem('udec_rutas_db');
+    if(d){
+      var parsed = JSON.parse(d);
+      if(typeof _validateDB === 'function' ? _validateDB(parsed) : (Array.isArray(parsed) && parsed.length)) return parsed;
+    }
+  }catch(e){}
+  return window.DB;
+}
+
+/**
+ * Fuente fresca y validada de rutas de aprendizaje para el export.
+ * Misma semántica que _freshSourceDB (persistencia como fuente de frescura).
+ * @returns {Object}
+ */
+function _freshSourceLR(){
+  if(window.__EMBEDDED_DB && !window.__UDEC_ADMIN_EXPORT__) return window.__LEARNING_ROUTES || {};
+  try{
+    var s = localStorage.getItem('udec_learning_routes');
+    if(s){
+      var parsed = JSON.parse(s);
+      if(parsed && typeof parsed === 'object' && Object.keys(parsed).length) return _normalizeRoutes(parsed);
+    }
+  }catch(e){}
+  return window.__LEARNING_ROUTES || {};
+}
+
+/**
+ * Token de generación para un export Admin. Identifica UNA instancia de export:
+ * permite distinguir localStorage sembrado por ESTE archivo (se conservan ediciones)
+ * de localStorage sembrado por otra fuente (se rehidrata el snapshot).
+ * Es un marcador de generación (no un timestamp de reloj, inmune a desfases).
+ * @returns {string}
+ */
+function _exportToken(){
+  return 'exp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+/**
+ * Construye el IIFE de hidratación que se embebe en el HTML Admin exportado.
+ * Reglas (por store: udec_rutas_db y udec_learning_routes):
+ *   - ausente o inválido            → sembrar snapshot + marcar token
+ *   - válido + token de ESTE export → conservar (ediciones del usuario)
+ *   - válido + token distinto       → rehidratar snapshot + marcar token
+ * No usa _validateDB (aún no cargado en <head>): validación inline ligera.
+ * @param {string} _token - token de generación del export
+ * @returns {string} código JS a incrustar
+ */
+function _adminHydrationJS(_token){
+  return '(function(){try{' +
+    'var _t=' + JSON.stringify(_token) + ';' +
+    'function _mk(k,t){try{var p=JSON.parse(localStorage.getItem(k));return !!p&&p.token===t;}catch(e){return false;}}' +
+    'function _ok(k){try{var p=JSON.parse(localStorage.getItem(k));if(Array.isArray(p))return p.length>0;return !!(p&&typeof p==="object"&&Object.keys(p).length);}catch(e){return false;}}' +
+    'if(!_ok("udec_rutas_db")||!_mk("udec_rutas_export_seed",_t)){' +
+      'localStorage.setItem("udec_rutas_db",JSON.stringify(window.__EMBEDDED_DB));' +
+      'localStorage.setItem("udec_rutas_export_seed",JSON.stringify({token:_t}));}' +
+    'if(!_ok("udec_learning_routes")||!_mk("udec_learning_routes_export_seed",_t)){' +
+      'localStorage.setItem("udec_learning_routes",JSON.stringify(window.__EMBEDDED_LR||{}));' +
+      'localStorage.setItem("udec_learning_routes_export_seed",JSON.stringify({token:_t}));}' +
+    '}catch(_e){}})();';
 }
 

@@ -637,3 +637,17 @@ window.__LEARNING_ROUTES = {
     ]
   }
 };
+
+/**
+ * Respaldo institucional en código (V2 anidado).
+ * Derivado de las 18 rutas anteriores sin modificar sus datos.
+ * __LEARNING_ROUTES_DEFAULT se deriva de aquí; se usa para recuperar
+ * el mapa ante localStorage inexistente, vacío {} o JSON corrupto.
+ */
+window.__LEARNING_ROUTES_BASE_V2 = (function(){
+  var out = {};
+  Object.keys(window.__LEARNING_ROUTES || {}).forEach(function(k){
+    out[k] = { ALL: JSON.parse(JSON.stringify(window.__LEARNING_ROUTES[k])) };
+  });
+  return out;
+})();

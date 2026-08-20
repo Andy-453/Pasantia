@@ -82,6 +82,7 @@ window.App = {
   showConfirm: showConfirm, getSt: getSt, pll: pll, uid: uid, gv: gv, gi: gi, toast: toast,
   // Rutas de Aprendizaje
   loadLearningRoutes: loadLearningRoutes, saveLearningRoutes: saveLearningRoutes, restoreDefaultRoutes: restoreDefaultRoutes,
+  getOrphanRoutes: getOrphanRoutes,
 };
 
 // ===== ARBOL =====

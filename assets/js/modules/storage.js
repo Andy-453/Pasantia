@@ -14,7 +14,7 @@
  * Estado:
  *   Estable. Serializa DB, rutas de aprendizaje y datos SNIES en exportación HTML.
  */
-function saveDB(){if(window.__EMBEDDED_DB)return;try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
+function saveDB(){if(_isReadOnlyExport())return;try{localStorage.setItem('udec_rutas_db',JSON.stringify(window.DB));}catch(e){}}
 function _validateDB(data){
   if(!Array.isArray(data)||!data.length) return false;
   for(var i=0;i<data.length;i++){
@@ -40,19 +40,20 @@ function _validateDB(data){
  */
 function _makeEmbedded(){
   return '<script>' +
-    'window.__EMBEDDED_DB=' + JSON.stringify(window.DB).replace(/<\//g, '<\\/') + ';' +
-    'window.__EMBEDDED_LR=' + JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_DB=' + JSON.stringify(_freshSourceDB()).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_LR=' + JSON.stringify(_freshSourceLR()).replace(/<\//g, '<\\/') + ';' +
     'window.__EMBEDDED_SD=' + JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/') + ';' +
     'window.__EMBEDDED_RC=' + JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/') + ';' +
     '<\/script>';
 }
 function loadDB(){
-  if(window.__EMBEDDED_DB){window.DB=JSON.parse(JSON.stringify(window.__EMBEDDED_DB));return;}
+  if(window.__EMBEDDED_DB && !window.__UDEC_ADMIN_EXPORT__){window.DB=JSON.parse(JSON.stringify(window.__EMBEDDED_DB));return;}
   if(window.__UDEC_EMBEDDED__){window.DB=JSON.parse(JSON.stringify(window.__DEFAULT_DATA));return;}
   try{
     var d=localStorage.getItem('udec_rutas_db');
     if(d){var parsed=JSON.parse(d);if(_validateDB(parsed)){window.DB=parsed;return;}}
   }catch(e){}
+  if(window.__UDEC_ADMIN_EXPORT__ && window.__EMBEDDED_DB){window.DB=JSON.parse(JSON.stringify(window.__EMBEDDED_DB));return;}
   window.DB=JSON.parse(JSON.stringify(window.__DEFAULT_DATA));
 }
 /**
@@ -129,8 +130,9 @@ function downloadAdminHTML(){
 function _makeAdminEmbedded(){
   return '<script>' +
     'window.__UDEC_ADMIN_EXPORT__=true;' +
-    '(function(){var _db=' + JSON.stringify(window.DB).replace(/<\//g, '<\\/') + ';try{var _x=localStorage.getItem("udec_rutas_db");if(!_x||!JSON.parse(_x).length)localStorage.setItem("udec_rutas_db",JSON.stringify(_db));}catch(_e){}})();' +
-    'window.__EMBEDDED_LR=' + JSON.stringify(window.__LEARNING_ROUTES || {}).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_DB=' + JSON.stringify(_freshSourceDB()).replace(/<\//g, '<\\/') + ';' +
+    'window.__EMBEDDED_LR=' + JSON.stringify(_freshSourceLR()).replace(/<\//g, '<\\/') + ';' +
+    _adminHydrationJS(_exportToken()) +
     'window.__EMBEDDED_SD=' + JSON.stringify(window.AppState ? window.AppState.snies.SD || {} : {}).replace(/<\//g, '<\\/') + ';' +
     'window.__EMBEDDED_RC=' + JSON.stringify(window.__rcRaw || null).replace(/<\//g, '<\\/') + ';' +
     '<\/script>';
@@ -146,11 +148,15 @@ function _downloadJSON(obj,filename){
   URL.revokeObjectURL(url);
 }
 function backupDB(){
+  var lr=window.__LEARNING_ROUTES||{};
+  var totalRoutes=Object.keys(lr).length;
+  var orphanCount=(typeof getOrphanRoutes==='function')?getOrphanRoutes().length:0;
   var payload={
     version:2,
     date:new Date().toISOString(),
     db:window.DB,
-    learningRoutes:window.__LEARNING_ROUTES||{},
+    learningRoutes:lr,
+    learningRoutesMeta:{ totalRoutes:totalRoutes, orphanCount:orphanCount }, // R5: auditoría, no modifica learningRoutes ni v1/v2
     sniesSD:window.AppState?window.AppState.snies.SD||null:null,
     rcRaw:window.__rcRaw||null,
     sedesCatalog:window.AppState?window.AppState.staticData.ALL_SEDES.slice():null
@@ -173,7 +179,16 @@ function restoreDB(file){
       var payload=JSON.parse(e.target.result);
       if(!payload||(payload.version!==1&&payload.version!==2)){toast('❌ Archivo de respaldo no compatible');return;}
       window.DB=payload.db;
-      window.__LEARNING_ROUTES=_normalizeRoutes(payload.learningRoutes||{});
+      // R4: nunca convertir __LEARNING_ROUTES en {} por ausencia de learningRoutes.
+      var hadLR = payload.learningRoutes && typeof payload.learningRoutes === 'object' && Object.keys(payload.learningRoutes).length > 0;
+      var routesNote;
+      if(hadLR){
+        window.__LEARNING_ROUTES=_normalizeRoutes(payload.learningRoutes);
+        routesNote='✅ Rutas de aprendizaje restauradas del respaldo';
+      } else {
+        routesNote='ℹ️ El respaldo no incluía rutas; se conservaron las rutas actuales';
+      }
+      if(typeof _lrCancelDraft === 'function') _lrCancelDraft(); // R4: el borrador no sobrevive al restore
       if(window.AppState) AppState.snies.SD=payload.sniesSD||AppState.snies.SD;
       window.__rcRaw=payload.rcRaw||null;
       saveDB();
@@ -185,6 +200,7 @@ function restoreDB(file){
       if(typeof renderSNIES==='function') renderSNIES();
       if(typeof renderIndicadores==='function') renderIndicadores();
       if(typeof renderPipeline==='function') renderPipeline();
+      toast(routesNote);
       toast('✅ Datos restaurados correctamente');
     }catch(err){
       toast('❌ Archivo inválido');
