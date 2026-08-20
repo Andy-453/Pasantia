@@ -43,9 +43,9 @@ function renderKPIs(){
   f.progs.forEach(p=>{
     if(!pregradoMatch(p.n)) return;
     (Array.isArray(p.lineas)?p.lineas:[]).filter(l=>itemMatch(l,'espec')).forEach(l=>{esps++;l.o==='V'?vig++:proy++;if(getSt(l.e).cat==='negado')neg++;});
-    (Array.isArray(p.mae)?p.mae:[]).filter(m=>itemMatch(m,'mae')).forEach(m=>{maes++;m.o==='V'?vig++:proy++;});
+    (Array.isArray(p.mae)?p.mae:[]).filter(m=>itemMatch(m,'mae')).forEach(m=>{maes++;m.o==='V'?vig++:proy++;if(getSt(m.e).cat==='negado')neg++;});
   });
-  if(f.doc&&itemMatch(f.doc,'doc')){f.doc.o==='V'?vig++:proy++;}
+  if(f.doc&&itemMatch(f.doc,'doc')){f.doc.o==='V'?vig++:proy++;if(getSt(f.doc.e).cat==='negado')neg++;}
   document.getElementById('kpis').innerHTML=`
     <div class="kpi" style="background:#e6f2eb;border-color:#006633"><div class="kpi-v" style="color:#006633">${vig}</div><div class="kpi-l">Oferta vigente</div></div>
     <div class="kpi" style="background:#e8f0fb;border-color:#378ADD"><div class="kpi-v" style="color:#1a5cb0">${proy}</div><div class="kpi-l">Oferta proyectada</div></div>

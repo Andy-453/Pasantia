@@ -177,7 +177,7 @@ function rcRenderTable(S, hoy){
 function updConsulta(){
   const sel=document.getElementById('selAnio');
   const y=+sel.value, lst=vencPorAnioSel[y]||[];
-  document.getElementById('resAnio').innerHTML = `?<b>${lst.length}</b>programa${lst.length!==1?'s':''} ${lst.length? '· SNIES '+lst.map(p=>p.snies).join(', '):''}`;
+  document.getElementById('resAnio').innerHTML = `?<b>${lst.length}</b> programa${lst.length!==1?'s':''} ${lst.length? '· SNIES '+lst.map(p=>p.snies).join(', '):''}`;
 }
 /* ================== TEMPLATE HTML ================== */
 function rcTemplate(){
