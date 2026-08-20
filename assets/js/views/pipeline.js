@@ -33,7 +33,7 @@ function renderPipeline(){
   // Prioridad (mayor a menor): Negado > Reclamación > Vigente > Radicado > Construcción > Por construir.
   // Esto evita doble conteo en estados compuestos como "Obtención-resignificación"
   // (contiene "obtención" Y "resignificación" — la prioridad lo asigna a Vigente).
-  var grupos={construccion:[],porConstruir:[],radicado:[],vigente:[],negado:[],reclamacion:[]};
+  var grupos={construccion:[],porConstruir:[],radicado:[],vigente:[],negado:[],reclamacion:[],otros:[]};
   all.forEach(function(x){
     var e=(x.estado||'').toLowerCase();
     if(e.includes('negado')) grupos.negado.push(x);
@@ -42,6 +42,7 @@ function renderPipeline(){
     else if(e.includes('radicado')||e.includes('radicación')||e.includes('entregado')) grupos.radicado.push(x);
     else if(e.includes('en construcción')) grupos.construccion.push(x);
     else if(e.includes('por construir')||e.includes('proyección')||e.includes('nueva propuesta')||e.includes('resignificación')) grupos.porConstruir.push(x);
+    else grupos.otros.push(x);
   });
   function kpi(ic,lbl,cnt,col){return '<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;border-left:4px solid '+col+';padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">'+ic+'</div><div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999">'+lbl+'</div><div style="font-size:24px;font-weight:800;color:'+col+';font-family:monospace">'+cnt+'</div></div></div>';}
   var nivCol={Especialización:G,Maestría:OR,Doctorado:'#0d3d22'};
@@ -124,6 +125,7 @@ function renderPipeline(){
     +kpi('📝','Por construir',grupos.porConstruir.length,OR)
     +kpi('❌','Negado MEN',grupos.negado.length,RD)
     +kpi('⚖️','Reclamación',grupos.reclamacion.length,'#dc2626')
+    +kpi('📂','Otros / Sin clasificar',grupos.otros.length,'#888')
   +'</div>';
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
     +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="timeline">'
@@ -138,6 +140,7 @@ function renderPipeline(){
   h+=sec('⚖️','En reclamación',grupos.reclamacion.length+' con observaciones del MEN',grupos.reclamacion,'#dc2626','#fff8f8');
   h+=sec('❌','Negado MEN',grupos.negado.length+' con resolución negativa',grupos.negado,RD,'#fff5f5');
   h+=sec('✅','Vigente',grupos.vigente.length+' programas activos con registro',grupos.vigente,G,'#f0fdf4');
+  h+=sec('❓','Otros / Sin clasificar',grupos.otros.length+' con estado sin clasificar',grupos.otros,'#888','#f7f7f7');
   h+='</div>';
   wrap.innerHTML=h;
 }
