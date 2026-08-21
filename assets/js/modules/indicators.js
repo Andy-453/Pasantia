@@ -15,8 +15,7 @@
  *     con datos embebidos (onclick, panel-indicadores).
  *
  * Riesgos de acoplamiento:
- *   - Los mapas ESTADOS_GRUPO y EST_COLORS deben mantenerse sincronizados
- *     con los estados reales usados en el editor y pipeline.
+ *   - La taxonomía de estados proviene de getSt/ST_MAP (utils.js), fuente única
  *
  * Estado:
  *   Extraído de app.js. Acceso DB via AppData.
@@ -31,32 +30,9 @@ function renderIndicadores(){
   const estadoCount={};
   const facStats=[];
 
-  const ESTADOS_GRUPO = {
-    'obtención': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'radicado men': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'en radicación': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'entregado para radicar': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'en construcción': {label:'En construcción', color:'#BA7517', bg:'#FAEEDA'},
-    'por construir': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'en proyección': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'nueva propuesta de la facultad': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'en reclamación  men': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'en reclamación men': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'renovación': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'renovación y modificación de la denominación': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'pendiente en resolución': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'pendiante en resolución': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'negado men': {label:'Negado MEN', color:'#A32D2D', bg:'#FCEBEB'},
-    'obtención-resignificación': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'con registro calificado': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'en oferta': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-  };
-
   function getEstGroup(e){
-    if(!e) return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
-    const k=e.trim().toLowerCase();
-    if(ESTADOS_GRUPO[k]) return ESTADOS_GRUPO[k];
-    return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
+    const g=getSt(e);
+    return g.cat?{label:g.group,color:g.dot,bg:g.bg}:{label:'Sin definir',color:'#888',bg:'#f5f5f0'};
   }
 
   AppData.getFacultades().forEach(fac=>{
