@@ -364,7 +364,7 @@ function _lrRenderRouteForm(route, meta){
         +'<input class="lr-subj-version" value="'+(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" data-action="lr-touch-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
         +'<input class="lr-subj-homo" type="text" value="'+_lrEsc(shomoMateria)+'" placeholder="Materia homologada desde pregrado" title="Materia homologada desde pregrado" '+(subj.homologa?'':'disabled')+' style="max-width:190px;min-width:120px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
-        +'<input class="lr-subj-url" type="url" value="'+(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
+        +'<input class="lr-subj-url" type="url" value="'+_lrEsc(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<button data-action="lr-delete-subject" data-si="'+si+'" data-ji="'+ji+'" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:2px" title="Eliminar materia">\u00d7</button>'
         +'</div>';
     });
@@ -409,7 +409,7 @@ function _lrCollectFormData(){
       var shm=(s.querySelector('.lr-subj-homo')?.value||'').trim();
       var isNew=!(_lrDraftSrc && _lrDraftSrc.subs[sjId]);
       if(isNew && !st && !sv && !su && !sh && !shm) return; // fila NUEVA totalmente vacía → descartar
-      var subj={id:sjId,title:st,version:sv,credits:sc,homologa:sh,resourceUrl:su||undefined};
+      var subj={id:sjId,title:st,version:sv,credits:sc,homologa:sh,resourceUrl:(su&&(su.indexOf('http://')===0||su.indexOf('https://')===0))?su:undefined};
       if(shm) subj.homo={materia:shm}; // R3: conserva homo.materia aunque homologa sea false
       subs.push(subj);
     });

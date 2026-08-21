@@ -8,6 +8,8 @@
  * @param {Object} route - Objeto de ruta con {semesters, espName, type, espId}
  * @returns {string} HTML del modal de ruta de aprendizaje
  */
+function _lreEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function _lreSafeUrl(u){u=String(u==null?'':u);return (u.indexOf('http://')===0||u.indexOf('https://')===0)?u:'';}
 function renderLearningRouteHTML(route){
   var sems = route.semesters || [];
   var n = sems.length;
@@ -22,9 +24,9 @@ function renderLearningRouteHTML(route){
     + '<div class="node-stripe"></div>'
     + '<div class="node-body">'
     + '<div class="node-label">'+typeLabel+'</div>'
-    + '<div class="node-title" style="font-size:11px">'+route.espName+'</div>'
+    + '<div class="node-title" style="font-size:11px">'+_lreEsc(route.espName)+'</div>'
     + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
-    + (route.version ? 'Versi\u00f3n: '+route.version+' &middot; ' : '')+totalCredits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
+    + (route.version ? 'Versi\u00f3n: '+_lreEsc(route.version)+' &middot; ' : '')+totalCredits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
     + '</div></div></div>';
 
   var connectorHtml = '<div class="route-connector"><div class="connector-line"></div><div class="connector-dot"></div><div class="connector-bar"></div></div>';
@@ -34,11 +36,12 @@ function renderLearningRouteHTML(route){
     var semCard = '<div class="node" style="width:100%;background:#fffdf0;box-shadow:0 2px 8px rgba(200,164,58,0.10);border-radius:8px;overflow:hidden;cursor:default">'
       + '<div class="node-stripe" style="background:var(--udec-gold);height:3px"></div>'
       + '<div class="node-body" style="padding:8px 10px 9px">'
-      + '<div class="node-label" style="color:var(--udec-gold);margin-bottom:2px">'+sem.title+'</div>'
-      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+sem.type+' &middot; '+semCredits+' crédito'+(semCredits>1?'s':'')+'</div>'
+      + '<div class="node-label" style="color:var(--udec-gold);margin-bottom:2px">'+_lreEsc(sem.title)+'</div>'
+      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+_lreEsc(sem.type)+' &middot; '+semCredits+' crédito'+(semCredits>1?'s':'')+'</div>'
       + '</div></div>';
 
     var subjectCards = sem.subjects.map(function(subj){
+      var _surl=_lreSafeUrl(subj.resourceUrl);
       var pillColor = subj.credits <= 1
         ? 'background:#f0f7f2;color:#006633;border:1px solid #b0d4be'
         : 'background:#e8f0fb;color:#1a5cb0;border:1px solid #b0c8e8';
@@ -47,16 +50,16 @@ function renderLearningRouteHTML(route){
         : '';
       var homoCtx = _lrHomologacion(subj, route);
       var homoPill = homoCtx
-        ? '<span class="pill lr-homo-pill" title="Homologa: '+homoCtx+'"><span class="lr-homo-dot"></span>'+homoCtx+'</span>'
+        ? '<span class="pill lr-homo-pill" title="Homologa: '+_lreEsc(homoCtx)+'"><span class="lr-homo-dot"></span>'+_lreEsc(homoCtx)+'</span>'
         : '';
       return '<div class="subj-card">'
         + '<div class="subj-stripe"></div>'
         + '<div class="subj-body">'
-        + '<div class="subj-name">'+(subj.resourceUrl
-          ? '<a href="'+subj.resourceUrl+'" target="_blank" rel="noopener noreferrer" style="color:#185FA5;text-decoration:underline;cursor:pointer">'+subj.title+'</a>'
-          : subj.title)+'</div>'
+        + '<div class="subj-name">'+(_surl
+          ? '<a href="'+_lreEsc(_surl)+'" target="_blank" rel="noopener noreferrer" style="color:#185FA5;text-decoration:underline;cursor:pointer">'+_lreEsc(subj.title)+'</a>'
+          : _lreEsc(subj.title))+'</div>'
         + '<div class="subj-meta">'
-        + (subj.version ? '<span class="pill" style="background:#f0f0f0;color:#555;border:1px solid #ddd;margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.version+'</span>' : '')
+        + (subj.version ? '<span class="pill" style="background:#f0f0f0;color:#555;border:1px solid #ddd;margin-bottom:0;font-size:7px;padding:1px 5px">'+_lreEsc(subj.version)+'</span>' : '')
         + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
         + homoBadge
         + homoPill
