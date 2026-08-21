@@ -178,6 +178,7 @@ function restoreDB(file){
     try{
       var payload=JSON.parse(e.target.result);
       if(!payload||(payload.version!==1&&payload.version!==2)){toast('❌ Archivo de respaldo no compatible');return;}
+      if(!payload.db||!_validateDB(payload.db)){toast('❌ Respaldo inválido: la base de datos no tiene el formato esperado');return;}
       window.DB=payload.db;
       // R4: nunca convertir __LEARNING_ROUTES en {} por ausencia de learningRoutes.
       var hadLR = payload.learningRoutes && typeof payload.learningRoutes === 'object' && Object.keys(payload.learningRoutes).length > 0;
