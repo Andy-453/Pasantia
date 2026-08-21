@@ -73,7 +73,7 @@ function saveDoc(){
 }
 function deleteFac(){
   var f=AppData.getFacultad(curFac);
-  showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+(f?f.name:'')+'</strong> y todos sus programas.',function(){
+  showConfirm('¿Eliminar facultad?','Se eliminará <strong>'+(f?_lrEsc(f.name):'')+'</strong> y todos sus programas.',function(){
     AppData.deleteFacultad(curFac);curFac=Math.max(0,curFac-1);
     toast('Facultad eliminada');__refreshAll();renderEditor();
   });
@@ -111,7 +111,7 @@ function saveProg(pid,isNew){
 }
 function deleteProg(pid){
   var r=AppData.findProgramById(pid);
-  showConfirm('¿Eliminar?','Se eliminará <strong>'+(r?r.programa.n:'este programa')+'</strong>.',function(){
+  showConfirm('¿Eliminar?','Se eliminará <strong>'+(r?_lrEsc(r.programa.n):'este programa')+'</strong>.',function(){
     if(r) AppData.deletePrograma(r.facIndex,pid);
     editingProgId=null;tmpLineas=[];tmpMaes=[];toast('Eliminado');__refreshAll();renderEditor();
   });
@@ -331,8 +331,8 @@ function _lrRenderRouteForm(route, meta){
     +_getTypeBadge(type)+'<div style="font-size:14px;font-weight:700;color:#006633">'+(isNew?'Nueva ruta':'Editar ruta')+'</div></div>';
   h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'" data-sede="'+sd+'">';
   h+='<div class="grid2" style="margin-bottom:12px">';
-  h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
-  h+='<div class="field"><label>Versi\u00f3n (opcional)</label><input id="lr-version" value="'+(route.version||'')+'" placeholder="Ej: V2.1, 2026-2, 1.0" style="width:100%"></div>';
+  h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+_lrEsc(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
+  h+='<div class="field"><label>Versi\u00f3n (opcional)</label><input id="lr-version" value="'+_lrEsc(route.version||'')+'" placeholder="Ej: V2.1, 2026-2, 1.0" style="width:100%"></div>';
   h+='</div>';
   h+='<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666;margin-bottom:12px">ID: '+progId+'</div>';
   h+='<div class="field" style="margin-bottom:12px"><label>🏫 Sede</label><select id="lr-sede" style="width:100%;max-width:280px">'+sedesOpts+'</select></div>';
@@ -350,7 +350,7 @@ function _lrRenderRouteForm(route, meta){
       +(route.semesters.length>1?'<button data-action="lr-delete-semester" data-si="'+si+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:4px 8px;font-size:9px;font-weight:700;cursor:pointer">Eliminar semestre</button>':'')
       +'</div>';
     h+='<div class="grid2" style="margin-bottom:8px">'
-      +'<div class="field"><label>T\u00edtulo</label><input class="lr-sem-title" value="'+(sem.title||'')+'" style="width:100%"></div>'
+      +'<div class="field"><label>T\u00edtulo</label><input class="lr-sem-title" value="'+_lrEsc(sem.title||'')+'" style="width:100%"></div>'
       +'<div class="field"><label>Tipo</label><select class="lr-sem-type" style="width:100%"><option value="Fundamentaci\u00f3n" '+(sem.type==='Fundamentación'?'selected':'')+'>Fundamentaci\u00f3n</option><option value="Profundizaci\u00f3n" '+(sem.type==='Profundización'?'selected':'')+'>Profundizaci\u00f3n</option></select></div>'
       +'</div>';
     var semInitCr=(sem.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0);
@@ -359,9 +359,9 @@ function _lrRenderRouteForm(route, meta){
     sem.subjects.forEach(function(subj,ji){
       var shomoMateria = (subj.homo && subj.homo.materia) || '';
       h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" data-subj-id="'+(subj.id||'')+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">'
-        +'<input class="lr-subj-name" value="'+(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
+        +'<input class="lr-subj-name" value="'+_lrEsc(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
-        +'<input class="lr-subj-version" value="'+(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
+        +'<input class="lr-subj-version" value="'+_lrEsc(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" data-action="lr-touch-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
         +'<input class="lr-subj-homo" type="text" value="'+_lrEsc(shomoMateria)+'" placeholder="Materia homologada desde pregrado" title="Materia homologada desde pregrado" '+(subj.homologa?'':'disabled')+' style="max-width:190px;min-width:120px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<input class="lr-subj-url" type="url" value="'+_lrEsc(subj.resourceUrl||'')+'" placeholder="URL materia (opcional)" style="width:140px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
@@ -449,7 +449,7 @@ function _lrDeleteRoute(espId, sede){
   var sd=sede||'ALL';
   if(!m || !m[sd]){ toast('Ruta no encontrada'); return; }
   var label=(sd==='ALL')?'Todas las sedes':sd;
-  showConfirm('Eliminar ruta','¿Eliminar la ruta de <strong>'+(m[sd].espName||espId)+'</strong> ('+label+')?',function(){
+  showConfirm('Eliminar ruta','¿Eliminar la ruta de <strong>'+_lrEsc(m[sd].espName||espId)+'</strong> ('+label+')?',function(){
     delete m[sd];
     if(!Object.keys(m).length) delete lr[espId];
     saveLearningRoutes(); toast('Ruta eliminada'); renderEditor(); __refreshAll();
@@ -540,7 +540,7 @@ function _lrDeleteOrphan(espId){
   if(!lr[espId]){ toast('Ruta no encontrada'); return; }
   var m=lr[espId];
   var first=m[Object.keys(m)[0]]||{};
-  showConfirm('Eliminar ruta huérfana','¿Eliminar la ruta huérfana de <strong>'+(first.espName||espId)+'</strong>? Esta es la única operación que elimina una ruta huérfana.',function(){
+  showConfirm('Eliminar ruta huérfana','¿Eliminar la ruta huérfana de <strong>'+_lrEsc(first.espName||espId)+'</strong>? Esta es la única operación que elimina una ruta huérfana.',function(){
     delete lr[espId];
     saveLearningRoutes(); toast('Ruta huérfana eliminada'); renderEditor(); __refreshAll();
   });

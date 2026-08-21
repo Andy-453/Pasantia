@@ -303,7 +303,7 @@ function renderIndicadores(){
           const pct=Math.round(s.pct);
           return `<div style="display:flex;align-items:center;gap:5px;padding:3px 0;border-bottom:1px solid #f0f4f0">
             <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
-            <span style="font-size:9px;color:#333;flex:1;line-height:1.3">${s.label}</span>
+            <span style="font-size:9px;color:#333;flex:1;line-height:1.3">${esc(s.label)}</span>
             <span style="font-size:9px;font-weight:700;color:${s.color};white-space:nowrap">${s.cnt} <span style="font-size:8px;font-weight:400;color:#999">${pct}%</span></span>
           </div>`;
         }).join('')}
@@ -336,7 +336,7 @@ function renderIndicadores(){
     const pct=totalPosg>0?Math.round(tp/totalPosg*100):0;
     const bg=i%2===0?'#f8fbf8':'#fff';
     h+=`<tr style="background:${bg};border-bottom:1px solid #eef4ee">
-      <td style="padding:8px 10px;font-weight:600;color:#006633;font-size:10px">${fs.name.replace('Facultad de ','').replace('Facultad ','')} </td>
+      <td style="padding:8px 10px;font-weight:600;color:#006633;font-size:10px">${esc(fs.name.replace('Facultad de ','').replace('Facultad ',''))} </td>
       <td style="padding:8px 10px;text-align:center;font-weight:700;color:#2e8b57">${fs.pre}</td>
       <td style="padding:8px 10px;text-align:center">${fs.esp}</td>
       <td style="padding:8px 10px;text-align:center;color:#9a7c1a;font-weight:600">${fs.mae}</td>
@@ -379,7 +379,7 @@ function renderIndicadores(){
   facStats.forEach(fs=>{
     const tp=fs.esp+fs.mae+fs.doc;
     h+=`<div style="border:1px solid #e0ece4;border-radius:8px;overflow:hidden">
-      <div style="background:#006633;color:#fff;padding:7px 10px;font-size:10px;font-weight:700">${fs.name.replace('Facultad de ','').replace('Facultad ','')}</div>
+      <div style="background:#006633;color:#fff;padding:7px 10px;font-size:10px;font-weight:700">${esc(fs.name.replace('Facultad de ','').replace('Facultad ',''))}</div>
       <div style="padding:8px 10px">`;
     const sortedFs=Object.entries(fs.estados).sort((a,b)=>b[1]-a[1]);
     sortedFs.forEach(([est,cnt])=>{
@@ -387,7 +387,7 @@ function renderIndicadores(){
       const pct=tp>0?Math.round(cnt/tp*100):0;
       h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f4f0">
         <span style="font-size:9px;color:#444;display:flex;align-items:center;gap:4px">
-          <span style="width:7px;height:7px;border-radius:50%;background:${ec.color};display:inline-block;flex-shrink:0"></span>${est}
+          <span style="width:7px;height:7px;border-radius:50%;background:${ec.color};display:inline-block;flex-shrink:0"></span>${esc(est)}
         </span>
         <span style="font-size:9px;font-weight:700;color:${ec.color};white-space:nowrap">${cnt} (${pct}%)</span>
       </div>`;

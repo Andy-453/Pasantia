@@ -23,7 +23,7 @@
  */
 function renderFacBar(){
   document.getElementById('facbar').innerHTML=AppData.getFacultades().map(function(f,i){
-    return '<button class="fac-btn'+(i===curFac?' act':'')+'" data-action="sel-fac" data-fac="'+i+'">'+f.name.replace('Facultad de ','').replace('Facultad ','')+'</button>';
+    return '<button class="fac-btn'+(i===curFac?' act':'')+'" data-action="sel-fac" data-fac="'+i+'">'+esc(f.name.replace('Facultad de ','').replace('Facultad ',''))+'</button>';
   }).join('');
 }
 

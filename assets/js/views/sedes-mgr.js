@@ -48,7 +48,7 @@ function openSedesManager(){
         var usage=countSedeUsage(s);
         var ut=usage>0?' <span style="font-size:10px;color:#999">('+usage+' registro'+(usage!==1?'s':'')+')</span>':'';
         html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;border-bottom:1px solid #eee">'+
-          '<span style="font-size:13px">'+s+ut+'</span>'+
+          '<span style="font-size:13px">'+esc(s)+ut+'</span>'+
           '<button class="sm-del-btn" data-idx="'+i+'" style="background:none;border:none;cursor:pointer;font-size:15px;color:#c33;padding:2px 8px;border-radius:4px;line-height:1" title="Eliminar sede">✕</button>'+
           '</div>';
       });

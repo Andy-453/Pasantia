@@ -54,11 +54,11 @@ function renderPipeline(){
       var tri=getTri(p.mes);
       var fecha=p.mes&&p.ano?'<span style="background:'+(TRI_BG[tri]||'#f5f5f5')+';color:'+(TRI_COL[tri]||'#555')+';padding:2px 7px;border-radius:7px;font-size:9px;font-weight:700">'+MESES[p.mes]+' '+p.ano+'</span>':'<span style="color:#ccc;font-style:italic;font-size:9px">Sin fecha</span>';
       t+='<tr style="border-bottom:1px solid #edf2ee;'+(i%2===0?'background:#fafbfa':'')+'">'
-        +'<td style="padding:7px 12px;font-weight:600;color:'+color+';font-size:10px">'+p.fac+'</td>'
+        +'<td style="padding:7px 12px;font-weight:600;color:'+color+';font-size:10px">'+esc(p.fac)+'</td>'
         +'<td style="padding:7px;text-align:center">'+nivBadge(p.nivel)+'</td>'
-        +'<td style="padding:7px 10px;font-weight:600;font-size:10px">'+p.nombre+'</td>'
-        +'<td style="padding:7px 10px;font-size:10px;color:'+estCol(p.estado)+';font-weight:600">'+p.estado+'</td>'
-        +'<td style="padding:7px 10px;font-size:10px;color:'+(p.resp?BL:'#ccc')+';font-style:'+(p.resp?'normal':'italic')+'">'+( p.resp||'Sin asignar')+'</td>'
+        +'<td style="padding:7px 10px;font-weight:600;font-size:10px">'+esc(p.nombre)+'</td>'
+        +'<td style="padding:7px 10px;font-size:10px;color:'+estCol(p.estado)+';font-weight:600">'+esc(p.estado)+'</td>'
+        +'<td style="padding:7px 10px;font-size:10px;color:'+(p.resp?BL:'#ccc')+';font-style:'+(p.resp?'normal':'italic')+'">'+esc(p.resp||'Sin asignar')+'</td>'
         +'<td style="padding:7px;text-align:center">'+fecha+'</td>'
         +'</tr>';
     });
@@ -83,14 +83,14 @@ function renderPipeline(){
           g.items.forEach(function(p){
             h+='<div style="background:#fff;border-radius:7px;border:1px solid '+col+'33;padding:7px 9px;margin-bottom:6px">'
               +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px">'
-                +'<div style="font-size:10px;font-weight:600;color:#1a2e1a;line-height:1.3">'+p.nombre+'</div>'
+                +'<div style="font-size:10px;font-weight:600;color:#1a2e1a;line-height:1.3">'+esc(p.nombre)+'</div>'
                 +'<span style="background:'+col+';color:#fff;padding:1px 6px;border-radius:6px;font-size:8px;font-weight:700;white-space:nowrap;flex-shrink:0">'+MESES[p.mes]+'</span>'
               +'</div>'
               +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
                 +'<span style="background:'+(nivCol[p.nivel]||'#888')+'22;color:'+(nivCol[p.nivel]||'#888')+';padding:1px 7px;border-radius:6px;font-size:8px;font-weight:700">'+p.nivel+'</span>'
-                +(p.resp?'<span style="font-size:9px;color:#555">👤 '+p.resp+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
+                +(p.resp?'<span style="font-size:9px;color:#555">👤 '+esc(p.resp)+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
               +'</div>'
-              +'<div style="margin-top:3px"><span style="font-size:9px;color:'+estCol(p.estado)+';font-weight:600">'+p.estado+'</span> <span style="font-size:9px;color:#aaa">· '+p.fac+'</span></div>'
+              +'<div style="margin-top:3px"><span style="font-size:9px;color:'+estCol(p.estado)+';font-weight:600">'+esc(p.estado)+'</span> <span style="font-size:9px;color:#aaa">· '+esc(p.fac)+'</span></div>'
               +'</div>';
           });
           h+='</div>';
