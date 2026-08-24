@@ -51,7 +51,7 @@ if (_dev) {
     var _actLabel = _isInInline ? 'Restaurar original' : 'Eliminar programa';
     var _actColor = _isInInline ? '#d4a017' : '#c0392b';
     h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+_snEsc(prog.name)+'</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+_snEsc(prog.nivel)+'</span>'+
-      (_dev ?'<button onclick="App.removeSniesProgram(\''+prog.name.replace(/"/g,'&quot;').replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
+      (_dev ?'<button onclick="App.removeSniesProgram(\''+_snEsc(String(prog.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
     '</div></div>';
     h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">';
     var kpis=[['Matriculados 2024',fmt(y24.mat),'vs '+fmt(y23.mat)+' en 2023',fc],['Graduados 2024',fmt(y24.grad),'vs '+fmt(y23.grad)+' en 2023','#C8A43A'],['Inscritos 2024',fmt(y24.ins),'vs '+fmt(y23.ins)+' en 2023','#185FA5'],['Admitidos 2024',fmt(y24.adm),'vs '+fmt(y23.adm)+' en 2023','#0891b2']];
