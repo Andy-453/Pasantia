@@ -1,7 +1,7 @@
 # Análisis Arquitectónico — Dashboard UDEC Posgrados
 
-> **Hito**: 2026-06-02 — Export HTML standalone funcional (CSS+JS+imágenes inline). Print CSS mejorado con @media print comprehensive.
-> Pendiente: migrar 6 referencias `DB` bare en renderers a `AppData`.
+> **Hito**: 2026-08-20 — Security hardening C1–C9 completado. Arquitectura modular (views/controllers/models/data) estable. Tablero RC standalone integrado.
+> Pendiente: migrar storage.js/embed.js a AppData (Fase 5).
 
 ## 1. Resumen del sistema
 
@@ -12,32 +12,63 @@ Aplicación web monolítica embebida (single-file HTML + JS modularizado) para l
 - Chart.js 4.4.1 (CDN) para gráficos SNIES
 - SVG inline para gráficos de indicadores
 - localStorage para persistencia
-- Single-file HTML con datos embebidos (DEFAULT_DATA en HTML serializado)
+- Single-file HTML con datos embebidos (`DEFAULT_DATA` en `data/default-data.js`)
 
 ### Archivos del proyecto
 
 | Archivo | Líneas | Rol |
 |---|---|---|---|
-| `Dashboard_UDEC_Posgrados_2026-04-23.html` | ~1176 | Shell HTML + datos embebidos serializados |
-| `assets/js/app.js` | 898 | Orquestador principal (init, tree, tabla, sedeView, editor, pipeline, SNIES) |
-| `assets/js/modules/utils.js` | 52 | Utilidades base (getSt, toast, uid, gv, gi, pll, showConfirm) |
-| `assets/js/modules/embed.js` | 108 | Runtime embedding para export HTML standalone |
-| `assets/js/modules/storage.js` | 94 | Persistencia (saveDB, loadDB, downloadHTML, resetDB) |
-| `assets/js/modules/filters.js` | 80 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
-| `assets/js/modules/dashboard.js` | 57 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
-| `assets/js/modules/indicators.js` | 435 | Panel de indicadores (renderIndicadores, helpers SVG) |
-| `assets/js/modules/export.js` | 276 | Exportaciones (downloadDB, exportSNIES, mapas SNIES) |
-| `assets/js/data/app-data.js` | 90 | Capa de acceso a datos (Fase 4) |
+| `Dashboard_UDEC_Posgrados_2026-04-23.html` | 1207 | Shell HTML + datos embebidos serializados |
+| `assets/js/app.js` | 97 | Orquestador: init, window.App, bootstrap |
+| **modules/** | | |
+| `modules/utils.js` | 253 | Utilidades base (esc, getSt, ST_MAP, toast, showConfirm, _getLearningRoute, _lrMakeId, _getAllAcademicPrograms, getOrphanRoutes) |
+| `modules/embed.js` | 174 | Runtime embedding para export HTML standalone |
+| `modules/storage.js` | 209 | Persistencia (saveDB, loadDB, downloadHTML, resetDB, backupDB, restoreDB) |
+| `modules/filters.js` | 70 | Filtros (sedeMatch, ofertaMatch, estadoMatch, itemMatch, applyFilters) |
+| `modules/dashboard.js` | 52 | KPIs y barra de facultades (renderKPIs, renderFacBar, selFac) |
+| `modules/indicators.js` | 350 | Panel de indicadores (renderIndicadores, EST_COLORS) |
+| `modules/export.js` | 264 | Exportaciones CSV/SNIES (downloadDB, exportSNIES) |
+| `modules/snies-loader.js` | 234 | Carga/importación SNIES desde localStorage + Excel |
+| `modules/rc-utils.js` | 42 | Utilidades del módulo Registro Calificado |
+| **views/** | | |
+| `views/tree.js` | 286 | Renderizado del árbol jerárquico |
+| `views/rc-view.js` | 294 | Vistas del módulo Registro Calificado |
+| `views/editor.js` | 523 | Editor de programas + rutas de aprendizaje |
+| `views/pipeline.js` | 144 | Pipeline de estados |
+| `views/snies.js` | 125 | Panel SNIES con Chart.js |
+| `views/learning-route.js` | 110 | Modal de ruta de aprendizaje |
+| `views/sedes-mgr.js` | 108 | Gestor de catálogo de sedes |
+| `views/prog-form.js` | 67 | Formulario de programa |
+| `views/sede-view.js` | 48 | Vista por sede |
+| `views/tabla.js` | 41 | Tabla resumen |
+| `views/rc.js` | 150 | Controlador del módulo RC |
+| `views/rc-standalone.js` | 16 | Bootstrap tablero RC standalone |
+| **controllers/** | | |
+| `controllers/navigation.js` | 69 | Navegación central (showTab, renderViews, snSetFac, snSetProg) |
+| `controllers/actions.js` | 154 | Dispatcher de acciones (data-action handlers) |
+| **models/** | | |
+| `models/app-state.js` | 84 | Estado centralizado (AppState) |
+| `models/learning-routes.js` | 138 | Modelo de rutas de aprendizaje (load, save, restore, backup) |
+| `models/snies-model.js` | 188 | Modelo SNIES (validate, build, compute) |
+| `models/rc-model.js` | 45 | Modelo Registro Calificado |
+| **data/** | | |
+| `data/app-data.js` | 196 | Capa de acceso a datos (AppData) |
+| `data/default-data.js` | 15 | Datos por defecto (window.__DEFAULT_DATA) |
+| `data/learning-routes.js` | 652 | Rutas de aprendizaje institucionales (18 rutas) |
+| `data/rc-data.js` | 3 | Datos base Registro Calificado |
 
-**Total: ~1885 líneas JS, 8 módulos + 1 orquestador + 1 data layer**
+**Total: ~5201 líneas JS, 32 archivos (10 modules + 12 views + 2 controllers + 4 models + 4 data)**
 
 ### Orden de carga
 ```
-Chart.js (CDN) → utils.js → embed.js → storage.js → app-data.js
-→ filters.js → dashboard.js → indicators.js → export.js → app.js
-```
-Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
-→ indicators.js → export.js → app.js
+Chart.js (CDN) → utils.js → embed.js → storage.js → models/app-state.js
+→ data/app-data.js → data/default-data.js → data/learning-routes.js
+→ modules/filters.js → modules/dashboard.js → modules/indicators.js
+→ modules/export.js → modules/snies-loader.js
+→ views/tree.js → views/tabla.js → views/sede-view.js → views/editor.js
+→ views/pipeline.js → views/snies.js → views/learning-route.js
+→ views/sedes-mgr.js → views/rc-view.js → views/rc.js → views/rc-standalone.js
+→ controllers/navigation.js → controllers/actions.js → app.js
 ```
 
 ---
@@ -48,8 +79,8 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 
 | Variable | Tipo | Define en | Modificado por | Consumido por | Acoplamiento | Riesgo |
 |---|---|---|---|---|---|---|
-| `DB` | `Array` | app.js:30 | storage.js (loadDB), app.js (editor CRUD), dashboard.js (selFac) | TODOS los módulos | **CRÍTICO** — 15+ consumidores | ALTO |
-| `DEFAULT_DATA` | `Array` | app.js:27 (inline en HTML) | downloadHTML (reescritura en descarga) | storage.js (loadDB) | BAJO | BAJO |
+| `DB` | `Array` | app.js:42 | storage.js (loadDB), app.js (editor CRUD), dashboard.js (selFac) | TODOS los módulos | **CRÍTICO** — 15+ consumidores | ALTO |
+| `DEFAULT_DATA` | `Array` | data/default-data.js (window.__DEFAULT_DATA) | downloadHTML (reescritura en descarga) | storage.js (loadDB) | BAJO | BAJO |
 | `ALL_SEDES` | `Array` | app.js:29 | Nunca | filters.js (populateSedes) | BAJO | BAJO |
 | `curFac` | `Number` | app.js:31 | dashboard.js (selFac), app.js (deleteFac, saveFac, saveNewFac) | filters.js, dashboard.js, app.js (tree, tabla, editor, pipeline) | **ALTO** — 10+ referencias | ALTO |
 | `filtSede` | `String` | app.js:31 | filters.js (applyFilters, resetFilters, populateSedes) | filters.js (sedeMatch), app.js (tree vía itemMatch) | MEDIO | MEDIO |
@@ -132,18 +163,17 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 
 | Candidato | Estado actual | Propuesta MVC | Líneas |
 |---|---|---|---|
-| `renderTree()` | app.js:43 | **View.Tree** | ~260 |
-| `renderTabla()` | app.js:304 | **View.TableView** | ~33 |
-| `renderSedeView()` | app.js:338 | **View.SedeView** | ~26 |
-| `renderEditor()` (activo) | app.js:800 | **View.Editor** | ~46 |
-| `renderEditor()` (sombreado) | app.js:369 | **ELIMINAR** | ~60 |
-| `renderProgForm()` | app.js:446 | **View.ProgForm** | ~56 |
-| `renderPipeline()` | app.js:667 | **View.Pipeline** | ~129 |
-| `renderSNIES()` | app.js:602 | **View.SNIES** | ~62 |
-| `renderIndicadores()` | indicators.js:28 | **View.Indicators** | ~405 |
-| `renderKPIs()` | dashboard.js:42 | **View.KPIs** | ~16 |
-| `renderFacBar()` | dashboard.js:25 | **View.FacBar** | ~5 |
-| `renderViews()` | app.js:580 | **View.orquestador** (Controller híbrido) | 1 línea |
+| `renderTree()` | views/tree.js:33 | **View.Tree** | ~286 |
+| `renderTabla()` | views/tabla.js | **View.TableView** | ~41 |
+| `renderSedeView()` | views/sede-view.js | **View.SedeView** | ~48 |
+| `renderEditor()` | views/editor.js | **View.Editor** | ~523 |
+| `renderProgForm()` | views/prog-form.js | **View.ProgForm** | ~67 |
+| `renderPipeline()` | views/pipeline.js:13 | **View.Pipeline** | ~144 |
+| `renderSNIES()` | views/snies.js | **View.SNIES** | ~125 |
+| `renderIndicadores()` | modules/indicators.js:24 | **View.Indicators** | ~350 |
+| `renderKPIs()` | modules/dashboard.js:40 | **View.KPIs** | ~12 |
+| `renderFacBar()` | modules/dashboard.js:24 | **View.FacBar** | ~5 |
+| `renderViews()` | controllers/navigation.js:39 | **Controller.Navigation** | 1 línea |
 
 ### 3.3. Posibles Controllers (lógica de negocio)
 
@@ -180,7 +210,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 
 ## 4. Zonas críticas
 
-### 4.1. `renderTree()` (app.js:43-301) — **CRÍTICO**
+### 4.1. `renderTree()` (views/tree.js:33) — **CRÍTICO**
 
 | Aspecto | Detalle |
 |---|---|
@@ -192,7 +222,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Inline handlers | `data-action="open-edit-prog"` (migrado a event delegation) |
 | Notas | Contiene 3 closures internos (`vline`, `stBadge`) que duplican lógica de utils.js |
 
-### 4.2. Editor (app.js:800-878 + 446-522) — **CRÍTICO**
+### 4.2. Editor (views/editor.js + views/prog-form.js) — **CRÍTICO**
 
 | Aspecto | Detalle |
 |---|---|
@@ -203,7 +233,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Riesgo migración | **ALTO** — funciones sombreadas (duplicadas), lógica de recolecta frágil |
 | Sombreado | `renderEditor` en línea 369 (NUNCA ejecutada), `saveDoc` en línea 431 (idem), `deleteFac` en 530, `saveFac` en 525 — **BASURA TÉCNICA** |
 
-### 4.3. `renderPipeline()` (app.js:667-794) — **ALTO**
+### 4.3. `renderPipeline()` (views/pipeline.js:13) — **ALTO**
 
 | Aspecto | Detalle |
 |---|---|
@@ -214,7 +244,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Inline handlers | `data-action="toggle-section"` (migrado a event delegation) |
 | Notas | Contiene 7 closures internos (`grp`, `kpi`, `nivBadge`, `tabla`, `buildTimeline`, `sec`, `getTri`, `estCol`) |
 
-### 4.4. `renderSNIES()` (app.js:602-663) — **MEDIO-ALTO**
+### 4.4. `renderSNIES()` (views/snies.js) — **MEDIO-ALTO**
 
 | Aspecto | Detalle |
 |---|---|
@@ -225,7 +255,7 @@ Chart.js (CDN) → utils.js → storage.js → filters.js → dashboard.js
 | Notas | Datos SD son independientes de DB (no hay acoplamiento con editor) |
 | Inline handlers | `data-action="snies-set-fac"`, `data-action="snies-set-prog"` (migrado a event delegation) |
 
-### 4.5. `renderViews()` (app.js:580) — **PUNTO ÚNICO DE ORQUESTACIÓN**
+### 4.5. `renderViews()` (controllers/navigation.js:39) — **PUNTO ÚNICO DE ORQUESTACIÓN**
 
 ```js
 function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();}
@@ -233,7 +263,7 @@ function renderViews(){renderKPIs();renderTree();renderTabla();renderSedeView();
 
 Dependencia: llama a 4 funciones de render. Cualquier cambio en la firma de estas funciones rompe el dashboard.
 
-### 4.6. `showTab()` (app.js:565-574) — **NAVEGACIÓN CENTRAL**
+### 4.6. `showTab()` (controllers/navigation.js:22) — **NAVEGACIÓN CENTRAL**
 
 ```js
 function showTab(id){
@@ -397,7 +427,12 @@ document.addEventListener('click', e => {
 });
 ```
 
-**Estado actual**: **0 onclick en app.js**, **1 onclick en HTML** (`downloadDB()` excluido por riesgo de doble descarga).
+**Estado actual**: Migración mayor completada. Quedan **onclick inline reducidos** en módulos menores:
+- `views/snies.js` — 3 onclick (import, reset, removeSniesProgram)
+- `views/sedes-mgr.js` — 6 asignaciones onclick (add, save, cancel, close, overlay)
+- `views/rc-view.js` — 2 onclick (upload, restore)
+- `modules/utils.js` — 3 onclick en `showConfirm` (cancel, confirm, overlay)
+- `HTML` — 1 onclick: `downloadDB()` (excluido por riesgo de doble descarga)
 
 ### 8.2. Funciones sombreadas — ELIMINADAS (Fase 3)
 
@@ -504,7 +539,8 @@ Todo se ejecuta al cargar app.js. Si se migra a ESModules, `type="module"` tiene
 ### Estilo actual
 - `var` para todo (ES5 legacy)
 - HTML templates concatenados con `+=`
-- `onclick` attributes en HTML generado
+- Event delegation como mecanismo principal (data-action + dispatchers centralizados)
+- Algunos `onclick` inline restantes en módulos menores (snies, sedes-mgr, rc-view, showConfirm)
 - Funciones globales (sin namespace)
 - `window.*` exports para compatibilidad módulo → HTML
 
@@ -548,7 +584,7 @@ window.AppState = {
 };
 ```
 
-Definido en `app.js:40-63` (inicio del bootstrap principal).
+Definido en `models/app-state.js` (84 líneas).
 
 ### 12.2. Variables migradas
 
@@ -780,25 +816,24 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 
 `resetFilters()` y `populateSedes()` modifican valores de selects vía `.value = ...` (programático), que no dispara eventos change — no hay loops.
 
-### 14.6. Handlers NO migrados (pendientes)
+### 14.6. Handlers — Estado de migración
 
-| Handler | Ubicación | Por qué no se migró |
+| Handler | Ubicación actual | Estado |
 |---|---|---|
-| `deleteProg(pid)` | renderEditor | editor excluido |
-| `saveProg(pid, isNew)` | renderProgForm | editor excluido |
-| `addLinea()` / `delLinea()` | renderProgForm | editor excluido |
-| `addMae()` / `delMae()` | renderProgForm | editor excluido |
-| `toggleDocForm()` | renderEditor | Editor excluido |
-| `saveDoc()` | renderEditor | Editor excluido |
-| `deleteFac()` / `saveFac(isNew)` | renderEditor | Editor excluido |
-| `openNewFac()` / `openEditFac()` | renderEditor | Editor excluido |
-| `downloadDB()` | HTML estático | No migrado (riesgo doble descarga) |
-| `showTab('snies')` | HTML estático (tb-snies) | Pendiente migrar a data-action |
+| `deleteProg(pid)` | controllers/actions.js | ✅ Migrado a data-action |
+| `saveProg(pid, isNew)` | controllers/actions.js | ✅ Migrado a data-action |
+| `addLinea()` / `delLinea()` | controllers/actions.js | ✅ Migrado a data-action |
+| `addMae()` / `delMae()` | controllers/actions.js | ✅ Migrado a data-action |
+| `toggleDocForm()` | controllers/actions.js | ✅ Migrado a data-action |
+| `saveDoc()` | controllers/actions.js | ✅ Migrado a data-action |
+| `deleteFac()` / `saveFac(isNew)` | controllers/actions.js | ✅ Migrado a data-action |
+| `openNewFac()` / `openEditFac()` | controllers/actions.js | ✅ Migrado a data-action |
+| `downloadDB()` | HTML estático | ⚠️ No migrado (riesgo doble descarga) |
 
 ### 14.7. Próximos pasos
 
-1. **Migrar editor**: ~15 handlers en renderProgForm y renderEditor.
-3. **Migrar tb-snies**: agregar `data-action="show-tab" data-tab="snies"` (único tab sin data-action).
+1. **Migrar `downloadDB()`**: evaluar migración a data-action con prevención de doble descarga.
+2. ~~**Migrar editor**~~: ✅ Completado (controllers/actions.js + views/editor.js).
 
 ### 14.8. Bloqueadores
 
@@ -844,6 +879,9 @@ Se removió `onclick`/`onchange` de todos los elementos con `data-action`. Cada 
 | Evento | Handler | Ubicación | Prioridad migración |
 |---|---|---|---|
 | click | `downloadDB()` | HTML header | Baja (excluido por riesgo doble descarga) |
+| click | `_sniesImportClick()`, `_sniesResetClick()`, `removeSniesProgram()` | views/snies.js | Baja (módulo SNIES) |
+| click | `restoreRCDefaults()` | views/rc-view.js | Baja (módulo RC) |
+| click | asignaciones onclick en sedes-mgr | views/sedes-mgr.js | Baja (modal interno) |
 
 ### 15.4. Preparación ESModules
 
@@ -852,7 +890,7 @@ Estado actual de dependencias para migración a `<script type="module">`:
 | Requisito | Estado |
 |---|---|
 | Sin `var` globales en módulos | ⚠️ **6 migradas** (`curFac`,`filtSede`,`filtOferta`,`filtEstado`,`filtNivel`,`filtPregrado` → `AppState.*`). Restan: `var DB`, `DEFAULT_DATA`, `ALL_SEDES` + `SD`, `_snFac`, `_snProg` (via accessor) |
-| Sin `onclick` inline en HTML | ✅ **0 onclick en JS, 1 en HTML (downloadDB excluido)** |
+| Sin `onclick` inline en HTML | ⚠️ **1 en HTML (downloadDB), ~14 en JS módulos menores (snies, sedes-mgr, rc-view, showConfirm)** |
 | Sin `onchange` inline en HTML | ✅ **0 onchange restantes** |
 | Dispatcher centralizado como cuello de botella único | ✅ Click + change cubiertos |
 | `window.App` como namespace de transición | ✅ ~50 funciones exportadas |
@@ -1467,7 +1505,7 @@ app-data.js ← storage.js ← embed.js    (embed.js → app-data.js? No)
 2. **Referencias mutables** — `getFacultades()` y `getFacultad()` retornan referencias directas; `getFacultadesSafe/getFacultadSafe` no tienen consumidores actualmente
 3. **Regex de export frágil** — downloadHTML/buildStandalone dependen de formato exacto `var DEFAULT_DATA=[...]`
 4. **ALL_SEDES y SD (SNIES)** — datos inline en app.js sin modularizar
-5. **ESTADOS_GRUPO duplicado** — indicators.js mantiene copia de ST_MAP de utils.js
+5. **EST_COLORS vs ST_MAP** — indicators.js tiene `EST_COLORS` (7 grupos con `color`/`bg`), diferente de `ST_MAP` en utils.js (17 estados con `cat`/`group`/`dot`/`bg`/`tx`). Relacionados semánticamente pero no es una copia directa.
 6. **Datos de encoding mixto** — caracteres UTF-8 con doble codificación en DEFAULT_DATA
 
 #### Deuda técnica identificada
