@@ -26,7 +26,7 @@ function renderLearningRouteHTML(route){
     + '<div class="node-label">'+typeLabel+'</div>'
     + '<div class="node-title" style="font-size:11px">'+_lreEsc(route.espName)+'</div>'
     + '<div style="margin-top:7px;padding-top:7px;border-top:1px solid #e8f2ec;font-size:10px;color:#666">'
-    + (route.version ? 'Versi\u00f3n: '+_lreEsc(route.version)+' &middot; ' : '')+totalCredits+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
+    + (route.version ? 'Versi\u00f3n: '+_lreEsc(route.version)+' &middot; ' : '')+_lreEsc(totalCredits)+' cr\u00e9ditos &middot; '+semCount+' semestre'+(semCount>1?'s':'')
     + '</div></div></div>';
 
   var connectorHtml = '<div class="route-connector"><div class="connector-line"></div><div class="connector-dot"></div><div class="connector-bar"></div></div>';
@@ -37,7 +37,7 @@ function renderLearningRouteHTML(route){
       + '<div class="node-stripe" style="background:var(--udec-gold);height:3px"></div>'
       + '<div class="node-body" style="padding:8px 10px 9px">'
       + '<div class="node-label" style="color:var(--udec-gold);margin-bottom:2px">'+_lreEsc(sem.title)+'</div>'
-      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+_lreEsc(sem.type)+' &middot; '+semCredits+' crédito'+(semCredits>1?'s':'')+'</div>'
+      + '<div class="node-title" style="font-size:10px;color:#8a6d00;font-weight:600">'+_lreEsc(sem.type)+' &middot; '+_lreEsc(semCredits)+' crédito'+(semCredits>1?'s':'')+'</div>'
       + '</div></div>';
 
     var subjectCards = sem.subjects.map(function(subj){
@@ -60,7 +60,7 @@ function renderLearningRouteHTML(route){
           : _lreEsc(subj.title))+'</div>'
         + '<div class="subj-meta">'
         + (subj.version ? '<span class="pill" style="background:#f0f0f0;color:#555;border:1px solid #ddd;margin-bottom:0;font-size:7px;padding:1px 5px">'+_lreEsc(subj.version)+'</span>' : '')
-        + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+subj.credits+' cr</span>'
+        + '<span class="pill" style="'+pillColor+';margin-bottom:0;font-size:7px;padding:1px 5px">'+_lreEsc(subj.credits)+' cr</span>'
         + homoBadge
         + homoPill
         + '</div></div></div>';

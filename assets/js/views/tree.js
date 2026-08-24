@@ -122,7 +122,7 @@ function renderTree(){
 
     h+=`<div class="prog-row">
       <div class="node node-pregrado">
-        <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${p.id}">✏️</button>
+        <button class="edit-node-btn no-print" data-action="open-edit-prog" data-pid="${_trEsc(p.id)}">✏️</button>
         <div class="node-stripe"></div>
         <div class="node-body">
           <div class="node-label">Programa de pregrado</div>
@@ -131,7 +131,7 @@ function renderTree(){
       </div>
       <div class="sede-control">
         <div class="sedes-btn-box">
-          <div class="sedes-btn${btnDisabled?' disabled':''}${listOpen?' open':''}"${btnDisabled?'':' data-action="toggle-sedes-list" data-pid="'+p.id+'" role="button" tabindex="0"'}>
+          <div class="sedes-btn${btnDisabled?' disabled':''}${listOpen?' open':''}"${btnDisabled?'':' data-action="toggle-sedes-list" data-pid="'+_trEsc(p.id)+'" role="button" tabindex="0"'}>
             <span class="sede-arrow">${listOpen?'▾':'▸'}</span>
             <span class="sede-dot" style="background:${sEff?sedeColor(sEff):'#999'}"></span>
             <span class="sedes-btn-label">${sEff?_trEsc(sEff):'SEDES'}</span>
@@ -139,7 +139,7 @@ function renderTree(){
           ${listOpen&&sedes.length?`
           <div class="sedes-list">
             ${sedes.map(s=>`
-            <div class="sede-option" data-action="select-sede-prog" data-pid="${p.id}" data-sede="${_trEsc(s)}" role="button" tabindex="0">
+            <div class="sede-option" data-action="select-sede-prog" data-pid="${_trEsc(p.id)}" data-sede="${_trEsc(s)}" role="button" tabindex="0">
               <span class="sede-dot" style="background:${sedeColor(s)}"></span>
               <span>${_trEsc(s)}</span>
               ${s===sEff?'<span class="sede-option-check">✓</span>':''}
@@ -206,7 +206,7 @@ function renderTree(){
           if(sM.length){
             r+=`
           <div class="mae-row">
-            <div class="node node-mae-hub${mOpen?' open':''}" data-action="toggle-mae" data-key="${p.id}" role="button" tabindex="0" title="${mOpen?'Colapsar':'Expandir'} maestrías">
+            <div class="node node-mae-hub${mOpen?' open':''}" data-action="toggle-mae" data-key="${_trEsc(p.id)}" role="button" tabindex="0" title="${mOpen?'Colapsar':'Expandir'} maestrías">
               <span class="sede-arrow">${mOpen?'▾':'▸'}</span>
               <div class="sede-dot" style="background:#C8A43A"></div>
               <div class="node-body">

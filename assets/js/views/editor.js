@@ -38,7 +38,7 @@ function renderEditor(){
           +((p.lineas||[]).length>3?'<div style="color:#aaa;font-size:9px;padding-top:3px">+ '+((p.lineas||[]).length-3)+' m\u00e1s...</div>':'')
           +(p.mae||[]).slice(0,2).map(function(m){return '<div style="padding:3px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:#C8A43A;flex-shrink:0;display:inline-block"></span><span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_lrEsc(m.n)+'</span>'+(m.mes&&m.ano?'<span style="font-size:8px;color:#185FA5;white-space:nowrap">'+['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][m.mes]+' '+m.ano+'</span>':'')+'</div>';}).join('')
         +'</div>'
-        +'<div style="display:flex;gap:6px"><button data-pid="'+p.id+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">\u270f\ufe0f Editar programa</button><button data-pid="'+p.id+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">\ud83d\uddd1\ufe0f</button></div>'
+        +'<div style="display:flex;gap:6px"><button data-pid="'+_lrEsc(p.id)+'" data-action="open-edit-prog" style="flex:1;background:#006633;color:#fff;border:none;border-radius:8px;padding:8px;font-size:11px;font-weight:700;cursor:pointer">\u270f\ufe0f Editar programa</button><button data-pid="'+_lrEsc(p.id)+'" data-action="delete-prog" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer" title="Eliminar">\ud83d\uddd1\ufe0f</button></div>'
       +'</div></div>';
   });
   h+='</div>';
@@ -148,8 +148,8 @@ function _lrRenderList(){
       var type=(m.ALL&&m.ALL.type)||p.type||'especializacion';
       h+='<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;padding:12px 16px">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">'
-        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+p.name+'</div>'
-        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+p.id+' \u00b7 '+keys.length+' ruta(s)</div></div>'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#333">'+_getTypeBadge(type)+_lrEsc(p.name)+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">ID: '+_lrEsc(p.id)+' \u00b7 '+keys.length+' ruta(s)</div></div>'
         +'</div>';
       keys.forEach(function(k){
         var e=m[k];
@@ -158,22 +158,22 @@ function _lrRenderList(){
         h+='<div style="background:#fafcfa;border:1px solid #e8f0ec;border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">'
           +'<div style="flex:1;min-width:0">'
             +'<div style="font-size:11px;font-weight:700;color:#333">'+(k==='ALL'?'\ud83c\udf10 Todas las sedes':'🏫 '+_lrEsc(k))+(k==='ALL'?' <span style="font-size:9px;color:#999;font-weight:400">(ruta global)</span>':' <span style="font-size:9px;color:#999;font-weight:400">(sede espec\u00edfica)</span>')+'</div>'
-            +'<div style="font-size:9px;color:#999;margin-top:2px">'+e.semesters.length+' semestre(s) \u00b7 '+lrCred+' cr\u00e9ditos \u00b7 '+ts+' materia(s)'+(e.version?' \u00b7 v'+e.version:'')+'</div>'
+            +'<div style="font-size:9px;color:#999;margin-top:2px">'+e.semesters.length+' semestre(s) \u00b7 '+esc(lrCred)+' cr\u00e9ditos \u00b7 '+ts+' materia(s)'+(e.version?' \u00b7 v'+_lrEsc(e.version):'')+'</div>'
           +'</div>'
           +'<div style="display:flex;gap:5px;flex-shrink:0">'
-          +'<button data-action="lr-edit-route" data-esp-id="'+p.id+'" data-sede="'+_lrEsc(k)+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\u270e Editar</button>'
-          +'<button data-action="lr-preview-route" data-esp-id="'+p.id+'" data-sede="'+_lrEsc(k)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
-          +'<button data-action="lr-delete-route" data-esp-id="'+p.id+'" data-sede="'+_lrEsc(k)+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\ud83d\uddd1</button>'
+          +'<button data-action="lr-edit-route" data-esp-id="'+_lrEsc(p.id)+'" data-sede="'+_lrEsc(k)+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\u270e Editar</button>'
+          +'<button data-action="lr-preview-route" data-esp-id="'+_lrEsc(p.id)+'" data-sede="'+_lrEsc(k)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+          +'<button data-action="lr-delete-route" data-esp-id="'+_lrEsc(p.id)+'" data-sede="'+_lrEsc(k)+'" style="background:#fee2e2;color:#c0392b;border:1px solid #fca5a5;border-radius:6px;padding:5px 10px;font-size:9px;font-weight:700;cursor:pointer">\ud83d\uddd1</button>'
           +'</div></div>';
       });
       if(m.ALL){
         var candidates=(p.sedes&&p.sedes.length?p.sedes:ALL_SEDES).filter(function(s){return keys.indexOf(s)===-1;});
         if(candidates.length){
           h+='<div style="display:flex;gap:6px;align-items:center;margin-top:4px">'
-            +'<select id="lr-new-sede-'+p.id+'" style="flex:1;max-width:220px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:10px"><option value="">\u2014 Sede \u2014</option>'
+            +'<select id="lr-new-sede-'+_lrEsc(p.id)+'" style="flex:1;max-width:220px;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:10px"><option value="">\u2014 Sede \u2014</option>'
             +candidates.map(function(s){return '<option value="'+_lrEsc(s)+'">'+_lrEsc(s)+'</option>';}).join('')
             +'</select>'
-            +'<button data-action="lr-create-sede-route" data-prog-id="'+p.id+'" data-prog-name="'+_lrEsc(p.name)+'" data-prog-type="'+p.type+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta para sede</button>'
+            +'<button data-action="lr-create-sede-route" data-prog-id="'+_lrEsc(p.id)+'" data-prog-name="'+_lrEsc(p.name)+'" data-prog-type="'+_lrEsc(p.type)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta para sede</button>'
             +'</div>';
         }
       }
@@ -186,9 +186,9 @@ function _lrRenderList(){
     h+='<div style="display:flex;flex-direction:column;gap:6px">';
     withoutRoute.forEach(function(p){
       h+='<div style="background:#fafcfa;border-radius:10px;border:1px solid #e8f0ec;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:0.85">'
-        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555">'+_getTypeBadge(p.type)+p.name+'</div>'
-        +'<div style="font-size:10px;color:#999;margin-top:2px">'+p.facName+(p.progName?' \u00b7 '+p.progName:'')+'</div></div>'
-        +'<button data-action="create-route-for-prog" data-prog-id="'+p.id+'" data-prog-name="'+_lrEsc(p.name)+'" data-prog-type="'+p.type+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta</button>'
+        +'<div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#555">'+_getTypeBadge(p.type)+_lrEsc(p.name)+'</div>'
+        +'<div style="font-size:10px;color:#999;margin-top:2px">'+_lrEsc(p.facName)+(p.progName?' \u00b7 '+_lrEsc(p.progName):'')+'</div></div>'
+        +'<button data-action="create-route-for-prog" data-prog-id="'+_lrEsc(p.id)+'" data-prog-name="'+_lrEsc(p.name)+'" data-prog-type="'+_lrEsc(p.type)+'" style="background:#006633;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap">\u2795 Crear ruta</button>'
         +'</div>';
     });
     h+='</div>';
@@ -206,7 +206,7 @@ function _lrRenderList(){
       var first=m[keys[0]]||{};
       h+='<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 16px">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap">'
-        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#92400E">'+(first.espName||'Ruta sin nombre')+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#92400E">'+_lrEsc(first.espName||'Ruta sin nombre')+'</div>'
         +'<div style="font-size:10px;color:#B45309;margin-top:2px">ID: '+_lrEsc(espId)+' \u00b7 '+keys.length+' ruta(s) \u00b7 sedes: '+keys.map(_lrEsc).join(', ')+'</div></div>'
         +'</div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
@@ -329,21 +329,21 @@ function _lrRenderRouteForm(route, meta){
   h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem">'
     +'<button data-action="lr-back-to-list" style="background:none;border:none;font-size:16px;cursor:pointer;color:#666">\u2190</button>'
     +_getTypeBadge(type)+'<div style="font-size:14px;font-weight:700;color:#006633">'+(isNew?'Nueva ruta':'Editar ruta')+'</div></div>';
-  h+='<div id="lr-form-container" data-esp-id="'+progId+'" data-prog-type="'+type+'" data-sede="'+sd+'">';
+  h+='<div id="lr-form-container" data-esp-id="'+_lrEsc(progId)+'" data-prog-type="'+_lrEsc(type)+'" data-sede="'+_lrEsc(sd)+'">';
   h+='<div class="grid2" style="margin-bottom:12px">';
   h+='<div class="field"><label>Nombre del programa</label><input id="lr-esp-name" value="'+_lrEsc(route.espName||'')+'" placeholder="Ej: Especializaci\u00f3n en..." style="width:100%"></div>';
   h+='<div class="field"><label>Versi\u00f3n (opcional)</label><input id="lr-version" value="'+_lrEsc(route.version||'')+'" placeholder="Ej: V2.1, 2026-2, 1.0" style="width:100%"></div>';
   h+='</div>';
-  h+='<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666;margin-bottom:12px">ID: '+progId+'</div>';
+  h+='<div style="padding:6px 10px;background:#f5f5f5;border-radius:6px;font-size:11px;color:#666;margin-bottom:12px">ID: '+_lrEsc(progId)+'</div>';
   h+='<div class="field" style="margin-bottom:12px"><label>🏫 Sede</label><select id="lr-sede" style="width:100%;max-width:280px">'+sedesOpts+'</select></div>';
   var tc=0; (route.semesters||[]).forEach(function(s){ tc+=(s.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0); });
   h+='<div style="background:#e6f2eb;border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;font-size:11px">'
-    +'<span style="font-weight:700;color:#006633">Total cr\u00e9ditos: <span id="lr-total-credits">'+tc+'</span></span>'
+    +'<span style="font-weight:700;color:#006633">Total cr\u00e9ditos: <span id="lr-total-credits">'+esc(tc)+'</span></span>'
     +'<span style="color:#999">\u00b7</span>'
     +'<span style="color:#666"><span id="lr-sem-count">'+route.semesters.length+'</span> semestre(s)</span></div>';
   h+='<div id="lr-semesters">';
   route.semesters.forEach(function(sem,si){
-    h+='<div class="lr-semester" data-si="'+si+'" data-sem-id="'+(sem.id||'')+'">';
+    h+='<div class="lr-semester" data-si="'+si+'" data-sem-id="'+_lrEsc(sem.id||'')+'">';
     h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
       +'<span style="font-size:12px;font-weight:700;color:#333">Semestre '+(si+1)+'</span>'
       +'<div style="flex:1"></div>'
@@ -354,13 +354,13 @@ function _lrRenderRouteForm(route, meta){
       +'<div class="field"><label>Tipo</label><select class="lr-sem-type" style="width:100%"><option value="Fundamentaci\u00f3n" '+(sem.type==='Fundamentación'?'selected':'')+'>Fundamentaci\u00f3n</option><option value="Profundizaci\u00f3n" '+(sem.type==='Profundización'?'selected':'')+'>Profundizaci\u00f3n</option></select></div>'
       +'</div>';
     var semInitCr=(sem.subjects||[]).reduce(function(t,sj){return t+(sj.credits||0);},0);
-    h+='<div class="field" style="margin-bottom:8px"><label>Cr\u00e9ditos del semestre</label><span class="lr-sem-credits-display" style="display:inline-block;padding:6px 10px;background:#f0f7f2;border-radius:6px;font-size:11px;color:#006633;font-weight:600">'+semInitCr+'</span><span style="font-size:10px;color:#999;margin-left:6px">calculado autom\u00e1ticamente</span></div>';
+    h+='<div class="field" style="margin-bottom:8px"><label>Cr\u00e9ditos del semestre</label><span class="lr-sem-credits-display" style="display:inline-block;padding:6px 10px;background:#f0f7f2;border-radius:6px;font-size:11px;color:#006633;font-weight:600">'+esc(semInitCr)+'</span><span style="font-size:10px;color:#999;margin-left:6px">calculado autom\u00e1ticamente</span></div>';
     h+='<div class="lr-subjects" data-si="'+si+'" style="margin-bottom:6px">';
     sem.subjects.forEach(function(subj,ji){
       var shomoMateria = (subj.homo && subj.homo.materia) || '';
-      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" data-subj-id="'+(subj.id||'')+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">'
+      h+='<div class="lr-subject" data-si="'+si+'" data-ji="'+ji+'" data-subj-id="'+_lrEsc(subj.id||'')+'" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#f9fbfa;border:1px solid #e8f0ec;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">'
         +'<input class="lr-subj-name" value="'+_lrEsc(subj.title||'')+'" placeholder="Nombre de la materia" style="flex:1;min-width:0;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
-        +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+subj.credits+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
+        +'<input class="lr-subj-credits" data-action="lr-update-sem-credits" type="number" min="0" max="10" value="'+esc(subj.credits)+'" style="width:45px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center" placeholder="Cr">'
         +'<input class="lr-subj-version" value="'+_lrEsc(subj.version||'')+'" placeholder="Versi\u00f3n" title="Versi\u00f3n (opcional)" style="width:70px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
         +'<label style="display:flex;align-items:center;gap:3px;font-size:9px;color:#666;white-space:nowrap;cursor:pointer"><input class="lr-subj-homologa" data-action="lr-touch-homologa" type="checkbox" '+(subj.homologa?'checked':'')+'> Homologa</label>'
         +'<input class="lr-subj-homo" type="text" value="'+_lrEsc(shomoMateria)+'" placeholder="Materia homologada desde pregrado" title="Materia homologada desde pregrado" '+(subj.homologa?'':'disabled')+' style="max-width:190px;min-width:120px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:10px">'
@@ -375,8 +375,8 @@ function _lrRenderRouteForm(route, meta){
   h+='</div>';
   h+='<button data-action="lr-add-semester" style="width:100%;padding:10px;background:#f5f5f5;border:1px dashed #ccc;border-radius:8px;cursor:pointer;font-size:11px;color:#666;margin-bottom:1rem">+ Agregar semestre</button>';
   h+='<div style="display:flex;gap:8px">'
-    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+progId+'" data-sede="'+_lrEsc(sd)+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
-    +'<button data-action="lr-preview-route" data-esp-id="'+progId+'" data-sede="'+_lrEsc(sd)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
+    +'<button class="btn-green" data-action="lr-save-route" data-esp-id="'+_lrEsc(progId)+'" data-sede="'+_lrEsc(sd)+'" style="flex:1">\ud83d\udcbe Guardar ruta</button>'
+    +'<button data-action="lr-preview-route" data-esp-id="'+_lrEsc(progId)+'" data-sede="'+_lrEsc(sd)+'" style="background:#e6f2eb;color:#006633;border:1px solid #b3d9c4;border-radius:8px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer">\ud83d\udc41 Vista previa</button>'
     +'<button data-action="lr-back-to-list" style="background:#f5f5f5;color:#666;border:1px solid #ddd;border-radius:8px;padding:8px 16px;font-size:11px;cursor:pointer">Cancelar</button>'
     +'</div>';
   h+='</div></div>';
