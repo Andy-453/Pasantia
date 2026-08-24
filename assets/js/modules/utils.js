@@ -38,7 +38,6 @@ var ST_MAP={
   'en proyección':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción',group:'Por construir'},
   'nueva propuesta de la facultad':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción',group:'Por construir'},
   'pendiente en resolución':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
-  'pendiante en resolución':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
   'en reclamación  men':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
   'en reclamación men':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
   'renovación':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
