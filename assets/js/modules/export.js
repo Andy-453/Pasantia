@@ -160,6 +160,8 @@ function getSniesEsp(esp){
   return SNIES_ESP_MAP[k]||'';
 }
 
+function defuseCSV(s){return s[0]==='='||s[0]==='+'||s[0]==='-'||s[0]==='@'?'\t'+s:s;}
+
 // ===== DESCARGA DE BD =====
 function downloadDB(){
   const headers = [
@@ -248,7 +250,7 @@ function downloadDB(){
   const bom = '\uFEFF';
   const csv = bom + rows.map(r =>
     r.map(cell => {
-      const s = String(cell ?? '').replace(/"/g, '""');
+      const s = defuseCSV(String(cell ?? '')).replace(/"/g, '""');
       return s.includes(',') || s.includes('\n') || s.includes('"') ? `"${s}"` : s;
     }).join(',')
   ).join('\n');
@@ -269,7 +271,7 @@ function downloadDB(){
 function exportSNIES(){
   var rows=[['Programa','Nivel','Año','Inscritos','Admitidos','Matriculados','Graduados','T.Absorcion','T.Selectividad','T.Graduacion','%H','%M']];
   SD.programs.forEach(function(p){[2020,2021,2022,2023,2024].forEach(function(y){var d=p.years[String(y)];rows.push([p.name,p.nivel,y,d.ins,d.adm,d.mat,d.grad,d.tabs,d.tsel,d.tgrad,d.pctH,d.pctM]);});});
-  var csv='\ufeff'+rows.map(function(r){return r.map(function(v){var s=String(v==null?'':v);return s.includes(',')? '"'+s+'"':s;}).join(',');}).join('\n');
+  var csv='\ufeff'+rows.map(function(r){return r.map(function(v){var s=defuseCSV(String(v==null?'':v)).replace(/"/g,'""');return s.includes(',')||s.includes('\n')||s.includes('"')? '"'+s+'"':s;}).join(',');}).join('\n');
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='SNIES_UDEC.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
