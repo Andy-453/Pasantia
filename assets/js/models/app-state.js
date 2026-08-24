@@ -24,8 +24,15 @@ function loadSedesCatalog(){
 }
 var ALL_SEDES=loadSedesCatalog();
 function saveSedesCatalog(arr){
-  ALL_SEDES.length=0;Array.prototype.push.apply(ALL_SEDES,arr);
-  try{localStorage.setItem('udec_sedes_catalog',JSON.stringify(arr));}catch(e){}
+  var clean=[];
+  (Array.isArray(arr)?arr:[]).forEach(function(s){
+    if(typeof s!=='string')return;
+    var v=s.trim();
+    if(!v||v.length>60||/[<>&"'\u0000-\u001f\u007f]/.test(v)||clean.indexOf(v)>-1)return;
+    clean.push(v);
+  });
+  ALL_SEDES.length=0;Array.prototype.push.apply(ALL_SEDES,clean);
+  try{localStorage.setItem('udec_sedes_catalog',JSON.stringify(clean));}catch(e){}
 }
 
 // Migrados a AppState.navigation.curFac / AppState.filters.* via window accessors
