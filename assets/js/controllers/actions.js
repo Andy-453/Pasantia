@@ -96,6 +96,7 @@ var __ACTIONS = {
   'lr-preview-route': function(b){ _lrPreviewRoute(b.dataset.espId, b.dataset.sede); },
   'restore-default-routes': function(){ restoreDefaultRoutes(function(){ renderEditor(); }); },
   'restore-lr-backup': function(){ restoreLearningRoutesBackup(function(){ renderEditor(); }); },
+  'download-lr-excel': function(){ exportLearningRoutesExcel(); },
   'backup-db': function(){ backupDB(); },
   'restore-db': function(){ document.getElementById('restore-input').click(); },
   'manage-sedes': function(){ openSedesManager(); },

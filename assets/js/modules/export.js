@@ -275,4 +275,74 @@ function exportSNIES(){
   var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='SNIES_UDEC.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
+// ===== EXPORTAR RUTAS DE APRENDIZAJE A EXCEL =====
+function exportLearningRoutesExcel(){
+  if(typeof XLSX==='undefined'){toast('Librería XLSX no disponible');return;}
+  var lr=window.__LEARNING_ROUTES||{};
+  var keys=Object.keys(lr);
+  if(!keys.length){toast('No hay rutas de aprendizaje para exportar');return;}
+
+  var lookup={};
+  AppData.getFacultades().forEach(function(f){
+    f.progs.forEach(function(p){
+      (p.lineas||[]).forEach(function(l){lookup[l.id]={facName:f.name,progName:p.n,lineaName:l.l,o:l.o};});
+      (p.mae||[]).forEach(function(m){lookup[m.id]={facName:f.name,progName:p.n,lineaName:'',o:m.o};});
+    });
+    if(f.doc){lookup['doc-'+f.id]={facName:f.name,progName:'',lineaName:'',o:f.doc.o};}
+  });
+
+  var ofertaLabel=function(o){return o==='V'?'Vigente':o==='P'?'Proyectada':'';};
+  var sedeLabel=function(s){return s==='ALL'?'Todas las sedes':s;};
+  var typeLabel=function(t){var m={especializacion:'Especialización',maestria:'Maestría',doctorado:'Doctorado'};return m[t]||t||'Programa';};
+
+  var rows=[['Facultad','Programa de Pregrado','Tipo de Programa','Especialización / Maestría / Doctorado','Línea de Profundización','Sede','Estado de Oferta','Semestre #','Nombre Semestre','Tipo Semestre','Asignatura','Créditos','Homologa','Materia Homologada','Versión Asignatura','URL Recurso','Versión Ruta','Créditos Totales Ruta','ID Ruta']];
+
+  keys.forEach(function(espId){
+    var sedeMap=lr[espId];
+    if(!sedeMap||typeof sedeMap!=='object')return;
+    var ctx=lookup[espId]||{facName:'',progName:'',lineaName:'',o:''};
+
+    Object.keys(sedeMap).forEach(function(sedeKey){
+      var route=sedeMap[sedeKey];
+      if(!route||!Array.isArray(route.semesters))return;
+
+      (route.semesters||[]).forEach(function(sem,si){
+        (sem.subjects||[]).forEach(function(subj){
+          rows.push([
+            ctx.facName,
+            ctx.progName,
+            typeLabel(route.type),
+            route.espName||'',
+            ctx.lineaName,
+            sedeLabel(sedeKey),
+            ofertaLabel(ctx.o),
+            si+1,
+            sem.title||'',
+            sem.type||'',
+            subj.title||'',
+            subj.credits||0,
+            subj.homologa?'Sí':'No',
+            (subj.homo&&subj.homo.materia)||'',
+            subj.version||'',
+            subj.resourceUrl||'',
+            route.version||'',
+            route.credits||0,
+            route.id||''
+          ]);
+        });
+      });
+    });
+  });
+
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  var colWidths=rows[0].map(function(_,ci){var max=rows[0][ci].length;for(var ri=1;ri<rows.length;ri++){var v=String(rows[ri][ci]||'');if(v.length>max)max=v.length;}return{wch:Math.min(max+2,50)};});
+  ws['!cols']=colWidths;
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Rutas de Aprendizaje');
+  var now=new Date();
+  var fecha=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb,'Rutas_Aprendizaje_UdeC_'+fecha+'.xlsx');
+  toast('Rutas de aprendizaje exportadas: '+keys.length+' programa(s), '+(rows.length-1)+' fila(s)');
+}
+
 // exportado via window.App (app.js)
