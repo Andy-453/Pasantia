@@ -122,6 +122,22 @@ Orquestador:
   app.js
 ```
 
+## Tablero RC standalone
+
+El tablero de Registros Calificados se distribuye como HTML autocontenido, **generado desde las fuentes** (no se edita a mano):
+
+```
+node tools/build_rc_standalone.js
+```
+
+- Plantilla versionada: `tablero_rc.template.html`
+- Salida generada: `tablero_rc_posgrados_udec.html` (banner GENERADO — NO EDITAR)
+- Fuente única del markup: `rcTemplate()` en `assets/js/views/rc-view.js`
+- Controlador único: `assets/js/views/rc.js`, iniciado por el bootstrap `assets/js/views/rc-standalone.js`
+- Datos base únicos: `assets/js/data/rc-data.js`
+
+Cualquier modificación debe hacerse en esas fuentes y luego regenerarse con el build.
+
 ## Módulo SNIES
 
 ### Descripción general

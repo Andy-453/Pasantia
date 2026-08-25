@@ -144,15 +144,17 @@ function renderRegistroCalificado(){
     document.getElementById('q').addEventListener('input',e=>{fTexto=e.target.value.toLowerCase();rcRender()});
     document.getElementById('selAnio').addEventListener('change',updConsulta);
 
-    Chart.register(ChartDataLabels);
-    Chart.defaults.font.family = 'Montserrat';
-    Chart.defaults.font.weight = 600;
-    Chart.defaults.color = C.gris;
-    Chart.defaults.borderColor = '#e4ece4';
-    Chart.defaults.plugins.datalabels.display = ctx => {
-      const v = ctx.dataset.data[ctx.dataIndex];
-      return v !== 0 && v !== null && v !== undefined;
-    };
+    if(typeof Chart!=='undefined' && typeof ChartDataLabels!=='undefined'){
+      Chart.register(ChartDataLabels);
+      Chart.defaults.font.family = 'Montserrat';
+      Chart.defaults.font.weight = 600;
+      Chart.defaults.color = C.gris;
+      Chart.defaults.borderColor = '#e4ece4';
+      Chart.defaults.plugins.datalabels.display = ctx => {
+        const v = ctx.dataset.data[ctx.dataIndex];
+        return v !== 0 && v !== null && v !== undefined;
+      };
+    }
 
     __rcReady = true;
   }

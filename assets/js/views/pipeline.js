@@ -20,7 +20,7 @@ function renderPipeline(){
   function getTri(mes){if(!mes)return null;if(mes<=3)return 'T1';if(mes<=6)return 'T2';if(mes<=9)return 'T3';return 'T4';}
   function getTriLabel(t){return {T1:'I Trimestre (Ene\u2013Mar)',T2:'II Trimestre (Abr\u2013Jun)',T3:'III Trimestre (Jul\u2013Sep)',T4:'IV Trimestre (Oct\u2013Dic)'}[t]||'';}
   function fsn(name){return name.replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim();}
-  function estCol(e){var k=(e||'').toLowerCase();if(k.includes('obtención')||k.includes('registro'))return G;if(k.includes('radicado')||k.includes('radicación'))return BL;if(k.includes('en construcción'))return AM;if(k.includes('por construir')||k.includes('proyección'))return OR;if(k.includes('negado'))return RD;if(k.includes('reclamación')||k.includes('renovación'))return '#dc2626';return '#888';}
+  function estCol(e){var g=getSt(e);if(!g.cat)return '#888';if(g.group==='En construcción')return AM;if(g.group==='Por construir')return OR;if(g.cat==='negado')return RD;if(g.cat==='reclamación')return '#dc2626';if(g.cat==='radicado')return BL;return G;}
   var all=[];
   AppData.getFacultades().forEach(function(fac){
     fac.progs.forEach(function(p){
@@ -29,19 +29,19 @@ function renderPipeline(){
     });
     if(fac.doc) all.push({fac:fsn(fac.name),nivel:'Doctorado',nombre:fac.doc.n,estado:fac.doc.e||'',oferta:fac.doc.o,resp:fac.doc.resp||'',mes:fac.doc.mes||null,ano:fac.doc.ano||null});
   });
-  // Clasificación mutuamente excluyente: cada programa pertenece a UN solo grupo.
-  // Prioridad (mayor a menor): Negado > Reclamación > Vigente > Radicado > Construcción > Por construir.
-  // Esto evita doble conteo en estados compuestos como "Obtención-resignificación"
-  // (contiene "obtención" Y "resignificación" — la prioridad lo asigna a Vigente).
-  var grupos={construccion:[],porConstruir:[],radicado:[],vigente:[],negado:[],reclamacion:[]};
+  // Clasificación mutuamente excluyente vía getSt/ST_MAP (utils.js), fuente única de taxonomía.
+  // 'Pendiente en resolución' y variantes → En reclamación; obtención-resignificación → Vigente
+  // (cat 'obtención'); la granularidad En construcción / Por construir se preserva vía group.
+  var grupos={construccion:[],porConstruir:[],radicado:[],vigente:[],negado:[],reclamacion:[],otros:[]};
   all.forEach(function(x){
-    var e=(x.estado||'').toLowerCase();
-    if(e.includes('negado')) grupos.negado.push(x);
-    else if(e.includes('reclamación')||e.includes('renovación')) grupos.reclamacion.push(x);
-    else if(e.includes('obtención')||e.includes('registro')||e.includes('oferta')) grupos.vigente.push(x);
-    else if(e.includes('radicado')||e.includes('radicación')||e.includes('entregado')) grupos.radicado.push(x);
-    else if(e.includes('en construcción')) grupos.construccion.push(x);
-    else if(e.includes('por construir')||e.includes('proyección')||e.includes('nueva propuesta')||e.includes('resignificación')) grupos.porConstruir.push(x);
+    var g=getSt(x.estado);
+    if(g.cat==='negado') grupos.negado.push(x);
+    else if(g.cat==='reclamación') grupos.reclamacion.push(x);
+    else if(g.cat==='radicado') grupos.radicado.push(x);
+    else if(g.cat==='construcción'&&g.group==='En construcción') grupos.construccion.push(x);
+    else if(g.cat==='construcción') grupos.porConstruir.push(x);
+    else if(g.cat==='obtención') grupos.vigente.push(x);
+    else grupos.otros.push(x);
   });
   function kpi(ic,lbl,cnt,col){return '<div style="background:#fff;border-radius:10px;border:1px solid #e0ece4;border-left:4px solid '+col+';padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="font-size:20px">'+ic+'</div><div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#999">'+lbl+'</div><div style="font-size:24px;font-weight:800;color:'+col+';font-family:monospace">'+cnt+'</div></div></div>';}
   var nivCol={Especialización:G,Maestría:OR,Doctorado:'#0d3d22'};
@@ -53,11 +53,11 @@ function renderPipeline(){
       var tri=getTri(p.mes);
       var fecha=p.mes&&p.ano?'<span style="background:'+(TRI_BG[tri]||'#f5f5f5')+';color:'+(TRI_COL[tri]||'#555')+';padding:2px 7px;border-radius:7px;font-size:9px;font-weight:700">'+MESES[p.mes]+' '+p.ano+'</span>':'<span style="color:#ccc;font-style:italic;font-size:9px">Sin fecha</span>';
       t+='<tr style="border-bottom:1px solid #edf2ee;'+(i%2===0?'background:#fafbfa':'')+'">'
-        +'<td style="padding:7px 12px;font-weight:600;color:'+color+';font-size:10px">'+p.fac+'</td>'
+        +'<td style="padding:7px 12px;font-weight:600;color:'+color+';font-size:10px">'+esc(p.fac)+'</td>'
         +'<td style="padding:7px;text-align:center">'+nivBadge(p.nivel)+'</td>'
-        +'<td style="padding:7px 10px;font-weight:600;font-size:10px">'+p.nombre+'</td>'
-        +'<td style="padding:7px 10px;font-size:10px;color:'+estCol(p.estado)+';font-weight:600">'+p.estado+'</td>'
-        +'<td style="padding:7px 10px;font-size:10px;color:'+(p.resp?BL:'#ccc')+';font-style:'+(p.resp?'normal':'italic')+'">'+( p.resp||'Sin asignar')+'</td>'
+        +'<td style="padding:7px 10px;font-weight:600;font-size:10px">'+esc(p.nombre)+'</td>'
+        +'<td style="padding:7px 10px;font-size:10px;color:'+estCol(p.estado)+';font-weight:600">'+esc(p.estado)+'</td>'
+        +'<td style="padding:7px 10px;font-size:10px;color:'+(p.resp?BL:'#ccc')+';font-style:'+(p.resp?'normal':'italic')+'">'+esc(p.resp||'Sin asignar')+'</td>'
         +'<td style="padding:7px;text-align:center">'+fecha+'</td>'
         +'</tr>';
     });
@@ -82,14 +82,14 @@ function renderPipeline(){
           g.items.forEach(function(p){
             h+='<div style="background:#fff;border-radius:7px;border:1px solid '+col+'33;padding:7px 9px;margin-bottom:6px">'
               +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px">'
-                +'<div style="font-size:10px;font-weight:600;color:#1a2e1a;line-height:1.3">'+p.nombre+'</div>'
+                +'<div style="font-size:10px;font-weight:600;color:#1a2e1a;line-height:1.3">'+esc(p.nombre)+'</div>'
                 +'<span style="background:'+col+';color:#fff;padding:1px 6px;border-radius:6px;font-size:8px;font-weight:700;white-space:nowrap;flex-shrink:0">'+MESES[p.mes]+'</span>'
               +'</div>'
               +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'
                 +'<span style="background:'+(nivCol[p.nivel]||'#888')+'22;color:'+(nivCol[p.nivel]||'#888')+';padding:1px 7px;border-radius:6px;font-size:8px;font-weight:700">'+p.nivel+'</span>'
-                +(p.resp?'<span style="font-size:9px;color:#555">👤 '+p.resp+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
+                +(p.resp?'<span style="font-size:9px;color:#555">👤 '+esc(p.resp)+'</span>':'<span style="font-size:9px;color:#ccc;font-style:italic">Sin responsable</span>')
               +'</div>'
-              +'<div style="margin-top:3px"><span style="font-size:9px;color:'+estCol(p.estado)+';font-weight:600">'+p.estado+'</span> <span style="font-size:9px;color:#aaa">· '+p.fac+'</span></div>'
+              +'<div style="margin-top:3px"><span style="font-size:9px;color:'+estCol(p.estado)+';font-weight:600">'+esc(p.estado)+'</span> <span style="font-size:9px;color:#aaa">· '+esc(p.fac)+'</span></div>'
               +'</div>';
           });
           h+='</div>';
@@ -124,6 +124,7 @@ function renderPipeline(){
     +kpi('📝','Por construir',grupos.porConstruir.length,OR)
     +kpi('❌','Negado MEN',grupos.negado.length,RD)
     +kpi('⚖️','Reclamación',grupos.reclamacion.length,'#dc2626')
+    +kpi('📂','Otros / Sin clasificar',grupos.otros.length,'#888')
   +'</div>';
   h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden;margin-bottom:1rem">'
     +'<div style="background:#1a2e1a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" data-action="toggle-section" data-sec-id="timeline">'
@@ -138,6 +139,7 @@ function renderPipeline(){
   h+=sec('⚖️','En reclamación',grupos.reclamacion.length+' con observaciones del MEN',grupos.reclamacion,'#dc2626','#fff8f8');
   h+=sec('❌','Negado MEN',grupos.negado.length+' con resolución negativa',grupos.negado,RD,'#fff5f5');
   h+=sec('✅','Vigente',grupos.vigente.length+' programas activos con registro',grupos.vigente,G,'#f0fdf4');
+  h+=sec('❓','Otros / Sin clasificar',grupos.otros.length+' con estado sin clasificar',grupos.otros,'#888','#f7f7f7');
   h+='</div>';
   wrap.innerHTML=h;
 }

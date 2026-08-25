@@ -216,8 +216,8 @@ function removeSniesProgram(programName) {
     AppState.snies.defaultSD.programs.some(function(p){return p.name===programName;});
 
   var msg = existsInInline
-    ? '¿Desea restaurar la versión original de "' + programName + '"?'
-    : '¿Desea eliminar el programa "' + programName + '"?';
+    ? '¿Desea restaurar la versión original de "' + esc(programName) + '"?'
+    : '¿Desea eliminar el programa "' + esc(programName) + '"?';
 
   showConfirm('Confirmar', msg, function() {
     _execRemoveSniesProgram(programName);

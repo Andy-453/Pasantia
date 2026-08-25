@@ -54,7 +54,7 @@ function populateSedes(){
   f.progs.forEach(function(p){p.sedes.forEach(function(x){s.add(x);});});
   var sel=document.getElementById('filt-sede');
   sel.innerHTML='<option value="ALL">Todas las sedes</option>';
-  AppState.staticData.ALL_SEDES.forEach(function(x){sel.innerHTML+='<option value="'+x+'">'+x+'</option>';});
+  AppState.staticData.ALL_SEDES.forEach(function(x){sel.innerHTML+='<option value="'+esc(x)+'">'+esc(x)+'</option>';});
   if(window.filtSede!=='ALL'&&AppState.staticData.ALL_SEDES.indexOf(window.filtSede)===-1) window.filtSede='ALL';
   sel.value=window.filtSede;
 
@@ -65,7 +65,7 @@ function populateSedes(){
   f.progs.forEach(function(p){
     if(!seen.has(p.n)){
       seen.add(p.n);
-      pSel.innerHTML+='<option value="'+p.n+'">'+p.n+'</option>';
+      pSel.innerHTML+='<option value="'+esc(p.n)+'">'+esc(p.n)+'</option>';
     }
   });
   if(prevPregrado!=='ALL'&&seen.has(prevPregrado)){pSel.value=prevPregrado;window.filtPregrado=prevPregrado;}

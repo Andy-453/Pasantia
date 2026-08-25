@@ -20,6 +20,7 @@
  */
 
 /* ================== LÍNEA DE TIEMPO (GANTT) ================== */
+function _rcEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function pintaGantt(S, hoy){
   const el = document.getElementById('gantt');
   if(!S.length){el.innerHTML='<div class="vacio">Ningún programa coincide con los filtros</div>';return;}
@@ -41,7 +42,7 @@ function pintaGantt(S, hoy){
       ? `<small>venció hace ${Math.abs(p.dv).toLocaleString('es-CO')} días</small>`
       : `<small>faltan ${p.dv.toLocaleString('es-CO')} días · vence ${fmtCorto(p.venc)}</small>`;
     return `<div class="g-row">
-      <div class="g-name">${p.nombre}<small>SNIES ${p.snies} · ${String(p.nivel).replace(' universitaria','')} · ${p.mod}${p.trans?' · ⚠ transitoria':''}</small></div>
+      <div class="g-name">${_rcEsc(p.nombre)}<small>SNIES ${_rcEsc(p.snies)} · ${_rcEsc(String(p.nivel).replace(' universitaria',''))} · ${_rcEsc(p.mod)}${p.trans?' · ⚠ transitoria':''}</small></div>
       <div class="g-track" style="--ny:${ny}">
         <div class="g-bar" style="left:${L.toFixed(2)}%;width:${W.toFixed(2)}%">
           <div class="g-seg" style="width:${w1.toFixed(2)}%;background:#79C000"></div>
@@ -52,7 +53,7 @@ function pintaGantt(S, hoy){
         <div class="g-venc" style="left:${pct(v).toFixed(2)}%"></div>
         ${(hoy.getTime()>=X0&&hoy.getTime()<=X1)?`<div class="g-hoy" style="left:${pct(hoy.getTime()).toFixed(2)}%" title="HOY: ${fmt(hoy)}"></div>`:''}
       </div>
-      <div class="g-stat"><span class="tag ${p.cls}">${p.est}</span>${stat}</div>
+      <div class="g-stat"><span class="tag ${p.cls}">${_rcEsc(p.est)}</span>${stat}</div>
     </div>`;
   }).join('');
   el.innerHTML = `<div class="g-inner">
@@ -82,11 +83,13 @@ function rcRenderKPIs(S, P, hoy){
 
 /* ================== DESTRUIR GRÁFICOS ================== */
 function rcDestroyCharts(){
+  if(typeof Chart!=='function'){return;}
   [chSemI,chVencI,chAEI,chRadI,chNivelI,chLineaI].forEach(c=>c&&c.destroy());
 }
 
 /* ================== GRÁFICOS CHART.JS ================== */
 function rcRenderCharts(S, aniosSel, vencPorAnioSel, kCounts, hoy){
+  if(typeof Chart!=='function'){return;}
   const { kVenc, k12, k16, k18, kOk } = kCounts;
 
   chSemI = new Chart(document.getElementById('chSem'),{type:'doughnut',data:{
@@ -155,12 +158,12 @@ function rcRenderTable(S, hoy){
   const rows=[...S].sort((a,b)=>a.dv-b.dv);
   const colorBar=p=>p.cls==='t-x'?C.rojo:p.cls==='t-12'?C.nar:p.cls==='t-16'?C.dor:p.cls==='t-18'?C.ama:C.vLim;
   tb.innerHTML = rows.length ? rows.map(p=>`<tr>
-   <td class="mono">${p.snies}</td>
-   <td><strong style="font-size:11.5px;font-weight:700;color:var(--v-oscuro)">${p.nombre}</strong>
+   <td class="mono">${_rcEsc(p.snies)}</td>
+   <td><strong style="font-size:11.5px;font-weight:700;color:var(--v-oscuro)">${_rcEsc(p.nombre)}</strong>
      <div class="bar-mini"><i style="width:${p.consumo.toFixed(0)}%;background:${colorBar(p)}"></i></div>
-     ${p.trans?`<div style="color:${C.rojo};font-size:9.5px;font-weight:700;margin-top:3px">⚠ Transitoria D.1174/23 hasta ${p.trans}</div>`:''}</td>
-   <td class="mono">${String(p.nivel).replace(' universitaria','')}<br>${p.mod}</td>
-   <td class="mono">${p.res}</td>
+     ${p.trans?`<div style="color:${C.rojo};font-size:9.5px;font-weight:700;margin-top:3px">⚠ Transitoria D.1174/23 hasta ${_rcEsc(p.trans)}</div>`:''}</td>
+   <td class="mono">${_rcEsc(String(p.nivel).replace(' universitaria',''))}<br>${_rcEsc(p.mod)}</td>
+   <td class="mono">${_rcEsc(p.res)}</td>
    <td class="mono">${fmt(p.ejec)}</td>
    <td class="mono" style="color:var(--v-oscuro);font-weight:800">${fmt(p.venc)}</td>
    <td class="mono" style="color:#8a6d00">${fmt(p.a18)}</td>
@@ -169,7 +172,7 @@ function rcRenderTable(S, hoy){
    <td class="ae ${p.ae1.getFullYear()===hoy.getFullYear()?'now':''}">${fmt(p.ae1)}</td>
    <td class="ae ${p.ae2.getFullYear()===hoy.getFullYear()?'now':''}">${fmt(p.ae2)}</td>
    <td class="mono" style="color:${p.dv<0?C.rojo:'var(--ink2)'}">${p.dv.toLocaleString('es-CO')}</td>
-   <td><span class="tag ${p.cls}">${p.est}</span></td></tr>`).join('')
+   <td><span class="tag ${p.cls}">${_rcEsc(p.est)}</span></td></tr>`).join('')
    : `<tr><td colspan="13" class="vacio">Ningún programa coincide con los filtros seleccionados</td></tr>`;
 }
 
@@ -177,7 +180,7 @@ function rcRenderTable(S, hoy){
 function updConsulta(){
   const sel=document.getElementById('selAnio');
   const y=+sel.value, lst=vencPorAnioSel[y]||[];
-  document.getElementById('resAnio').innerHTML = `?<b>${lst.length}</b>programa${lst.length!==1?'s':''} ${lst.length? '· SNIES '+lst.map(p=>p.snies).join(', '):''}`;
+  document.getElementById('resAnio').innerHTML = `?<b>${lst.length}</b> programa${lst.length!==1?'s':''} ${lst.length? '· SNIES '+lst.map(p=>_rcEsc(p.snies)).join(', '):''}`;
 }
 /* ================== TEMPLATE HTML ================== */
 function rcTemplate(){

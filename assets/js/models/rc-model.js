@@ -35,9 +35,13 @@ function procesa(raw, hoy){
 }
 
 function filtrados(P, fEstado, fNivel, fTexto){
+  const acum={'18M':['t-12','t-16','t-18'],'16M':['t-12','t-16']};
   return P.filter(p=>{
-    if(fEstado!=='all' && p.cls!==mapEstado[fEstado])return false;
-    if(fNivel!=='all' && !norm(p.nivel).includes(norm(fNivel).slice(0,8)))return false;
+    if(fEstado!=='all'){
+      if(acum[fEstado]){ if(acum[fEstado].indexOf(p.cls)===-1)return false; }
+      else if(p.cls!==mapEstado[fEstado])return false;
+    }
+    if(fNivel!=='all' && norm(String(p.nivel).split(/\s+/)[0])!==norm(String(fNivel).split(/\s+/)[0]))return false;
     if(fTexto && !(p.nombre.toLowerCase().includes(fTexto)||String(p.snies).includes(fTexto)))return false;
     return true;
   });

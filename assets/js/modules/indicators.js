@@ -15,8 +15,7 @@
  *     con datos embebidos (onclick, panel-indicadores).
  *
  * Riesgos de acoplamiento:
- *   - Los mapas ESTADOS_GRUPO y EST_COLORS deben mantenerse sincronizados
- *     con los estados reales usados en el editor y pipeline.
+ *   - La taxonomía de estados proviene de getSt/ST_MAP (utils.js), fuente única
  *
  * Estado:
  *   Extraído de app.js. Acceso DB via AppData.
@@ -31,32 +30,9 @@ function renderIndicadores(){
   const estadoCount={};
   const facStats=[];
 
-  const ESTADOS_GRUPO = {
-    'obtención': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'radicado men': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'en radicación': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'entregado para radicar': {label:'Radicado MEN', color:'#378ADD', bg:'#E6F1FB'},
-    'en construcción': {label:'En construcción', color:'#BA7517', bg:'#FAEEDA'},
-    'por construir': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'en proyección': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'nueva propuesta de la facultad': {label:'Por construir', color:'#e09020', bg:'#FEF3C7'},
-    'en reclamación  men': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'en reclamación men': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'renovación': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'renovación y modificación de la denominación': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'pendiente en resolución': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'pendiante en resolución': {label:'En reclamación', color:'#D85A30', bg:'#FAECE7'},
-    'negado men': {label:'Negado MEN', color:'#A32D2D', bg:'#FCEBEB'},
-    'obtención-resignificación': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'con registro calificado': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-    'en oferta': {label:'Obtención / Con registro', color:'#1D9E75', bg:'#E1F5EE'},
-  };
-
   function getEstGroup(e){
-    if(!e) return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
-    const k=e.trim().toLowerCase();
-    if(ESTADOS_GRUPO[k]) return ESTADOS_GRUPO[k];
-    return {label:'Sin definir', color:'#888', bg:'#f5f5f0'};
+    const g=getSt(e);
+    return g.cat?{label:g.group,color:g.dot,bg:g.bg}:{label:'Sin definir',color:'#888',bg:'#f5f5f0'};
   }
 
   AppData.getFacultades().forEach(fac=>{
@@ -303,7 +279,7 @@ function renderIndicadores(){
           const pct=Math.round(s.pct);
           return `<div style="display:flex;align-items:center;gap:5px;padding:3px 0;border-bottom:1px solid #f0f4f0">
             <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
-            <span style="font-size:9px;color:#333;flex:1;line-height:1.3">${s.label}</span>
+            <span style="font-size:9px;color:#333;flex:1;line-height:1.3">${esc(s.label)}</span>
             <span style="font-size:9px;font-weight:700;color:${s.color};white-space:nowrap">${s.cnt} <span style="font-size:8px;font-weight:400;color:#999">${pct}%</span></span>
           </div>`;
         }).join('')}
@@ -336,7 +312,7 @@ function renderIndicadores(){
     const pct=totalPosg>0?Math.round(tp/totalPosg*100):0;
     const bg=i%2===0?'#f8fbf8':'#fff';
     h+=`<tr style="background:${bg};border-bottom:1px solid #eef4ee">
-      <td style="padding:8px 10px;font-weight:600;color:#006633;font-size:10px">${fs.name.replace('Facultad de ','').replace('Facultad ','')} </td>
+      <td style="padding:8px 10px;font-weight:600;color:#006633;font-size:10px">${esc(fs.name.replace('Facultad de ','').replace('Facultad ',''))} </td>
       <td style="padding:8px 10px;text-align:center;font-weight:700;color:#2e8b57">${fs.pre}</td>
       <td style="padding:8px 10px;text-align:center">${fs.esp}</td>
       <td style="padding:8px 10px;text-align:center;color:#9a7c1a;font-weight:600">${fs.mae}</td>
@@ -379,7 +355,7 @@ function renderIndicadores(){
   facStats.forEach(fs=>{
     const tp=fs.esp+fs.mae+fs.doc;
     h+=`<div style="border:1px solid #e0ece4;border-radius:8px;overflow:hidden">
-      <div style="background:#006633;color:#fff;padding:7px 10px;font-size:10px;font-weight:700">${fs.name.replace('Facultad de ','').replace('Facultad ','')}</div>
+      <div style="background:#006633;color:#fff;padding:7px 10px;font-size:10px;font-weight:700">${esc(fs.name.replace('Facultad de ','').replace('Facultad ',''))}</div>
       <div style="padding:8px 10px">`;
     const sortedFs=Object.entries(fs.estados).sort((a,b)=>b[1]-a[1]);
     sortedFs.forEach(([est,cnt])=>{
@@ -387,7 +363,7 @@ function renderIndicadores(){
       const pct=tp>0?Math.round(cnt/tp*100):0;
       h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0f4f0">
         <span style="font-size:9px;color:#444;display:flex;align-items:center;gap:4px">
-          <span style="width:7px;height:7px;border-radius:50%;background:${ec.color};display:inline-block;flex-shrink:0"></span>${est}
+          <span style="width:7px;height:7px;border-radius:50%;background:${ec.color};display:inline-block;flex-shrink:0"></span>${esc(est)}
         </span>
         <span style="font-size:9px;font-weight:700;color:${ec.color};white-space:nowrap">${cnt} (${pct}%)</span>
       </div>`;

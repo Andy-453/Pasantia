@@ -178,6 +178,7 @@ function restoreDB(file){
     try{
       var payload=JSON.parse(e.target.result);
       if(!payload||(payload.version!==1&&payload.version!==2)){toast('❌ Archivo de respaldo no compatible');return;}
+      if(!payload.db||!_validateDB(payload.db)){toast('❌ Respaldo inválido: la base de datos no tiene el formato esperado');return;}
       window.DB=payload.db;
       // R4: nunca convertir __LEARNING_ROUTES en {} por ausencia de learningRoutes.
       var hadLR = payload.learningRoutes && typeof payload.learningRoutes === 'object' && Object.keys(payload.learningRoutes).length > 0;
@@ -209,5 +210,5 @@ function restoreDB(file){
   reader.onerror=function(){toast('❌ Error al leer el archivo');};
   reader.readAsText(file);
 }
-function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){try{localStorage.removeItem('udec_rutas_db');}catch(e){}location.reload();}}
+function resetDB(){if(confirm('¿Restablecer todos los datos al estado original?')){var KEYS=['udec_rutas_db','udec_learning_routes','udec_learning_routes_meta','udec_learning_routes_pre_restore','udec_snies_data','udec_sedes_catalog','udec_rutas_export_seed','udec_learning_routes_export_seed'];try{KEYS.forEach(function(k){localStorage.removeItem(k);});}catch(e){}location.reload();}}
 

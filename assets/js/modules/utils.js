@@ -12,28 +12,37 @@
  * Estado:
  *   Estable. Sin dependencias externas.
  */
-function showConfirm(t,m,ok){var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';o.innerHTML='<div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2)"><div style="font-size:15px;font-weight:700;color:#1a2e1a;margin-bottom:8px">'+t+'</div><div style="font-size:12px;color:#555;margin-bottom:20px">'+m+'</div><div style="display:flex;gap:8px;justify-content:flex-end"><button id="__cc" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer">Cancelar</button><button id="__co" style="padding:8px 18px;border-radius:8px;border:none;background:#c0392b;color:#fff;font-weight:700;cursor:pointer">Eliminar</button></div></div>';document.body.appendChild(o);document.getElementById('__cc').onclick=function(){document.body.removeChild(o);};document.getElementById('__co').onclick=function(){document.body.removeChild(o);ok();};o.onclick=function(e){if(e.target===o)document.body.removeChild(o);};}
+function showConfirm(t,m,ok){var o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';o.innerHTML='<div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2)"><div id="__ct" style="font-size:15px;font-weight:700;color:#1a2e1a;margin-bottom:8px"></div><div id="__cm" style="font-size:12px;color:#555;margin-bottom:20px"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button id="__cc" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#555;cursor:pointer">Cancelar</button><button id="__co" style="padding:8px 18px;border-radius:8px;border:none;background:#c0392b;color:#fff;font-weight:700;cursor:pointer">Eliminar</button></div></div>';document.body.appendChild(o);document.getElementById('__ct').textContent=t;document.getElementById('__cm').innerHTML=m;document.getElementById('__cc').onclick=function(){document.body.removeChild(o);};document.getElementById('__co').onclick=function(){document.body.removeChild(o);ok();};o.onclick=function(e){if(e.target===o)document.body.removeChild(o);};}
 
-// ===== COLORES DE ESTADO =====
+// ===== ESCAPE HTML =====
+/**
+ * Escapa texto para interpolación segura en innerHTML y atributos.
+ * No altera cadenas sin caracteres especiales (comportamiento transparente).
+ * @param {*} s - Valor arbitrario (null/undefined se tratan como '')
+ * @returns {string} Cadena con & < > " ' escapados
+ */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ===== COLORES Y TAXONOMÍA DE ESTADO (fuente única) =====
+// cat: categoría gruesa (filtros/KPIs) · group: etiqueta fina (paneles indicadores/pipeline)
 var ST_MAP={
-  'obtención':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención'},
-  'con registro calificado':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención'},
-  'en oferta':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención'},
-  'obtención-resignificación':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención'},
-  'radicado men':{dot:'#378ADD',bg:'#E6F1FB',tx:'#0C447C',cat:'radicado'},
-  'en radicación':{dot:'#378ADD',bg:'#E6F1FB',tx:'#0C447C',cat:'radicado'},
-  'entregado para radicar':{dot:'#378ADD',bg:'#E6F1FB',tx:'#0C447C',cat:'radicado'},
-  'en construcción':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción'},
-  'por construir':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción'},
-  'en proyección':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción'},
-  'nueva propuesta de la facultad':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción'},
-  'pendiente en resolución':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación'},
-  'pendiante en resolución':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación'},
-  'en reclamación  men':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación'},
-  'en reclamación men':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación'},
-  'renovación':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación'},
-  'renovación y modificación de la denominación':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación'},
-  'negado men':{dot:'#A32D2D',bg:'#FCEBEB',tx:'#501313',cat:'negado'},
+  'obtención':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención',group:'Obtención / Con registro'},
+  'con registro calificado':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención',group:'Obtención / Con registro'},
+  'en oferta':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención',group:'Obtención / Con registro'},
+  'obtención-resignificación':{dot:'#1D9E75',bg:'#E1F5EE',tx:'#085041',cat:'obtención',group:'Obtención / Con registro'},
+  'radicado men':{dot:'#378ADD',bg:'#E6F1FB',tx:'#0C447C',cat:'radicado',group:'Radicado MEN'},
+  'en radicación':{dot:'#378ADD',bg:'#E6F1FB',tx:'#0C447C',cat:'radicado',group:'Radicado MEN'},
+  'entregado para radicar':{dot:'#378ADD',bg:'#E6F1FB',tx:'#0C447C',cat:'radicado',group:'Radicado MEN'},
+  'en construcción':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción',group:'En construcción'},
+  'por construir':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción',group:'Por construir'},
+  'en proyección':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción',group:'Por construir'},
+  'nueva propuesta de la facultad':{dot:'#BA7517',bg:'#FAEEDA',tx:'#633806',cat:'construcción',group:'Por construir'},
+  'pendiente en resolución':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
+  'en reclamación  men':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
+  'en reclamación men':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
+  'renovación':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
+  'renovación y modificación de la denominación':{dot:'#D85A30',bg:'#FAECE7',tx:'#4A1B0C',cat:'reclamación',group:'En reclamación'},
+  'negado men':{dot:'#A32D2D',bg:'#FCEBEB',tx:'#501313',cat:'negado',group:'Negado MEN'},
 };
 function getSt(s){
   if(!s||!s.trim()) return {dot:'#aaa',bg:'#f5f5f0',tx:'#666',cat:''};

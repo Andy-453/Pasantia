@@ -15,12 +15,17 @@ function renderSNIES(){
   var n=function(v){return isNaN(+v)?0:+v;};
   var fmt=function(v){return Math.round(n(v)).toLocaleString('es-CO');};
   var fmtP=function(v){return n(v).toFixed(1)+'%';};
-  var progs=_snFac==='TODAS'?(SD&&SD.programs||[]):(SD&&SD.programs||[]).filter(function(p){return FAC_MP[p.name]===_snFac;});
+  var facOf=function(p){var f=p&&p.facultad&&String(p.facultad).trim();return f||FAC_MP[p.name];};
+  var extraFacs=[];
+  (SD&&SD.programs||[]).forEach(function(p){var f=facOf(p);if(f&&facs.indexOf(f)===-1&&extraFacs.indexOf(f)===-1)extraFacs.push(f);});
+  var facsAll=facs.concat(extraFacs);
+  var progs=_snFac==='TODAS'?(SD&&SD.programs||[]):(SD&&SD.programs||[]).filter(function(p){return facOf(p)===_snFac;});
   if(!_snProg||!progs.find(function(p){return p.name===_snProg;})) _snProg=progs.length?progs[0].name:null;
   var prog=_snProg?(SD&&SD.programs||[]).find(function(p){return p.name===_snProg;}):null;
   var fc=_snFac==='TODAS'?'#006633':(FAC_COL[_snFac]||'#006633');
-  var facBtns=facs.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+f.replace(/"/g,'&quot;')+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+( f==='TODAS'?'Todas':f)+'</button>';}).join('');
-  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[FAC_MP[p.name]]||fc;return '<button data-action="snies-set-prog" data-prog="'+p.name.replace(/"/g,'&quot;')+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. ')+'</button>';}).join('');
+  function _snEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  var facBtns=facsAll.map(function(f){var a=f===_snFac;var c=FAC_COL[f]||'#006633';return '<button data-action="snies-set-fac" data-fac="'+_snEsc(f)+'" style="padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d0e4d8')+';background:'+(a?c:'#fff')+';color:'+(a?'#fff':'#555')+'">'+_snEsc(f==='TODAS'?'Todas':f)+'</button>';}).join('');
+  var progBtns=progs.map(function(p){var a=p.name===_snProg;var c=FAC_COL[facOf(p)]||fc;return '<button data-action="snies-set-prog" data-prog="'+_snEsc(p.name)+'" style="padding:5px 12px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+(a?c:'#d8e8dc')+';background:'+(a?c+'18':'#fff')+';color:'+(a?c:'#555')+'">'+_snEsc(p.name.replace('Espec. ','').replace('Maestría en ','Mae. ').replace('Doctorado en ','Doc. '))+'</button>';}).join('');
   var h='<div style="padding:.5rem 0">';
   h+='<div style="font-size:14px;font-weight:700;color:#006633;margin-bottom:1rem;display:flex;align-items:center;gap:8px"><span style="width:4px;height:20px;background:#006633;border-radius:2px;display:inline-block"></span>Análisis SNIES · Posgrados 2020–2024</div>';
 if (_dev) {
@@ -45,8 +50,8 @@ if (_dev) {
     var _isInInline = AppState.snies.defaultSD && AppState.snies.defaultSD.programs && AppState.snies.defaultSD.programs.some(function(p){return p.name===prog.name;});
     var _actLabel = _isInInline ? 'Restaurar original' : 'Eliminar programa';
     var _actColor = _isInInline ? '#d4a017' : '#c0392b';
-    h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+prog.name+'</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+prog.nivel+'</span>'+
-      (_dev ?'<button onclick="App.removeSniesProgram(\''+prog.name.replace(/"/g,'&quot;')+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
+    h+='<div style="background:'+fc+'12;border-radius:10px;border-left:4px solid '+fc+';padding:12px 16px;margin-bottom:1rem"><div style="font-size:13px;font-weight:700;color:'+fc+'">'+_snEsc(prog.name)+'</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="background:'+(nivCol[prog.nivel]||'#888')+';color:#fff;padding:2px 9px;border-radius:8px;font-size:9px;font-weight:700">'+_snEsc(prog.nivel)+'</span>'+
+      (_dev ?'<button onclick="App.removeSniesProgram(\''+_snEsc(String(prog.name).replace(/\\/g,'\\\\').replace(/'/g,"\\'"))+'\')" style="padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid '+_actColor+';background:#fff;color:'+_actColor+'">'+_actLabel+'</button>':'')+
     '</div></div>';
     h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">';
     var kpis=[['Matriculados 2024',fmt(y24.mat),'vs '+fmt(y23.mat)+' en 2023',fc],['Graduados 2024',fmt(y24.grad),'vs '+fmt(y23.grad)+' en 2023','#C8A43A'],['Inscritos 2024',fmt(y24.ins),'vs '+fmt(y23.ins)+' en 2023','#185FA5'],['Admitidos 2024',fmt(y24.adm),'vs '+fmt(y23.adm)+' en 2023','#0891b2']];
@@ -57,7 +62,7 @@ if (_dev) {
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden"><div style="padding:10px 14px;border-bottom:1px solid #f0f4f0;font-size:10px;font-weight:700;color:#C8A43A;text-transform:uppercase">Tasas indicadores %</div><div style="padding:12px;height:220px"><canvas id="sn-tasas"></canvas></div></div>';
     h+='</div>';
     h+='<div style="background:#fff;border-radius:12px;border:1px solid #e0ece4;overflow:hidden">';
-    h+='<div style="padding:10px 14px;background:'+fc+';color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Histórico 2020–2024 · '+prog.name+'</div>';
+    h+='<div style="padding:10px 14px;background:'+fc+';color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Histórico 2020–2024 · '+_snEsc(prog.name)+'</div>';
     h+='<table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:'+fc+'22">';
     ['Año','Inscritos','Admitidos','Matriculados','Graduados','T.Absorción','T.Selectividad','T.Graduación','% H','% M'].forEach(function(c){h+='<th style="padding:8px;text-align:center">'+c+'</th>';});
     h+='</tr></thead><tbody>';
