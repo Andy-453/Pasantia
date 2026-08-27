@@ -1586,7 +1586,7 @@ Donde cada `ruta` tiene la forma:
   espName: 'Esp. en ...',         // nombre del programa
   version: 'V2.1',                // opcional
   type:    'especializacion' | 'maestria' | 'doctorado',
-  credits: 20,                    // suma de créditos de materias
+  credits: 20,                    // suma de créditos de CADIs
   semesters: [
     {
       id:    'sem1',
@@ -1619,7 +1619,7 @@ Donde cada `ruta` tiene la forma:
 `ALL` es la ruta por defecto de un programa. Reglas:
 
 1. Una ruta `ALL` **es la base de referencia**: el editor permite crear una ruta de sede
-   **copiando la ruta ALL** (`copyFrom:'ALL'`), conservando semestres, materias e ids.
+   **copiando la ruta ALL** (`copyFrom:'ALL'`), conservando semestres, CADIs e ids.
 2. `ALL` actúa como **fallback** de resolución: si se solicita la ruta de una sede sin
    ruta específica, se abre la ruta `ALL`.
 3. Al eliminar una ruta de sede específica, `ALL` **permanece intacta**.
@@ -1648,7 +1648,7 @@ sede específica (m[sede])  →  ALL (m.ALL)  →  null
 | `_hasFlatRoute` | `(obj)` → boolean | Detecta estructura legacy plana (utils.js:71) |
 | `_normalizeRoutes` | `(obj)` → mapa anidado | Normaliza legacy a `[espId][sede]` (utils.js:78) |
 | `_lrMakeId` | `(espId, sede)` → string | Genera el id canónico de la ruta (utils.js:92) |
-| `_lrHomologacion` | `(subj, route)` → string\|null | Nombre de materia de pregrado si `homologa===true` y `homo.materia` no vacío (utils.js:143) |
+| `_lrHomologacion` | `(subj, route)` → string\|null | Nombre del CADI de pregrado si `homologa===true` y `homo.materia` no vacío (utils.js:143) |
 
 ### 20.5. Normalización de rutas legacy planas
 
@@ -1707,9 +1707,9 @@ borra la key, restaura los defaults normalizados y re-renderiza.
 - Tras restaurar: `saveDB()`, `saveLearningRoutes()`, sincroniza SNIES, catálogo de
   sedes, etiquetas de programas por defecto, y refresca todas las vistas.
 
-### 20.8. Persistencia de IDs de semestres y materias
+### 20.8. Persistencia de IDs de semestres y CADIs
 
-El editor conserva los `id` de semestres y materias al guardar:
+El editor conserva los `id` de semestres y CADIs al guardar:
 
 - `_lrCollectFormData` (editor.js:276) lee `dataset.semId` / `dataset.subjId` y los
   reutiliza; solo genera `uid()` para elementos nuevos (`_lrAddSemester`,
@@ -1774,15 +1774,15 @@ El editor tiene dos pestañas (`_lrEditorTab`, editor.js:5): **Programas** y
 - `_lrEditRoute(progId, sede, prefill)` (editor.js:194): abre el formulario en
   `#editor-content` con `#lr-form-container` (`data-esp-id`, `data-prog-type`,
   `data-sede`), `#lr-sede` (select), nombre/versión, total de créditos, semestres y
-  materias. Recupera la ruta existente o la crea (copia de ALL / plantilla nueva).
+  CADIs. Recupera la ruta existente o la crea (copia de ALL / plantilla nueva).
 - `_lrCollectFormData` (editor.js:276): recolecta el formulario; nombre obligatorio
-  (toast si vacío); materias sin título se omiten; créditos recalculados.
+  (toast si vacío); CADIs sin título se omiten; créditos recalculados.
 - `_lrSaveRoute` (editor.js:318): construye y persiste
   `__LEARNING_ROUTES[espId][sede]` (id canónico, `saveLearningRoutes()`), toast
   "Ruta guardada", re-renderiza.
 - `_rerenderForm` (editor.js:372): guarda un **borrador en memoria**
   (`__LEARNING_ROUTES`) **sin persistir** (phantom) para operaciones de agregar /
-  eliminar semestre o materia; solo el guardado explícito persiste.
+  eliminar semestre o CADI; solo el guardado explícito persiste.
 - `_lrPreviewRoute` (editor.js:382): abre modal con la ruta guardada, o con el
   borrador del formulario si aún no se guardó.
 - Acción `edit-lr-from-modal` (actions.js:57): desde el modal, valida
@@ -1883,7 +1883,7 @@ las rutas en un HTML administrativo nuevo:
   profunda** (o plantilla), **nunca escribe en el mapa vivo**.
 - `_lrMergeFormIntoRoute` (editor.js:244) es una **fusión conservadora**: parte de la
   copia profunda y solo toca campos representados por el formulario. Preserva campos
-  no representados, `version`, `resourceUrl`, `homo.materia`, materias existentes con
+  no representados, `version`, `resourceUrl`, `homo.materia`, CADIs existentes con
   título vacío e IDs; **descarta únicamente filas nuevas totalmente vacías**.
 - `_lrSaveRoute` (editor.js:426) fusiona sobre el borrador/`_lrDraftSrc`, persiste con
   `saveLearningRoutes()` y llama a `_lrCancelDraft()`.

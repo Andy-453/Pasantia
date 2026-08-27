@@ -295,7 +295,7 @@ function exportLearningRoutesExcel(){
   var sedeLabel=function(s){return s==='ALL'?'Todas las sedes':s;};
   var typeLabel=function(t){var m={especializacion:'Especialización',maestria:'Maestría',doctorado:'Doctorado'};return m[t]||t||'Programa';};
 
-  var rows=[['Facultad','Programa de Pregrado','Tipo de Programa','Especialización / Maestría / Doctorado','Línea de Profundización','Sede','Estado de Oferta','Semestre #','Nombre Semestre','Tipo Semestre','Asignatura','Créditos','Homologa','Materia Homologada','Versión Asignatura','URL Recurso','Versión Ruta','Créditos Totales Ruta','ID Ruta']];
+  var rows=[['Facultad','Programa de Pregrado','Tipo de Programa','Especialización / Maestría / Doctorado','Línea de Profundización','Sede','Estado de Oferta','Semestre #','Nombre Semestre','Tipo Semestre','CADI','Créditos','Homologa','CADI Homologado','Versión Asignatura','URL Recurso','Versión Ruta','Créditos Totales Ruta','ID Ruta']];
 
   keys.forEach(function(espId){
     var sedeMap=lr[espId];
