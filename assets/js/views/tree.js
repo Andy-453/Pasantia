@@ -234,7 +234,7 @@ function renderTree(){
                 <div class="node-stripe"></div>
                 <div class="node-body">
                   ${pll(m.o)}
-                  <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap"><div class="node-label" style="margin-bottom:0">Maestría</div>${maeTipoPill(m.tipo)}</div>
+                  <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap"><div class="node-label" style="margin-bottom:0">Maestría</div>${maeTipoPill(m.tipo)}</div>
                   <div class="node-title${routeLinkCls(m.id, sEff)}">${_trEsc(m.n)}</div>
                   <div class="sede-chip">📍 ${(m.sedes||[]).map(_trEsc).join(' · ')}</div>
                   ${stBadge(m.e, m)}
