@@ -192,6 +192,7 @@ button:active{transform:scale(.98)}
 .pv{background:#e6f2eb;color:#006633;border:1px solid #b0d4be}
 .pp{background:#e8f0fb;color:#1a5cb0;border:1px solid #b0c8e8}
 .tipo-tag{display:inline-block;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;background:#e8f5ee;color:#1a6040;border:1px solid #c3e0cf;padding:2px 8px;border-radius:10px;margin-bottom:4px}
+.mae-tipo{display:inline-flex;align-items:center;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 6px;border-radius:8px;border:1px solid transparent;line-height:1.4}
 
 /* ===== CHIPS DE SEDE ===== */
 .sede-chip{display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:2px 7px;border-radius:8px;background:#f5f7f5;border:1px solid #d8e8dc;color:#555;margin-top:4px;line-height:1.4}

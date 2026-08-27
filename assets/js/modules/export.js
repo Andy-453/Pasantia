@@ -179,7 +179,8 @@ function downloadDB(){
     'Estado',
     'Sede(s) Programa',
     'Doctorado Facultad',
-    'Estado Doctorado'
+    'Estado Doctorado',
+    'Tipo de Maestría'
   ];
   const rows = [headers];
 
@@ -204,7 +205,8 @@ function downloadDB(){
           l.e || '',
           l.sedes.join(' | '),
           fac.doc ? fac.doc.n : '',
-          fac.doc ? fac.doc.e : ''
+          fac.doc ? fac.doc.e : '',
+          ''
         ]);
       });
 
@@ -224,7 +226,8 @@ function downloadDB(){
           m.e || '',
           m.sedes.join(' | '),
           fac.doc ? fac.doc.n : '',
-          fac.doc ? fac.doc.e : ''
+          fac.doc ? fac.doc.e : '',
+          m.tipo || ''
         ]);
       });
 
@@ -232,7 +235,7 @@ function downloadDB(){
         rows.push([
           fac.name, sniesPre, p.n, p.sedes.join(' | '),
           '', '', '', '', '', '', '', '', '',
-          fac.doc ? fac.doc.n : '', fac.doc ? fac.doc.e : ''
+          fac.doc ? fac.doc.n : '', fac.doc ? fac.doc.e : '', ''
         ]);
       }
     });
@@ -242,7 +245,7 @@ function downloadDB(){
         fac.name, '', 'Todos los pregrados', fac.doc.sedes.join(' | '),
         fac.doc.o === 'V' ? 'Oferta Vigente' : 'Oferta Proyectada',
         'Doctorado', '', fac.doc.n, '', '', '', fac.doc.e || '',
-        fac.doc.sedes.join(' | '), fac.doc.n, fac.doc.e || ''
+        fac.doc.sedes.join(' | '), fac.doc.n, fac.doc.e || '', ''
       ]);
     }
   });
