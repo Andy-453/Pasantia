@@ -31,7 +31,7 @@ function renderProgForm(){
       +'<div class="grid2"><div class="field"><label>Oferta</label><select id="lo'+esc(l.id)+'"><option value="V"'+(l.o==='V'?' selected':'')+'>Vigente</option><option value="P"'+(l.o==='P'?' selected':'')+'>Proyectada</option></select></div>'
       +'<div class="field"><label>👤 Responsable</label><input id="lresp'+esc(l.id)+'" value="'+esc(l.resp||'')+'" placeholder="Docente o equipo"></div></div>'
       +'<div class="grid3"><div class="field"><label>📅 Mes</label><select id="lmes'+esc(l.id)+'">'+mo(l.mes)+'</select></div>'
-+'<div class="field"><label>📅 Año</label><select id="lano'+esc(l.id)+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Enlace</label><input type="url" id="lenlace'+esc(l.id)+'" value="'+esc(l.enlaceObtencion||'')+'" placeholder="URL programa"></div></div>'
++'<div class="field"><label>📅 Año</label><select id="lano'+esc(l.id)+'">'+ao(l.ano)+'</select></div><div class="field"><label>🔗 Link Registro Calificado</label><input type="url" id="lenlace'+esc(l.id)+'" value="'+esc(l.enlaceObtencion||'')+'" placeholder="URL Registro Calificado"></div></div>'
 +'<div style="margin-top:6px"><label style="font-size:10px;font-weight:700;color:#555;display:block;margin-bottom:3px">📍 Sedes</label><div style="display:flex;flex-wrap:wrap;gap:4px">'+ALL_SEDES.map(function(s){return '<label style="display:flex;align-items:center;gap:2px;font-size:9px;cursor:pointer;padding:2px 6px;border-radius:4px;background:'+((l.sedes||[]).indexOf(s)>-1?'#e6f2eb':'#f5f5f5')+'"><input type="checkbox" id="lse_'+esc(l.id)+'_'+esc(s)+'" '+((l.sedes||[]).indexOf(s)>-1?'checked':'')+' style="margin:0"> '+esc(s)+'</label>';}).join('')+'</div></div>'
 +'</div>';
   }).join('');
