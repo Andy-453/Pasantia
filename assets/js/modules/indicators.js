@@ -444,80 +444,75 @@ var _rcCompute = function(){
 var renderRCSeccion = function(){
   var rc = _rcCompute();
   var short = function(n){ return (n||'').replace('Facultad de ','').replace('Facultad ','').split(',')[0].trim(); };
-  var pill = function(bg,color,txt){ return '<span style="background:'+bg+';color:'+color+';padding:2px 8px;border-radius:8px;font-weight:600">'+txt+'</span>'; };
 
   var h = '';
-  h += '<div style="background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #d8e8dc;margin-top:1rem">';
-  h += '<div style="font-size:11px;font-weight:700;color:#006633;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Registro Calificado por Facultad</div>';
+  h += '<div class="rc-container">';
+  h += '<div class="rc-title">Registro Calificado por Facultad</div>';
+  h += '<div class="rc-title-sub">Líneas con y sin registro calificado, por facultad y estado</div>';
 
-  // KPIs resumen
-  h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">';
+  // KPIs resumen (fondos pastel semánticos)
+  h += '<div class="rc-kpi-row">';
   var kpis = [
-    { v: rc.total,     l: 'Total líneas',            c: '#006633', bg: '#e6f2eb' },
-    { v: rc.conRC,     l: 'CON RC',                  c: '#1D9E75', bg: '#E1F5EE' },
-    { v: rc.sinRC,     l: 'SIN RC',                  c: '#A32D2D', bg: '#FCEBEB' },
-    { v: rc.proySin,   l: 'Proyectadas sin RC',      c: '#BA7517', bg: '#FAEEDA' },
+    { v: rc.total,   l: 'Total líneas',       cls: 'rc-kpi-total'  },
+    { v: rc.conRC,   l: 'CON RC',             cls: 'rc-kpi-con'    },
+    { v: rc.sinRC,   l: 'SIN RC',             cls: 'rc-kpi-sin'    },
+    { v: rc.proySin, l: 'Proyectadas sin RC', cls: 'rc-kpi-proysin' }
   ];
   kpis.forEach(function(k){
-    h += '<div style="background:'+k.bg+';border-radius:10px;padding:10px 12px;text-align:center;border:1px solid '+k.c+'30">'
-      + '<div style="font-size:22px;font-weight:800;color:'+k.c+'">'+k.v+'</div>'
-      + '<div style="font-size:9px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;line-height:1.3">'+k.l+'</div>'
-      + '</div>';
+    h += '<div class="rc-kpi '+k.cls+'"><div class="rc-kpi-v">'+k.v+'</div><div class="rc-kpi-l">'+k.l+'</div></div>';
   });
   h += '</div>';
 
-  // tabla resumen global
-  h += '<div style="overflow-x:auto;margin-bottom:14px"><table style="width:100%;border-collapse:collapse;font-size:10px;min-width:760px">';
-  h += '<thead><tr style="background:#006633;color:#fff">'
-    + '<th style="padding:8px 10px;text-align:left;font-weight:700;border-radius:6px 0 0 0">Facultad</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700">Total</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700">CON RC</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700">SIN RC</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700">Vig. + RC</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700">Vig. sin RC</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700">Proy. + RC</th>'
-    + '<th style="padding:8px 10px;text-align:center;font-weight:700;border-radius:0 6px 0 0">Proy. sin RC</th>'
+  // tabla resumen global (reutiliza .tbl-wrap + .tbl)
+  h += '<div class="tbl-wrap"><table class="tbl rc-tbl-min">';
+  h += '<thead><tr>'
+    + '<th>Facultad</th>'
+    + '<th class="rc-th-c">Total</th>'
+    + '<th class="rc-th-c">CON RC</th>'
+    + '<th class="rc-th-c">SIN RC</th>'
+    + '<th class="rc-th-c">Vig. + RC</th>'
+    + '<th class="rc-th-c">Vig. sin RC</th>'
+    + '<th class="rc-th-c">Proy. + RC</th>'
+    + '<th class="rc-th-c">Proy. sin RC</th>'
     + '</tr></thead><tbody>';
-  rc.perFac.forEach(function(f, i){
-    var bg = i % 2 === 0 ? '#f8fbf8' : '#fff';
-    h += '<tr style="background:'+bg+';border-bottom:1px solid #eef4ee">'
-      + '<td style="padding:8px 10px;font-weight:600;color:#006633">'+esc(short(f.fac.name))+'</td>'
-      + '<td style="padding:8px 10px;text-align:center;font-weight:700">'+f.total+'</td>'
-      + '<td style="padding:8px 10px;text-align:center;color:#1D9E75;font-weight:600">'+f.conRC+'</td>'
-      + '<td style="padding:8px 10px;text-align:center;color:#A32D2D;font-weight:600">'+f.sinRC+'</td>'
-      + '<td style="padding:8px 10px;text-align:center">'+f.vigCon+'</td>'
-      + '<td style="padding:8px 10px;text-align:center;color:#BA7517;font-weight:600">'+f.vigSin+'</td>'
-      + '<td style="padding:8px 10px;text-align:center">'+f.proyCon+'</td>'
-      + '<td style="padding:8px 10px;text-align:center;color:#BA7517;font-weight:700">'+f.proySin+'</td>'
+  rc.perFac.forEach(function(f){
+    h += '<tr>'
+      + '<td class="rc-txt-green">'+esc(short(f.fac.name))+'</td>'
+      + '<td class="rc-th-c rc-txt-dark">'+f.total+'</td>'
+      + '<td class="rc-th-c rc-txt-green">'+f.conRC+'</td>'
+      + '<td class="rc-th-c rc-txt-alert">'+f.sinRC+'</td>'
+      + '<td class="rc-th-c">'+f.vigCon+'</td>'
+      + '<td class="rc-th-c rc-txt-gold">'+f.vigSin+'</td>'
+      + '<td class="rc-th-c">'+f.proyCon+'</td>'
+      + '<td class="rc-th-c rc-txt-gold-bold">'+f.proySin+'</td>'
       + '</tr>';
   });
-  h += '<tr style="background:#006633;color:#fff;font-weight:700">'
-    + '<td style="padding:9px 10px;border-radius:0 0 0 6px">TOTAL</td>'
-    + '<td style="padding:9px 10px;text-align:center">'+rc.total+'</td>'
-    + '<td style="padding:9px 10px;text-align:center">'+rc.conRC+'</td>'
-    + '<td style="padding:9px 10px;text-align:center">'+rc.sinRC+'</td>'
-    + '<td style="padding:9px 10px;text-align:center">'+rc.vigCon+'</td>'
-    + '<td style="padding:9px 10px;text-align:center">'+rc.vigSin+'</td>'
-    + '<td style="padding:9px 10px;text-align:center">'+rc.proyCon+'</td>'
-    + '<td style="padding:9px 10px;text-align:center;border-radius:0 0 6px 0">'+rc.proySin+'</td>'
+  h += '<tr class="rc-row-total">'
+    + '<td>TOTAL</td>'
+    + '<td class="rc-th-c">'+rc.total+'</td>'
+    + '<td class="rc-th-c">'+rc.conRC+'</td>'
+    + '<td class="rc-th-c">'+rc.sinRC+'</td>'
+    + '<td class="rc-th-c">'+rc.vigCon+'</td>'
+    + '<td class="rc-th-c">'+rc.vigSin+'</td>'
+    + '<td class="rc-th-c">'+rc.proyCon+'</td>'
+    + '<td class="rc-th-c">'+rc.proySin+'</td>'
     + '</tr>';
   h += '</tbody></table></div>';
 
-  // tarjetas por facultad (clickeables)
-  h += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">';
+  // tarjetas por facultad (chrome exterior limpio, pocos bordes internos)
+  h += '<div class="rc-grid">';
   rc.perFac.forEach(function(f){
-    var col = f.conRC > 0 ? '#1D9E75' : '#BA7517';
-    h += '<div style="border:1px solid #e0ece4;border-radius:8px;overflow:hidden">'
-      + '<div style="background:#006633;color:#fff;padding:7px 10px;font-size:10px;font-weight:700">'+esc(short(f.fac.name))+'</div>'
-      + '<div style="padding:8px 10px">'
-      + '<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#333;margin-bottom:4px"><span>Total líneas</span><span>'+f.total+'</span></div>'
-      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-con:'+esc(f.fac.name)+'" style="display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-radius:6px;background:#E1F5EE;cursor:pointer;margin-bottom:3px"><span style="font-size:9px;font-weight:600;color:#085041">CON RC</span><span style="font-size:11px;font-weight:800;color:#1D9E75">'+f.conRC+'</span></div>'
-      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-sin:'+esc(f.fac.name)+'" style="display:flex;justify-content:space-between;align-items:center;padding:3px 6px;border-radius:6px;background:#FCEBEB;cursor:pointer;margin-bottom:3px"><span style="font-size:9px;font-weight:600;color:#501313">SIN RC</span><span style="font-size:11px;font-weight:800;color:#A32D2D">'+f.sinRC+'</span></div>'
-      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:6px">'
-      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-vig-con:'+esc(f.fac.name)+'" style="padding:3px 6px;border-radius:6px;background:#e6f2eb;cursor:pointer;text-align:center"><div style="font-size:8px;color:#085041;font-weight:600">Vigente + RC</div><div style="font-size:11px;font-weight:800;color:#006633">'+f.vigCon+'</div></div>'
-      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-vig-sin:'+esc(f.fac.name)+'" style="padding:3px 6px;border-radius:6px;background:#FAEEDA;cursor:pointer;text-align:center"><div style="font-size:8px;color:#633806;font-weight:600">Vigente sin RC</div><div style="font-size:11px;font-weight:800;color:#BA7517">'+f.vigSin+'</div></div>'
-      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-proy-con:'+esc(f.fac.name)+'" style="padding:3px 6px;border-radius:6px;background:#E6F1FB;cursor:pointer;text-align:center"><div style="font-size:8px;color:#0C447C;font-weight:600">Proyectada + RC</div><div style="font-size:11px;font-weight:800;color:#378ADD">'+f.proyCon+'</div></div>'
-      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-proy-sin:'+esc(f.fac.name)+'" style="padding:3px 6px;border-radius:6px;background:#FCEBEB;cursor:pointer;text-align:center"><div style="font-size:8px;color:#501313;font-weight:600">Proyectada sin RC</div><div style="font-size:11px;font-weight:800;color:#A32D2D">'+f.proySin+'</div></div>'
+    h += '<div class="rc-card">'
+      + '<div class="rc-card-head"><span class="rc-card-name">'+esc(short(f.fac.name))+'</span>'
+      + '<span class="rc-card-total">Total <b>'+f.total+'</b></span></div>'
+      + '<div class="rc-card-body">'
+      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-con:'+esc(f.fac.name)+'" class="rc-tile rc-tile-con"><span class="rc-tile-label"><span class="rc-dot"></span>CON RC</span><span class="rc-tile-num">'+f.conRC+'</span></div>'
+      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-sin:'+esc(f.fac.name)+'" class="rc-tile rc-tile-sin"><span class="rc-tile-label"><span class="rc-dot"></span>SIN RC</span><span class="rc-tile-num">'+f.sinRC+'</span></div>'
+      + '<div class="rc-sub">'
+      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-vig-con:'+esc(f.fac.name)+'" class="rc-cell rc-cell-vigcon"><div class="rc-cell-label">Vigente + RC</div><div class="rc-cell-num">'+f.vigCon+'</div></div>'
+      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-vig-sin:'+esc(f.fac.name)+'" class="rc-cell rc-cell-vigsin"><div class="rc-cell-label">Vigente sin RC</div><div class="rc-cell-num">'+f.vigSin+'</div></div>'
+      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-proy-con:'+esc(f.fac.name)+'" class="rc-cell rc-cell-proycon"><div class="rc-cell-label">Proyectada + RC</div><div class="rc-cell-num">'+f.proyCon+'</div></div>'
+      + '<div role="button" tabindex="0" data-action="rc-show-detail" data-filter="fac-proy-sin:'+esc(f.fac.name)+'" class="rc-cell rc-cell-proysin"><div class="rc-cell-label">Proyectada sin RC</div><div class="rc-cell-num">'+f.proySin+'</div></div>'
       + '</div></div></div>';
   });
   h += '</div>';
@@ -573,38 +568,52 @@ var renderIndicadorRCDetalle = function(filter){
   var sub = kindLabel ? (' — ' + kindLabel + (filter && filter.split(':')[1] ? ' — ' + filter.split(':')[1] : '')) : '';
 
   var rows = list.map(function(r, i){
-    var link = r.link ? '<a href="'+esc(r.link)+'" target="_blank" rel="noopener noreferrer" style="color:#0563C1;font-size:9px">Ver link</a>' : '<span style="color:#A32D2D;font-size:9px;font-weight:600">Sin RC</span>';
-    return '<tr style="background:'+(i%2===0?'#f8fbf8':'#fff')+';border-bottom:1px solid #eef4ee">'
-      + '<td style="padding:6px 8px;font-size:9px;color:#006633;font-weight:600">'+esc(r.fac)+'</td>'
-      + '<td style="padding:6px 8px;font-size:9px">'+esc(r.prog)+'</td>'
-      + '<td style="padding:6px 8px;font-size:9px">'+esc(r.linea)+'</td>'
-      + '<td style="padding:6px 8px;font-size:9px">'+esc(r.esp)+'</td>'
-      + '<td style="padding:6px 8px;font-size:9px;text-align:center">'+esc(r.oferta)+'</td>'
-      + '<td style="padding:6px 8px;font-size:9px">'+esc(r.estado)+'</td>'
-      + '<td style="padding:6px 8px;text-align:center">'+link+'</td>'
+    var link = r.link ? '<a href="'+esc(r.link)+'" target="_blank" rel="noopener noreferrer" class="rc-link">Ver link</a>' : '<span class="rc-nolink">Sin RC</span>';
+    return '<tr>'
+      + '<td class="rc-txt-green">'+esc(r.fac)+'</td>'
+      + '<td>'+esc(r.prog)+'</td>'
+      + '<td>'+esc(r.linea)+'</td>'
+      + '<td>'+esc(r.esp)+'</td>'
+      + '<td class="rc-th-c">'+esc(r.oferta)+'</td>'
+      + '<td>'+esc(r.estado)+'</td>'
+      + '<td class="rc-th-c">'+link+'</td>'
       + '</tr>';
   }).join('');
 
-  var html = '<div id="rc-detail-overlay" style="position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto">'
-    + '<div style="background:#fff;border-radius:12px;width:100%;max-width:960px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden">'
-    + '<div style="background:#006633;color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between">'
-    + '<span style="font-size:13px;font-weight:700">'+esc(title)+esc(sub)+'</span>'
-    + '<button data-action="rc-close-detail" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:16px;cursor:pointer;border-radius:6px;padding:2px 10px">×</button>'
-    + '</div>'
-    + '<div style="padding:14px 18px;max-height:70vh;overflow:auto">'
-    + '<div style="font-size:10px;color:#555;margin-bottom:8px"><b>'+list.length+'</b> línea(s)</div>'
-    + '<table style="width:100%;border-collapse:collapse;font-size:10px;min-width:820px">'
-    + '<thead><tr style="background:#0d3d22;color:#fff">'
-    + '<th style="padding:7px 8px;text-align:left">Facultad</th><th style="padding:7px 8px;text-align:left">Programa</th>'
-    + '<th style="padding:7px 8px;text-align:left">Línea</th><th style="padding:7px 8px;text-align:left">Especialización</th>'
-    + '<th style="padding:7px 8px;text-align:center">Oferta</th><th style="padding:7px 8px;text-align:left">Estado</th>'
-    + '<th style="padding:7px 8px;text-align:center">Link RC</th></tr></thead><tbody>'
-    + rows + '</tbody></table></div></div></div>';
+  var html = '<div id="rc-detail-overlay" class="rc-overlay">'
+    + '<div class="modal rc-modal">'
+    + '<div class="modal-title"><span>🔍</span><span>'+esc(title)+'<span class="rc-modal-sub">'+esc(sub)+'</span></span>'
+    + '<button data-action="rc-close-detail" class="rc-close" title="Cerrar">×</button></div>'
+    + '<div class="rc-modal-body">'
+    + '<div class="rc-count"><b>'+list.length+'</b> línea(s)</div>'
+    + '<div class="tbl-wrap"><table class="tbl rc-detail-tbl">'
+    + '<thead><tr>'
+    + '<th>Facultad</th><th>Programa</th>'
+    + '<th>Línea</th><th>Especialización</th>'
+    + '<th>Oferta</th><th>Estado</th>'
+    + '<th>Link RC</th></tr></thead><tbody>'
+    + rows + '</tbody></table></div>'
+    + '<div class="rc-modal-foot"><button data-action="rc-close-detail" class="rc-close-bottom">Cerrar</button></div>'
+    + '</div></div></div>';
 
   var holder = document.createElement('div');
   holder.innerHTML = html;
   var node = holder.firstChild;
   document.body.appendChild(node);
+
+  // Cierre por tecla ESC y clic sobre el backdrop (fondo), reutilizando el
+  // mismo comportamiento de cierre existente y autolimpiándose al cerrar.
+  var onKey = function(e){
+    if(!node || !node.parentNode){ document.removeEventListener('keydown', onKey); return; }
+    if(e.key === 'Escape' && node.parentNode) document.body.removeChild(node);
+    if(!node.parentNode) document.removeEventListener('keydown', onKey);
+  };
+  var onBackdrop = function(e){
+    if(e.target !== node) return;
+    if(node.parentNode) document.body.removeChild(node);
+  };
+  if(document.addEventListener) document.addEventListener('keydown', onKey);
+  if(node && node.addEventListener) node.addEventListener('click', onBackdrop);
 };
 
 // exportado via window.App (app.js)

@@ -8,6 +8,16 @@
   --udec-dark:#1a2e1a;
   --udec-gray:#f4f6f4;
   --udec-border:#c8ddd0;
+  --udec-alert:#a35c44;
+  --udec-alert-strong:#b04a4a;
+
+  /* Paleta semántica soft (RC) */
+  --rc-verde-bg:#eaf6ef;   --rc-verde-tx:#0f6b44;   /* vigente + RC  */
+  --rc-turq-bg:#e6f4f2;    --rc-turq-tx:#107a6a;    /* CON RC        */
+  --rc-rojo-bg:#fbeeee;    --rc-rojo-tx:#a3443f;    /* SIN RC        */
+  --rc-ambar-bg:#fdf1dc;   --rc-ambar-tx:#9a6b12;   /* proy. sin RC  */
+  --rc-azul-bg:#e8f0fb;    --rc-azul-tx:#2b6cb0;    /* proy. + RC    */
+  --rc-total-bg:#eef4ef;   --rc-total-tx:#0f6b44;   /* total         */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a1a;background:var(--udec-gray)}
@@ -217,6 +227,99 @@ button:active{transform:scale(.98)}
 .tbl td{padding:5px 8px;border-bottom:1px solid var(--udec-green-pale);vertical-align:middle}
 .tbl tr:hover td{background:var(--udec-green-pale)}
 
+/* ===== REGISTRO CALIFICADO POR FACULTAD ===== */
+.rc-container{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 3px 12px rgba(0,30,0,.06);margin-top:1rem}
+.rc-title{font-size:11px;font-weight:800;color:var(--udec-green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.rc-title-sub{font-size:9px;color:#77848a;margin-bottom:14px;letter-spacing:.02em}
+
+/* ── KPIs: fondo pastel semántico, número dominante, sin bordes ── */
+.rc-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.rc-kpi{border:none;border-radius:12px;padding:12px 10px;text-align:center}
+.rc-kpi-v{font-size:24px;font-weight:800;line-height:1.1}
+.rc-kpi-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;line-height:1.3;opacity:.85}
+.rc-kpi-total{background:var(--rc-total-bg)}
+.rc-kpi-total .rc-kpi-v{color:var(--rc-total-tx)}
+.rc-kpi-con{background:var(--rc-turq-bg)}
+.rc-kpi-con .rc-kpi-v{color:var(--rc-turq-tx)}
+.rc-kpi-sin{background:var(--rc-rojo-bg)}
+.rc-kpi-sin .rc-kpi-v{color:var(--rc-rojo-tx)}
+.rc-kpi-proysin{background:var(--rc-ambar-bg)}
+.rc-kpi-proysin .rc-kpi-v{color:var(--rc-ambar-tx)}
+
+/* ── Tabla global reutiliza .tbl-wrap + .tbl ── */
+.rc-tbl-min{min-width:760px}
+.rc-th-c{text-align:center}
+.rc-txt-green{color:var(--rc-turq-tx)!important;font-weight:600}
+.rc-txt-alert{color:var(--rc-rojo-tx)!important;font-weight:600}
+.rc-txt-gold{color:var(--rc-ambar-tx)!important;font-weight:600}
+.rc-txt-gold-bold{color:var(--rc-ambar-tx)!important;font-weight:700}
+.rc-txt-dark{color:var(--udec-dark);font-weight:600}
+.rc-row-total{background:var(--udec-green);color:#fff;font-weight:700}
+.rc-row-total td{border-bottom:none!important}
+
+/* ── Tarjetas por facultad: contenedor limpio, pocos bordes ── */
+.rc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;margin-top:16px}
+.rc-card{background:#fff;border:1px solid #e3ebe5;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,30,0,.05)}
+.rc-card-head{background:#fff;padding:11px 14px;border-bottom:1px solid #eef2ee;display:flex;align-items:baseline;justify-content:space-between}
+.rc-card-name{font-size:12px;font-weight:800;color:var(--udec-green)}
+.rc-card-total{font-size:10px;color:#66736a;font-weight:600}
+.rc-card-total b{font-size:13px;color:var(--udec-dark)}
+.rc-card-body{padding:12px 14px}
+
+/* ── CON / SIN RC: alto peso visual ── */
+.rc-tile{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:9px;margin-bottom:6px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.rc-tile:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,30,0,.10)}
+.rc-tile-label{font-size:10px;font-weight:800;color:var(--udec-dark);display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;letter-spacing:.05em}
+.rc-tile-num{font-size:17px;font-weight:800;line-height:1}
+.rc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.rc-tile-con{background:var(--rc-turq-bg)}
+.rc-tile-con .rc-dot{background:var(--rc-turq-tx)}
+.rc-tile-con .rc-tile-num{color:var(--rc-turq-tx)}
+.rc-tile-sin{background:var(--rc-rojo-bg);margin-bottom:0}
+.rc-tile-sin .rc-dot{background:var(--rc-rojo-tx)}
+.rc-tile-sin .rc-tile-num{color:var(--rc-rojo-tx)}
+
+/* ── Matriz 2x2 estados: pastel, compactos, número protagonista ── */
+.rc-sub{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;padding-top:12px;border-top:1px dashed #e3ebe5}
+.rc-cell{border-radius:9px;padding:6px 8px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.rc-cell:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,30,0,.10)}
+.rc-cell-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.2;opacity:.9}
+.rc-cell-num{font-size:15px;font-weight:800;line-height:1.15;margin-top:2px}
+.rc-cell-vigcon{background:var(--rc-verde-bg)}
+.rc-cell-vigcon .rc-cell-label,.rc-cell-vigcon .rc-cell-num{color:var(--rc-verde-tx)}
+.rc-cell-vigsin{background:var(--rc-ambar-bg)}
+.rc-cell-vigsin .rc-cell-label,.rc-cell-vigsin .rc-cell-num{color:var(--rc-ambar-tx)}
+.rc-cell-proycon{background:var(--rc-azul-bg)}
+.rc-cell-proycon .rc-cell-label,.rc-cell-proycon .rc-cell-num{color:var(--rc-azul-tx)}
+.rc-cell-proysin{background:var(--rc-ambar-bg)}
+.rc-cell-proysin .rc-cell-label,.rc-cell-proysin .rc-cell-num{color:var(--rc-ambar-tx)}
+
+/* ── Modal detalle reutiliza .modal-overlay + .modal ── */
+.rc-overlay{position:fixed;inset:0;background:rgba(0,30,0,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto;cursor:pointer}
+.rc-overlay > *{cursor:default}
+.modal.rc-modal{max-width:960px;width:100%}
+.rc-modal-sub{font-weight:400;font-size:11px;opacity:.9}
+.rc-close{background:#f0f4f2;border:1px solid #cfddd5;color:var(--udec-green);font-size:18px;font-weight:700;line-height:1;cursor:pointer;border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;margin-left:auto;transition:background .15s,border-color .15s;flex-shrink:0}
+.rc-close:hover{background:#e2ece6;border-color:var(--udec-green)}
+.rc-close-bottom{background:var(--udec-green);color:#fff;border:none;font-size:12px;font-weight:700;padding:9px 22px;border-radius:7px;cursor:pointer;transition:background .15s;margin-top:14px}
+.rc-close-bottom:hover{background:var(--udec-green-mid)}
+.rc-count{font-size:10px;color:#555;margin-bottom:8px}
+.rc-link{color:#0563C1;font-size:9px}
+.rc-nolink{color:var(--rc-rojo-tx);font-size:9px;font-weight:600}
+.rc-modal-body{max-height:70vh;overflow:auto;padding-bottom:2px}
+.rc-modal-foot{display:flex;justify-content:flex-end;padding:0 6px 2px}
+
+/* Tabla del detalle: usa ancho real, sin ancho mínimo rígido, wrap de textos */
+.rc-detail-tbl{min-width:0!important;width:100%}
+.rc-detail-tbl th,.rc-detail-tbl td{white-space:normal!important;vertical-align:top;word-break:break-word}
+.rc-detail-tbl .rc-link{white-space:nowrap}
+
+@media (max-width:768px){
+  .rc-kpi-row{grid-template-columns:repeat(2,1fr)}
+  .rc-overlay{padding:1rem}
+  .rc-grid{grid-template-columns:1fr}
+}
+
 /* ===== VISTA POR SEDE ===== */
 .sede-wrap{padding:1rem;background:var(--udec-green-pale);border-radius:0 0 8px 8px;border:1px solid var(--udec-border);border-top:none}
 .sede-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
@@ -346,6 +449,18 @@ button:active{transform:scale(.98)}
   .sede-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:4px!important}
   .sede-card{page-break-inside:avoid;break-inside:avoid;padding:5px 7px!important;border-top-width:2px!important}
   .sede-name{font-size:10px!important}
+
+  /* ── REGISTRO CALIFICADO ── */
+  .rc-tbl-min{min-width:0!important}
+  .rc-grid{grid-template-columns:1fr 1fr!important;gap:4px!important}
+  .rc-card{page-break-inside:avoid;break-inside:avoid}
+  .rc-tile:hover,.rc-cell:hover{transform:none!important;box-shadow:none!important}
+  .rc-container{padding:6px 8px!important;border-radius:8px!important;break-inside:avoid;box-shadow:none!important}
+  .rc-kpi-v{font-size:16px!important}
+  .rc-kpi-l{font-size:7px!important}
+  .rc-tile-num{font-size:13px!important}
+  .rc-cell-num{font-size:12px!important}
+  .rc-overlay{display:none!important}
 
   /* ── INDICADORES ── */
   #indicadores-content div[style*="overflow-x"][style*="auto"]{overflow:visible!important;width:100%!important}
