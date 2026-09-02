@@ -70,7 +70,7 @@ window.App = {
   // Desarrollo
   renderPipeline: renderPipeline, toggleSec: toggleSec,
   // Indicadores
-  renderIndicadores: renderIndicadores,
+  renderIndicadores: renderIndicadores, renderIndicadorRCDetalle: renderIndicadorRCDetalle,
   // Almacenamiento
   loadDB: loadDB, saveDB: saveDB, downloadHTML: downloadHTML, downloadDB: downloadDB, resetDB: resetDB,
   backupDB: backupDB, restoreDB: restoreDB,

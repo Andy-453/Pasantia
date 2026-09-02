@@ -47,6 +47,13 @@ var __ACTIONS = {
   'show-learning-route': function(b){
     openLearningRouteModal(b.dataset.espId, b.dataset.sede);
   },
+  'rc-show-detail': function(b){
+    renderIndicadorRCDetalle(b.getAttribute('data-filter'));
+  },
+  'rc-close-detail': function(){
+    var o = document.getElementById('rc-detail-overlay');
+    if(o && o.parentNode) document.body.removeChild(o);
+  },
   'toggle-sedes-list': function(b){ toggleSedesList(b.getAttribute('data-pid')); },
   'select-sede-prog': function(b){ setSedeProg(b.getAttribute('data-pid'), b.getAttribute('data-sede')); },
   'toggle-mae': function(b){ toggleMaeNode(b.getAttribute('data-key')); },
